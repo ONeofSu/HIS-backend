@@ -1,4 +1,4 @@
-package org.csu.userserviceconsumer;
+package org.csu.userserviceconsumer.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +12,6 @@ public class Controller {
 
     @GetMapping("/hello")
     public String hello() {
-        return this.restTemplate.getForObject("http://localhost:8080/hello", String.class);
+        return this.restTemplate.getForObject("http://user-service-provider/hello", String.class);
     }
 }
