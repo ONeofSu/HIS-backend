@@ -25,10 +25,10 @@ class HerbInfoApplicationTests {
 
     @Test
     void contextLoads() {
-//        System.out.println(herbLocationService.getAllHerbLocations());
-//        System.out.println(herbLocationService.getHerbLocationsByHerbId(1));
-//        System.out.println(herbLocationService.getHerbLocationsByDistrict("渝中区"));
-//        System.out.println(herbLocationService.getHerbLocationsByStreet("太白街道"));
+        System.out.println(herbLocationService.getAllHerbLocations());
+        System.out.println(herbLocationService.getHerbLocationsByHerbId(1));
+        System.out.println(herbLocationService.getHerbLocationsByDistrictName("万州区"));
+        System.out.println(herbLocationService.getHerbLocationsByStreetName("太白街道"));
         System.out.println(districtStreetService.getAllDistricts());
         System.out.println(districtStreetService.getAllStreetsInDistrictByDistrictName("渝中区"));
     }

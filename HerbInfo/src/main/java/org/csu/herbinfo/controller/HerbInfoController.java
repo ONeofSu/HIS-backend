@@ -1,44 +1,108 @@
 package org.csu.herbinfo.controller;
 
-import org.csu.herbinfo.DTO.HerbGrowthDTO;
-import org.csu.herbinfo.entity.HerbGrowth;
-import org.csu.herbinfo.service.HerbGrowthService;
+import org.csu.herbinfo.DTO.HerbDTO;
+import org.csu.herbinfo.entity.Herb;
+import org.csu.herbinfo.entity.HerbCategory;
+import org.csu.herbinfo.service.HerbService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 /*
-交互中药基本信息的Controller
+交互基本信息的Controller
  */
 
 @RestController
 public class HerbInfoController {
     @Autowired
-    HerbGrowthService herbGrowthService;
+    HerbService herbService;
 
-    //新增生长信息
-    @PostMapping(value = "/growth",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> addHerbGrowthInfo( @RequestParam("herbId") int herbId,@RequestParam("batchCode") String batchCode,
-                                                     @RequestParam("wet") double wet,@RequestParam("temperature") double temperature,
-                                                     @RequestParam("des") String des,@RequestParam("longitude") double longitude,
-                                                     @RequestParam("latitude") double latitude,@RequestParam("userId") int userId,
-                                                     @RequestParam("img") MultipartFile img){
-        HerbGrowthDTO herbGrowthDTO = new HerbGrowthDTO();
-        herbGrowthDTO.setHerbId(herbId);
-        herbGrowthDTO.setBatchCode(batchCode);
-        herbGrowthDTO.setWet(wet);
-        herbGrowthDTO.setTemperature(temperature);
-        herbGrowthDTO.setDes(des);
-        herbGrowthDTO.setLongitude(longitude);
-        herbGrowthDTO.setLatitude(latitude);
-        herbGrowthDTO.setUserId(userId);
-        herbGrowthDTO.setImg(img);
-        if(!herbGrowthService.addHerbGrowth(herbGrowthDTO)) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    @GetMapping("herbs/info/{name}")
+    public ResponseEntity<?> getHerbInfo(@PathVariable String name) {
+        int herbId = herbService.getHerbIdByName(name);
+        if(herbId == -1){
+            return ResponseEntity.status(490).body("中药不存在");
         }
-        return ResponseEntity.ok("Already record growth info");
+        Herb herb = herbService.getHerbById(herbId);
+        if(herb == null){
+            return ResponseEntity.status(500).body("获取失败");
+        }
+        return ResponseEntity.ok(herb);
+    }
+
+    @GetMapping("/herbs")
+    public ResponseEntity<?> getAllHerbs() {
+        ResponseEntity<List<Herb>> result = null;
+        List<Herb> herbs = herbService.getAllHerbs();
+        result = ResponseEntity.ok(herbs);
+        return result;
+    }
+
+    @PostMapping("/herbs/info")
+    public ResponseEntity<?> addHerb(@RequestBody HerbDTO herbDTO){
+        Herb herb = herbService.transferDTOToHerb(herbDTO);
+        if(herbService.isHerbNameExist(herb.getName())){
+            return ResponseEntity.status(490).body("中药已存在");
+        }
+        if(!herbService.addHerb(herb)){
+            return ResponseEntity.status(500).body("添加失败");
+        }
+        return ResponseEntity.ok(herb);
+    }
+
+    @DeleteMapping("/herbs/info/{herbId}")
+    public ResponseEntity<?> deleteHerb(@PathVariable int herbId) {
+        if(!herbService.isHerbIdExist(herbId)){
+            return ResponseEntity.status(490).body("中药不存在");
+        }
+        if(herbService.isExistLinkOnHerb(herbId)){
+            return ResponseEntity.status(491).body("该中药还有种类连接，不能删除");
+        }
+        if(!herbService.deleteHerbById(herbId)){
+            return ResponseEntity.status(500).body("删除失败");
+        }
+        return ResponseEntity.ok(herbId);
+    }
+
+    @GetMapping("/category")
+    public ResponseEntity<?> getAllCategory() {
+        ResponseEntity<List<HerbCategory>> result = null;
+        List<HerbCategory> herbCategories = herbService.getAllHerbCategories();
+        result = ResponseEntity.ok(herbCategories);
+        return result;
+    }
+
+    @PostMapping("/category")
+    public ResponseEntity<?> addCategory(@RequestBody HerbDTO herbDTO) {
+        String name = herbDTO.getName();
+        if(name==null || name.equals("")){
+            return ResponseEntity.status(490).body("种类名不得为空");
+        }
+        if(herbService.isHerbCategoryNameExist(name)){
+            return ResponseEntity.status(491).body("该种类已存在");
+        }
+
+        HerbCategory herbCategory = new HerbCategory();
+        herbCategory.setName(name);
+        if(!herbService.addHerbCategory(herbCategory)){
+           return ResponseEntity.status(500).body("添加失败");
+        }
+        return ResponseEntity.ok(herbCategory);
+    }
+
+    @DeleteMapping("/category/{category_id}")
+    public ResponseEntity<?> deleteCategory(@PathVariable int category_id) {
+        if(!herbService.isHerbCategoryIdExist(category_id)){
+            return ResponseEntity.status(490).body("中药种类不存在");
+        }
+        if(herbService.isExistLinkOnCategory(category_id)){
+            return ResponseEntity.status(491).body("该种类还有种中药接，不能删除");
+        }
+        if(!herbService.deleteHerbCategoryById(category_id)){
+            return ResponseEntity.status(500).body("删除失败");
+        }
+        return ResponseEntity.ok(category_id);
     }
 }

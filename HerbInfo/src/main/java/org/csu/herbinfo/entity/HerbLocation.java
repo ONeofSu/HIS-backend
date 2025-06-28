@@ -15,9 +15,9 @@ public class HerbLocation {
     @TableField(value = "location_count")
     private int count;
     @TableField(value = "district_id")
-    private String districtId;
+    private int districtId;
     @TableField(value = "street_id")
-    private String streetId;
+    private int streetId;
     @TableField(value = "location_longitude")
     private double longitude;
     @TableField(value = "location_latitude")

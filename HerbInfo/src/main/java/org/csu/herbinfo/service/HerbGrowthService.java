@@ -6,7 +6,6 @@ import org.csu.herbinfo.entity.HerbGrowth;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-@Service
 public interface HerbGrowthService {
     public boolean addHerbGrowth(HerbGrowth hg);
     public boolean addHerbGrowth(HerbGrowthDTO hg);

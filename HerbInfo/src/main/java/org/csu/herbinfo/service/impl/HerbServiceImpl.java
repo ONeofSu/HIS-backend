@@ -1,6 +1,7 @@
 package org.csu.herbinfo.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.csu.herbinfo.DTO.HerbDTO;
 import org.csu.herbinfo.entity.Herb;
 import org.csu.herbinfo.entity.HerbCategory;
 import org.csu.herbinfo.entity.HerbLinkCategory;
@@ -111,6 +112,12 @@ public class HerbServiceImpl implements HerbService {
         return true;
     }
 
+    @Override
+    public boolean isHerbNameExist(String name) {
+        int id = getHerbIdByName(name);
+        return isHerbIdExist(id);
+    }
+
     //------------------------------------------HERB_CATEGORY-----------------------------------------------
     @Override
     public List<HerbCategory> getAllHerbCategories() {
@@ -162,6 +169,21 @@ public class HerbServiceImpl implements HerbService {
         }
         herbCategoryMapper.deleteById(id);
         return true;
+    }
+
+    @Override
+    public boolean isHerbCategoryIdExist(int id) {
+        HerbCategory herbCategory = getHerbCategoryById(id);
+        if (herbCategory == null) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isHerbCategoryNameExist(String name) {
+        int id = getHerbCategoryIdByName(name);
+        return isHerbCategoryIdExist(id);
     }
 
     //----------------------------HERB_LINK_CATEGORY----------------------------------------------
@@ -228,5 +250,18 @@ public class HerbServiceImpl implements HerbService {
             return false;
         }
         return true;
+    }
+
+    //-----------------------------------------ELSE--------------------------------------------------------------
+
+    @Override
+    public Herb transferDTOToHerb(HerbDTO herbDTO) {
+        Herb herb = new Herb();
+        herb.setName(herbDTO.getName());
+        herb.setOrigin(herbDTO.getOrigin());
+        herb.setDes1(herbDTO.getDes());
+        herb.setImage(herbDTO.getImg_url());
+        herb.setIsvalid(true);
+        return herb;
     }
 }
