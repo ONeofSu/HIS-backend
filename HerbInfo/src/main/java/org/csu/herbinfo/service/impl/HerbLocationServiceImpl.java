@@ -21,10 +21,10 @@ public class HerbLocationServiceImpl implements HerbLocationService {
         if(herbLocation==null){
             return false;
         }
-        if(herbLocation.getDistrict()==null || herbLocation.getDistrict().equals("") ||
-        herbLocation.getStreet()==null || herbLocation.getStreet().equals("")){
-            return false;
-        }
+//        if(herbLocation.getDistrict()==null || herbLocation.getDistrict().equals("") ||
+//        herbLocation.getStreet()==null || herbLocation.getStreet().equals("")){
+//            return false;
+//        }
         if(herbLocation.getCount()==0) return false;
         return true;
     }
@@ -45,23 +45,23 @@ public class HerbLocationServiceImpl implements HerbLocationService {
         return list;
     }
 
-    @Override
-    public List<HerbLocation> getHerbLocationsByDistrict(String district) {
-        ArrayList<HerbLocation> list = new ArrayList<>();
-        QueryWrapper<HerbLocation> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("district", district);
-        list.addAll(herbLocationMapper.selectList(queryWrapper));
-        return list;
-    }
-
-    @Override
-    public List<HerbLocation> getHerbLocationsByStreet(String street) {
-        ArrayList<HerbLocation> list = new ArrayList<>();
-        QueryWrapper<HerbLocation> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("street", street);
-        list.addAll(herbLocationMapper.selectList(queryWrapper));
-        return list;
-    }
+//    @Override
+//    public List<HerbLocation> getHerbLocationsByDistrict(String district) {
+//        ArrayList<HerbLocation> list = new ArrayList<>();
+//        QueryWrapper<HerbLocation> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.eq("district", district);
+//        list.addAll(herbLocationMapper.selectList(queryWrapper));
+//        return list;
+//    }
+//
+//    @Override
+//    public List<HerbLocation> getHerbLocationsByStreet(String street) {
+//        ArrayList<HerbLocation> list = new ArrayList<>();
+//        QueryWrapper<HerbLocation> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.eq("street", street);
+//        list.addAll(herbLocationMapper.selectList(queryWrapper));
+//        return list;
+//    }
 
     @Override
     public boolean addHerbLocation(HerbLocation herbLocation) {
