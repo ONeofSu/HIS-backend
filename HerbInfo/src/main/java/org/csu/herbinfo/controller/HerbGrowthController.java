@@ -19,25 +19,24 @@ public class HerbGrowthController {
     HerbGrowthService herbGrowthService;
 
     //新增生长信息
-    @PostMapping(value = "/growth",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> addHerbGrowthInfo( @RequestParam("herbId") int herbId,@RequestParam("batchCode") String batchCode,
-                                                     @RequestParam("wet") double wet,@RequestParam("temperature") double temperature,
-                                                     @RequestParam("des") String des,@RequestParam("longitude") double longitude,
-                                                     @RequestParam("latitude") double latitude,@RequestParam("userId") int userId,
-                                                     @RequestParam("img") MultipartFile img){
-        HerbGrowthDTO herbGrowthDTO = new HerbGrowthDTO();
-        herbGrowthDTO.setHerbId(herbId);
-        herbGrowthDTO.setBatchCode(batchCode);
-        herbGrowthDTO.setWet(wet);
-        herbGrowthDTO.setTemperature(temperature);
-        herbGrowthDTO.setDes(des);
-        herbGrowthDTO.setLongitude(longitude);
-        herbGrowthDTO.setLatitude(latitude);
-        herbGrowthDTO.setUserId(userId);
-        herbGrowthDTO.setImg(img);
-        if(!herbGrowthService.addHerbGrowth(herbGrowthDTO)) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-        return ResponseEntity.ok("Already record growth info");
+    @PostMapping(value = "/growth")
+    public ResponseEntity<?> addGrowth(@RequestBody HerbGrowthDTO herbGrowthDTO) {
+        return null;
     }
+
+    @GetMapping("/growth")
+    public ResponseEntity<?> getAllGrowth() {
+        return null;
+    }
+
+    @GetMapping("/growth/batch/{batchCode}")
+    public ResponseEntity<?> getAllGrowthOnBatch(@PathVariable String batchCode) {
+        return null;
+    }
+
+    @DeleteMapping("/growth/{growth_id}")
+    public ResponseEntity<?> deleteGrowth(@PathVariable String growth_id) {
+        return null;
+    }
+
 }

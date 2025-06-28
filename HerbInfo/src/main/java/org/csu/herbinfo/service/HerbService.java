@@ -35,5 +35,7 @@ public interface HerbService {
     public boolean isExistLinkOnHerb(int herbId);   //检测中药是否有链接映射
     public boolean isExistLinkOnCategory(int categoryId);   //检测类别是否有链接映射
 
+    public boolean isLinkExist(int herbId, int categoryId);
+
     public Herb transferDTOToHerb(HerbDTO herbDTO);
 }

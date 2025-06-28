@@ -252,6 +252,17 @@ public class HerbServiceImpl implements HerbService {
         return true;
     }
 
+    @Override
+    public boolean isLinkExist(int herbId, int categoryId) {
+        QueryWrapper<HerbLinkCategory> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("herb_id", herbId).eq("category_id", categoryId);
+        HerbLinkCategory herbLinkCategory = herbLinkCategoryMapper.selectOne(queryWrapper);
+        if(herbLinkCategory==null) {
+            return false;
+        }
+        return true;
+    }
+
     //-----------------------------------------ELSE--------------------------------------------------------------
 
     @Override

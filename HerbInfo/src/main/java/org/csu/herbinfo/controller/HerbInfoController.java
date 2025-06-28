@@ -3,6 +3,7 @@ package org.csu.herbinfo.controller;
 import org.csu.herbinfo.DTO.HerbDTO;
 import org.csu.herbinfo.entity.Herb;
 import org.csu.herbinfo.entity.HerbCategory;
+import org.csu.herbinfo.entity.HerbLinkCategory;
 import org.csu.herbinfo.service.HerbService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -98,11 +99,68 @@ public class HerbInfoController {
             return ResponseEntity.status(490).body("中药种类不存在");
         }
         if(herbService.isExistLinkOnCategory(category_id)){
-            return ResponseEntity.status(491).body("该种类还有种中药接，不能删除");
+            return ResponseEntity.status(491).body("该种类还有中药链接，不能删除");
         }
         if(!herbService.deleteHerbCategoryById(category_id)){
             return ResponseEntity.status(500).body("删除失败");
         }
         return ResponseEntity.ok(category_id);
     }
+
+    @PostMapping("/{herbId}/links/{categoryId}")
+    public ResponseEntity<?> addLink(@PathVariable int herbId, @PathVariable int categoryId) {
+        if(!herbService.isHerbIdExist(herbId)){
+            return ResponseEntity.status(490).body("中药不存在");
+        }
+        if(!herbService.isHerbCategoryIdExist(categoryId)){
+            return ResponseEntity.status(491).body("中药种类不存在");
+        }
+        if(herbService.isLinkExist(herbId, categoryId)){
+            return ResponseEntity.status(492).body("中药-类型映射已存在");
+        }
+        if(!herbService.addHerbLinkCategory(herbId, categoryId)){
+            return ResponseEntity.status(500).body("添加失败");
+        }
+        return ResponseEntity.ok("添加成功");
+    }
+
+    @DeleteMapping("/{herbId}/links/{categoryId}")
+    public ResponseEntity<?> deleteLink(@PathVariable int herbId, @PathVariable int categoryId) {
+        if(!herbService.isHerbIdExist(herbId)){
+            return ResponseEntity.status(490).body("中药不存在");
+        }
+        if(!herbService.isHerbCategoryIdExist(categoryId)){
+            return ResponseEntity.status(491).body("中药种类不存在");
+        }
+        if(!herbService.isLinkExist(herbId, categoryId)){
+            return ResponseEntity.status(492).body("中药-类型映射不存在");
+        }
+        if(!herbService.deleteHerbLinkCategory(herbId, categoryId)){
+            return ResponseEntity.status(500).body("添加失败");
+        }
+        return ResponseEntity.ok("删除成功");
+    }
+
+    @GetMapping("/{herbId}/links")
+    public ResponseEntity<?> getAllLinksOnHerb(@PathVariable int herbId) {
+        if(!herbService.isHerbIdExist(herbId)){
+            return ResponseEntity.status(490).body("中药不存在");
+        }
+        ResponseEntity<List<HerbLinkCategory>> result = null;
+        List<HerbLinkCategory> list = herbService.getLinksOnHerb(herbId);
+        result = ResponseEntity.ok(list);
+        return result;
+    }
+
+    @GetMapping("/links/{categoryId}")
+    public ResponseEntity<?> getAllLinksOnCategory(@PathVariable int categoryId) {
+        if(!herbService.isHerbCategoryIdExist(categoryId)){
+            return ResponseEntity.status(490).body("中药种类不存在");
+        }
+        ResponseEntity<List<HerbLinkCategory>> result = null;
+        List<HerbLinkCategory> list = herbService.getLinksOnHerbCategory(categoryId);
+        result = ResponseEntity.ok(list);
+        return result;
+    }
+
 }

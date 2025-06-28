@@ -9,8 +9,7 @@ import java.sql.Timestamp;
 
 @Data
 public class HerbGrowthDTO {
-    private int id;
-    private int herbId;
+    private String herbName;
     private String batchCode;
     private double wet;
     private double temperature;
@@ -19,19 +18,5 @@ public class HerbGrowthDTO {
     private double latitude;
     private int userId;
     private Timestamp recordTime;
-    private MultipartFile img;
-
-    public HerbGrowth transferIntoHerbGrowthExceptImg() {
-        HerbGrowth hg = new HerbGrowth();
-        hg.setHerbId(this.herbId);
-        hg.setBatchCode(this.batchCode);
-        hg.setWet(this.wet);
-        hg.setTemperature(this.temperature);
-        hg.setDes(this.des);
-        hg.setLongitude(this.longitude);
-        hg.setLatitude(this.latitude);
-        hg.setUserId(this.userId);
-        hg.setRecordTime(this.recordTime);
-        return hg;
-    }
+    private String imgUrl;
 }

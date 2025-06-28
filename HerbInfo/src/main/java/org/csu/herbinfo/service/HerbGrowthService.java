@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface HerbGrowthService {
     public boolean addHerbGrowth(HerbGrowth hg);
-    public boolean addHerbGrowth(HerbGrowthDTO hg);
+    //public boolean addHerbGrowth(HerbGrowthDTO hg);
     public List<HerbGrowth> getHerbGrowthsByBatchCode(String batchCode);
     public List<HerbGrowth> getAllHerbGrowths();
 }

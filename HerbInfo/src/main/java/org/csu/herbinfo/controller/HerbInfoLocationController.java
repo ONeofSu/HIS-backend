@@ -1,5 +1,6 @@
 package org.csu.herbinfo.controller;
 
+import org.csu.herbinfo.DTO.DistrictAndStreetDTO;
 import org.csu.herbinfo.DTO.HerbLocationDTO;
 import org.csu.herbinfo.entity.HerbLocation;
 import org.csu.herbinfo.service.DistrictStreetService;
@@ -106,5 +107,23 @@ public class HerbInfoLocationController {
             return ResponseEntity.status(500).body("删除失败");
         }
         return ResponseEntity.ok(locationId);
+    }
+
+    @PostMapping("/location/valid")
+    public ResponseEntity<?> validDistrictAndStreet(@RequestBody DistrictAndStreetDTO districtAndStreetDTO) {
+        int district_id = districtStreetService.getDistrictIdByName(districtAndStreetDTO.getDistrict());
+        if(district_id == -1){
+            return ResponseEntity.status(490).body("行政区不存在");
+        }
+        int street_id = districtStreetService.getStreetIdByName(districtAndStreetDTO.getStreet());
+        if(street_id == -1){
+            return ResponseEntity.status(491).body("街道不存在");
+        }
+
+        if(!districtStreetService.isStreetInDistrict(district_id, street_id)){
+            return ResponseEntity.status(492).body("街道不在行政区中");
+        }
+
+        return ResponseEntity.ok(districtAndStreetDTO);
     }
 }

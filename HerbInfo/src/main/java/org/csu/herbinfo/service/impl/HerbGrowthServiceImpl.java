@@ -59,43 +59,43 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
         return true;
     }
 
-    @Override
-    public boolean addHerbGrowth(HerbGrowthDTO hgDTO) {
-        hgDTO.setRecordTime(new Timestamp(new Date().getTime()));   //设置时间戳
-        HerbGrowth hg = hgDTO.transferIntoHerbGrowthExceptImg();
-
-        //handle img
-        String imgUrl = null;
-        try{
-            Path uploadDir_path = Paths.get("src/../../resources/his_info/growth_images/").toAbsolutePath();
-            String uploadDir = uploadDir_path.toString();
-            System.out.println(uploadDir);
-            File dir = new File(uploadDir);
-            if (!dir.exists()) {
-                dir.mkdirs(); // 创建目录
-            }
-
-            //时间处理
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-            Timestamp hgTime = hgDTO.getRecordTime();
-            LocalDateTime localDateTime = hgTime.toLocalDateTime();
-            String timeForFileName = localDateTime.format(formatter);
-
-            //文件名
-            String fileName = hgDTO.getBatchCode() + timeForFileName + ".jpg";
-            File destFile = new File(uploadDir, fileName);
-            hgDTO.getImg().transferTo(destFile);
-
-            //存储图片路径
-            imgUrl = "/../resources/his_info/growth_images/" + fileName;
-        }catch (IOException e){
-            e.printStackTrace();
-            return false;
-        }
-
-        hg.setImgUrl(imgUrl);
-        return addHerbGrowth(hg);
-    }
+//    @Override
+//    public boolean addHerbGrowth(HerbGrowthDTO hgDTO) {
+//        hgDTO.setRecordTime(new Timestamp(new Date().getTime()));   //设置时间戳
+//        HerbGrowth hg = hgDTO.transferIntoHerbGrowthExceptImg();
+//
+//        //handle img
+//        String imgUrl = null;
+//        try{
+//            Path uploadDir_path = Paths.get("src/../../resources/his_info/growth_images/").toAbsolutePath();
+//            String uploadDir = uploadDir_path.toString();
+//            System.out.println(uploadDir);
+//            File dir = new File(uploadDir);
+//            if (!dir.exists()) {
+//                dir.mkdirs(); // 创建目录
+//            }
+//
+//            //时间处理
+//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+//            Timestamp hgTime = hgDTO.getRecordTime();
+//            LocalDateTime localDateTime = hgTime.toLocalDateTime();
+//            String timeForFileName = localDateTime.format(formatter);
+//
+//            //文件名
+//            String fileName = hgDTO.getBatchCode() + timeForFileName + ".jpg";
+//            File destFile = new File(uploadDir, fileName);
+//            hgDTO.getImg().transferTo(destFile);
+//
+//            //存储图片路径
+//            imgUrl = "/../resources/his_info/growth_images/" + fileName;
+//        }catch (IOException e){
+//            e.printStackTrace();
+//            return false;
+//        }
+//
+//        hg.setImgUrl(imgUrl);
+//        return addHerbGrowth(hg);
+//    }
 
     @Override
     public List<HerbGrowth> getHerbGrowthsByBatchCode(String batchCode) {
