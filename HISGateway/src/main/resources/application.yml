@@ -18,6 +18,12 @@ spring:
                 - Path=/user-service/hello
               filters:
                 - StripPrefix=1
+            - id: herb-info-service
+              uri: lb://herb-info-service
+              predicates:
+                - Path=/herb-info-service/**
+              filters:
+                - StripPrefix=1
 
 eureka:
   client:
