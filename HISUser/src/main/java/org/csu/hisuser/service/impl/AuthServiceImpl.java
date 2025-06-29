@@ -91,6 +91,7 @@ public class AuthServiceImpl implements AuthService {
         if(!jwtUtil.validateToken(token)) {
             return false;
         }
+
         String username = getUsernameFromToken(token);
         if(username == null) {
             return false;
