@@ -2,6 +2,9 @@ package org.csu.herbinfo.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.csu.herbinfo.DTO.HerbDTO;
+import org.csu.herbinfo.VO.HerbLinkCategoryVO;
+import org.csu.herbinfo.VO.HerbLocationVO;
+import org.csu.herbinfo.VO.HerbVO;
 import org.csu.herbinfo.entity.Herb;
 import org.csu.herbinfo.entity.HerbCategory;
 import org.csu.herbinfo.entity.HerbLinkCategory;
@@ -57,13 +60,25 @@ public class HerbServiceImpl implements HerbService {
     @Override
     public Herb getHerbByName(String name) {
         Herb herb = null;
+        int i = 0;
+        boolean flag = false;
         QueryWrapper<Herb> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("herb_name", name);
-        herb = herbMapper.selectOne(queryWrapper);
-        if (herb == null || !herb.isIsvalid()) {
+        List<Herb> herbs = herbMapper.selectList(queryWrapper);
+        if (herbs == null || herbs.size() == 0) {
             return null;
         }
-        return herb;
+        for(;i<herbs.size();i++) {
+            herb = herbs.get(i);
+            if(herb.isIsvalid()){
+                flag = true;
+                break;
+            }
+        }
+        if (!flag) {
+            return null;
+        }
+        return herbs.get(i);
     }
 
     @Override
@@ -109,6 +124,7 @@ public class HerbServiceImpl implements HerbService {
         if (herb == null || !herb.isIsvalid()) {
             return false;
         }
+        System.out.println(herb.isIsvalid());
         return true;
     }
 
@@ -274,5 +290,52 @@ public class HerbServiceImpl implements HerbService {
         herb.setImage(herbDTO.getImg_url());
         herb.setIsvalid(true);
         return herb;
+    }
+
+    @Override
+    public HerbVO transferHerbToVO(Herb herb) {
+        HerbVO herbVO = new HerbVO();
+        herbVO.setId(herb.getId());
+        herbVO.setName(herb.getName());
+        herbVO.setOrigin(herb.getOrigin());
+        herbVO.setDes(herb.getDes1());
+        herbVO.setImage(herb.getImage());
+
+        List<HerbLinkCategory> herbLinkCategoryList = getLinksOnHerb(herb.getId());
+        List<HerbLinkCategoryVO> herbLinkCategoryVOList = transferLinkToVOList(herbLinkCategoryList);
+        herbVO.setHerbLinkCategoryList(herbLinkCategoryVOList);
+        return herbVO;
+    }
+
+    @Override
+    public List<HerbVO> transferHerbToVOList(List<Herb> herbs) {
+        ArrayList<HerbVO> herbVOList = new ArrayList<>();
+        for (Herb herb : herbs) {
+            HerbVO herbVO = transferHerbToVO(herb);
+            herbVOList.add(herbVO);
+        }
+        return herbVOList;
+    }
+
+    @Override
+    public HerbLinkCategoryVO transferLinkToVO(HerbLinkCategory herbLinkCategory) {
+        HerbLinkCategoryVO herbLinkCategoryVO = new HerbLinkCategoryVO();
+        herbLinkCategoryVO.setId(herbLinkCategory.getId());
+        herbLinkCategoryVO.setHerbId(herbLinkCategory.getHerbId());
+        herbLinkCategoryVO.setCategoryId(herbLinkCategory.getCategoryId());
+
+        herbLinkCategoryVO.setHerbName(getHerbById(herbLinkCategoryVO.getHerbId()).getName());
+        herbLinkCategoryVO.setCategoryName(getHerbById(herbLinkCategoryVO.getHerbId()).getName());
+        return herbLinkCategoryVO;
+    }
+
+    @Override
+    public List<HerbLinkCategoryVO> transferLinkToVOList(List<HerbLinkCategory> herbLinkCategories) {
+        ArrayList<HerbLinkCategoryVO> result = new ArrayList<>();
+        for (HerbLinkCategory herbLinkCategory : herbLinkCategories) {
+            HerbLinkCategoryVO herbLinkCategoryVO = transferLinkToVO(herbLinkCategory);
+            result.add(herbLinkCategoryVO);
+        }
+        return result;
     }
 }

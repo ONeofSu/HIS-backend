@@ -3,6 +3,8 @@ package org.csu.herbinfo.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.csu.herbinfo.DTO.HerbGrowthDTO;
 import org.csu.herbinfo.DTO.HerbLocationDTO;
+import org.csu.herbinfo.VO.HerbLocationVO;
+import org.csu.herbinfo.entity.Herb;
 import org.csu.herbinfo.entity.HerbGrowth;
 import org.csu.herbinfo.entity.HerbLocation;
 import org.csu.herbinfo.mapper.HerbGrowthMapper;
@@ -53,6 +55,12 @@ public class HerbLocationServiceImpl implements HerbLocationService {
     }
 
     @Override
+    public HerbLocation getHerbLocationById(int id) {
+        HerbLocation herbLocation = herbLocationMapper.selectById(id);
+        return herbLocation;
+    }
+
+    @Override
     public List<HerbLocation> getHerbLocationsByHerbId(int herbId) {
         ArrayList<HerbLocation> list = new ArrayList<>();
         QueryWrapper<HerbLocation> queryWrapper = new QueryWrapper<>();
@@ -86,8 +94,41 @@ public class HerbLocationServiceImpl implements HerbLocationService {
         if(!isHerbLocationValid(herbLocation)){
             return false;
         }
+        int ori_id = isHerbLocationInfoExists(herbLocation);
+        if(ori_id!=-1){
+            HerbLocation ori = herbLocationMapper.selectById(ori_id);
+            ori.setCount(ori.getCount()+herbLocation.getCount());
+            herbLocationMapper.updateById(ori);
+            return true;
+        }
         herbLocationMapper.insert(herbLocation);
         return true;
+    }
+
+    @Override
+    public int isHerbLocationInfoExists(HerbLocation herbLocation) {
+        HerbLocation flag;
+        QueryWrapper<HerbLocation> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("district_id", herbLocation.getDistrictId())
+                .eq("street_id", herbLocation.getStreetId())
+                .eq("location_longitude", herbLocation.getLongitude())
+                .eq("location_latitude", herbLocation.getLatitude());
+        flag = herbLocationMapper.selectOne(queryWrapper);
+        if(flag==null){
+            return -1;
+        }
+        return flag.getId();
+    }
+
+    @Override
+    public HerbLocation getHerbLocationByLocationInfo(HerbLocation herbLocation) {
+        System.out.println("getHerbLocationByLocationInfo:"+herbLocation);
+        int location_id = isHerbLocationInfoExists(herbLocation);
+        if(location_id==-1){
+            return null;
+        }
+        System.out.println("getHerbLocationByLocationInfo:"+location_id);
+        return herbLocationMapper.selectById(location_id);
     }
 
     @Override
@@ -126,5 +167,31 @@ public class HerbLocationServiceImpl implements HerbLocationService {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public HerbLocationVO transferHerbLocationToVO(HerbLocation herbLocation) {
+        HerbLocationVO herbLocationVO = new HerbLocationVO();
+        herbLocationVO.setId(herbLocation.getId());
+        herbLocationVO.setHerbId(herbLocation.getHerbId());
+        herbLocationVO.setCount(herbLocation.getCount());
+        herbLocationVO.setDistrictId(herbLocation.getDistrictId());
+        herbLocationVO.setStreetId(herbLocation.getStreetId());
+        herbLocationVO.setLatitude(herbLocation.getLatitude());
+        herbLocationVO.setLongitude(herbLocation.getLongitude());
+
+        herbLocationVO.setHerbName(herbService.getHerbById(herbLocation.getHerbId()).getName());
+        herbLocationVO.setDistrictName(districtStreetService.getDistrictById(herbLocation.getDistrictId()).getName());
+        herbLocationVO.setStreetName(districtStreetService.getStreetById(herbLocation.getStreetId()).getName());
+        return herbLocationVO;
+    }
+
+    @Override
+    public List<HerbLocationVO> transferHerbLocationListToVOList(List<HerbLocation> herbLocationList) {
+        List<HerbLocationVO> herbLocationVOList = new ArrayList<>();
+        for(HerbLocation herbLocation : herbLocationList){
+            herbLocationVOList.add(transferHerbLocationToVO(herbLocation));
+        }
+        return herbLocationVOList;
     }
 }

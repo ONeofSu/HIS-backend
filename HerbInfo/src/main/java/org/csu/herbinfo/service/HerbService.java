@@ -1,6 +1,9 @@
 package org.csu.herbinfo.service;
 
 import org.csu.herbinfo.DTO.HerbDTO;
+import org.csu.herbinfo.VO.HerbLinkCategoryVO;
+import org.csu.herbinfo.VO.HerbLocationVO;
+import org.csu.herbinfo.VO.HerbVO;
 import org.csu.herbinfo.entity.Herb;
 import org.csu.herbinfo.entity.HerbCategory;
 import org.csu.herbinfo.entity.HerbLinkCategory;
@@ -38,4 +41,8 @@ public interface HerbService {
     public boolean isLinkExist(int herbId, int categoryId);
 
     public Herb transferDTOToHerb(HerbDTO herbDTO);
+    public HerbVO transferHerbToVO(Herb herb);
+    public List<HerbVO> transferHerbToVOList(List<Herb> herbs);
+    public HerbLinkCategoryVO transferLinkToVO(HerbLinkCategory herbLinkCategory);
+    public List<HerbLinkCategoryVO> transferLinkToVOList(List<HerbLinkCategory> herbLinkCategories);
 }

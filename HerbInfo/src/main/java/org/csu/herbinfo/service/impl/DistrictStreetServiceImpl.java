@@ -1,6 +1,7 @@
 package org.csu.herbinfo.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.csu.herbinfo.VO.StreetVO;
 import org.csu.herbinfo.entity.District;
 import org.csu.herbinfo.entity.Street;
 import org.csu.herbinfo.mapper.DistrictMapper;
@@ -70,6 +71,18 @@ public class DistrictStreetServiceImpl implements DistrictStreetService {
     }
 
     @Override
+    public Street getStreetById(int streetId) {
+        streetMapper.selectById(streetId);
+        return streetMapper.selectById(streetId);
+    }
+
+    @Override
+    public District getDistrictById(int districtId) {
+        districtMapper.selectById(districtId);
+        return districtMapper.selectById(districtId);
+    }
+
+    @Override
     public boolean isDistrictExist(int districtId) {
         QueryWrapper<District> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("district_id", districtId);
@@ -93,5 +106,26 @@ public class DistrictStreetServiceImpl implements DistrictStreetService {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public StreetVO transferStreetToVO(Street street) {
+        StreetVO streetVO = new StreetVO();
+        streetVO.setDistrictId(street.getDistrictId());
+        streetVO.setStreetId(street.getStreetId());
+        streetVO.setStreetName(street.getName());
+
+        streetVO.setDistrictName(getDistrictById(street.getDistrictId()).getName());
+        return streetVO;
+    }
+
+    @Override
+    public List<StreetVO> transferStreetToVOList(List<Street> streetList) {
+        List<StreetVO> streetVOList = new ArrayList<>();
+        for(Street street : streetList){
+            StreetVO streetVO = transferStreetToVO(street);
+            streetVOList.add(streetVO);
+        }
+        return streetVOList;
     }
 }
