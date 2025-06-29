@@ -8,11 +8,11 @@
         <version>3.5.3</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>org.csu</groupId>
-    <artifactId>HerbInfo</artifactId>
+    <groupId>com.csu</groupId>
+    <artifactId>Research</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>HerbInfo</name>
-    <description>HerbInfo</description>
+    <name>Research</name>
+    <description>Research</description>
     <url/>
     <licenses>
         <license/>
