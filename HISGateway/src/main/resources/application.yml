@@ -11,6 +11,16 @@ spring:
           discovery:
             locator:
               enabled: true
+          globalcors:
+            cors-configurations:
+              '[/**]':  #允许跨域访问的资源
+                allowedOrigins: "*" #跨域允许的来源
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+
           routes:
             - id: user-service-provider
               uri: lb://user-service-provider
@@ -24,6 +34,8 @@ spring:
                 - Path=/herb-info-service/**
               filters:
                 - StripPrefix=1
+
+
 
 eureka:
   client:
