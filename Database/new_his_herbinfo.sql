@@ -1,0 +1,1150 @@
+/*
+ Navicat Premium Dump SQL
+
+ Source Server         : local-mysql
+ Source Server Type    : MySQL
+ Source Server Version : 80033 (8.0.33)
+ Source Host           : localhost:3306
+ Source Schema         : his_herbinfo
+
+ Target Server Type    : MySQL
+ Target Server Version : 80033 (8.0.33)
+ File Encoding         : 65001
+
+ Date: 28/06/2025 16:52:44
+*/
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for district
+-- ----------------------------
+DROP TABLE IF EXISTS `district`;
+CREATE TABLE `district`  (
+  `district_id` bigint NOT NULL,
+  `district_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  PRIMARY KEY (`district_id`) USING BTREE,
+  INDEX `idx_district_name`(`district_name` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of district
+-- ----------------------------
+INSERT INTO `district` VALUES (500101, '万州区');
+INSERT INTO `district` VALUES (500230, '丰都县');
+INSERT INTO `district` VALUES (500107, '九龙坡区');
+INSERT INTO `district` VALUES (500235, '云阳县');
+INSERT INTO `district` VALUES (500109, '北碚区');
+INSERT INTO `district` VALUES (500108, '南岸区');
+INSERT INTO `district` VALUES (500119, '南川区');
+INSERT INTO `district` VALUES (500117, '合川区');
+INSERT INTO `district` VALUES (500231, '垫江县');
+INSERT INTO `district` VALUES (500229, '城口县');
+INSERT INTO `district` VALUES (500104, '大渡口区');
+INSERT INTO `district` VALUES (500111, '大足区');
+INSERT INTO `district` VALUES (500236, '奉节县');
+INSERT INTO `district` VALUES (500237, '巫山县');
+INSERT INTO `district` VALUES (500238, '巫溪县');
+INSERT INTO `district` VALUES (500113, '巴南区');
+INSERT INTO `district` VALUES (500154, '开州区');
+INSERT INTO `district` VALUES (500243, '彭水苗族土家族自治县');
+INSERT INTO `district` VALUES (500233, '忠县');
+INSERT INTO `district` VALUES (500155, '梁平区');
+INSERT INTO `district` VALUES (500156, '武隆区');
+INSERT INTO `district` VALUES (500118, '永川区');
+INSERT INTO `district` VALUES (500105, '江北区');
+INSERT INTO `district` VALUES (500116, '江津区');
+INSERT INTO `district` VALUES (500106, '沙坪坝区');
+INSERT INTO `district` VALUES (500102, '涪陵区');
+INSERT INTO `district` VALUES (500103, '渝中区');
+INSERT INTO `district` VALUES (500112, '渝北区');
+INSERT INTO `district` VALUES (500152, '潼南区');
+INSERT INTO `district` VALUES (500120, '璧山区');
+INSERT INTO `district` VALUES (500240, '石柱土家族自治县');
+INSERT INTO `district` VALUES (500241, '秀山土家族苗族自治县');
+INSERT INTO `district` VALUES (500110, '綦江区');
+INSERT INTO `district` VALUES (500153, '荣昌区');
+INSERT INTO `district` VALUES (500242, '酉阳土家族苗族自治县');
+INSERT INTO `district` VALUES (500151, '铜梁区');
+INSERT INTO `district` VALUES (500115, '长寿区');
+INSERT INTO `district` VALUES (500114, '黔江区');
+
+-- ----------------------------
+-- Table structure for herb
+-- ----------------------------
+DROP TABLE IF EXISTS `herb`;
+CREATE TABLE `herb`  (
+  `herb_id` bigint NOT NULL AUTO_INCREMENT,
+  `herb_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `herb_origin` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `herb_img` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `herb_des1` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+  `herb_des2` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+  `herb_isvalid` tinyint(1) NOT NULL,
+  PRIMARY KEY (`herb_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of herb
+-- ----------------------------
+INSERT INTO `herb` VALUES (1, '222', 'china', NULL, NULL, NULL, 1);
+INSERT INTO `herb` VALUES (2, '111', NULL, NULL, NULL, NULL, 1);
+
+-- ----------------------------
+-- Table structure for herb_category
+-- ----------------------------
+DROP TABLE IF EXISTS `herb_category`;
+CREATE TABLE `herb_category`  (
+  `category_id` bigint NOT NULL AUTO_INCREMENT,
+  `category_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  PRIMARY KEY (`category_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of herb_category
+-- ----------------------------
+INSERT INTO `herb_category` VALUES (1, '治人');
+
+-- ----------------------------
+-- Table structure for herb_growth
+-- ----------------------------
+DROP TABLE IF EXISTS `herb_growth`;
+CREATE TABLE `herb_growth`  (
+  `growth_id` bigint NOT NULL AUTO_INCREMENT,
+  `herb_id` bigint NOT NULL,
+  `batch_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `wet` decimal(4, 1) NOT NULL,
+  `temperature` decimal(4, 1) NOT NULL,
+  `growth_des` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+  `growth_longitude` decimal(9, 6) NOT NULL,
+  `growth_latitude` decimal(8, 6) NOT NULL,
+  `user_id` bigint NOT NULL,
+  `growth_time` datetime NOT NULL,
+  `growth_img` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  PRIMARY KEY (`growth_id`) USING BTREE,
+  INDEX `herb_id`(`herb_id` ASC) USING BTREE,
+  INDEX `user_id`(`user_id` ASC) USING BTREE,
+  CONSTRAINT `herb_growth_ibfk_1` FOREIGN KEY (`herb_id`) REFERENCES `herb` (`herb_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `herb_growth_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `his_userinfo`.`user` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of herb_growth
+-- ----------------------------
+INSERT INTO `herb_growth` VALUES (1, 1, '1111', 0.0, 0.0, NULL, 0.000000, 0.000000, 1, '2025-06-27 19:06:06', '/ur');
+INSERT INTO `herb_growth` VALUES (2, 1, 'a1', 5.7, 34.1, '', 23.400000, 12.320000, 1, '2025-06-27 20:11:26', '/../Images/a12025-06-27_20-11-26.jpg');
+INSERT INTO `herb_growth` VALUES (3, 1, 'a1', 5.7, 34.1, '', 23.400000, 12.320000, 1, '2025-06-27 20:13:51', '/../Images/a12025-06-27_20-13-50.jpg');
+INSERT INTO `herb_growth` VALUES (4, 1, 'a1', 5.7, 34.1, '', 23.400000, 12.320000, 1, '2025-06-27 20:17:22', '/../Images/a12025-06-27_20-17-22.jpg');
+INSERT INTO `herb_growth` VALUES (5, 1, 'a1', 5.7, 34.1, '', 23.400000, 12.320000, 1, '2025-06-27 20:30:06', '/../Images/a12025-06-27_20-30-05.jpg');
+
+-- ----------------------------
+-- Table structure for herb_link_category
+-- ----------------------------
+DROP TABLE IF EXISTS `herb_link_category`;
+CREATE TABLE `herb_link_category`  (
+  `hlc_id` bigint NOT NULL AUTO_INCREMENT,
+  `herb_id` bigint NOT NULL,
+  `category_id` bigint NOT NULL,
+  PRIMARY KEY (`hlc_id`) USING BTREE,
+  INDEX `herb_id`(`herb_id` ASC) USING BTREE,
+  INDEX `category_id`(`category_id` ASC) USING BTREE,
+  CONSTRAINT `herb_link_category_ibfk_1` FOREIGN KEY (`herb_id`) REFERENCES `herb` (`herb_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `herb_link_category_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `herb_category` (`category_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of herb_link_category
+-- ----------------------------
+INSERT INTO `herb_link_category` VALUES (3, 2, 1);
+
+-- ----------------------------
+-- Table structure for herb_location
+-- ----------------------------
+DROP TABLE IF EXISTS `herb_location`;
+CREATE TABLE `herb_location`  (
+  `location_id` bigint NOT NULL AUTO_INCREMENT,
+  `herb_id` bigint NOT NULL,
+  `location_count` int NOT NULL,
+  `district_id` bigint NOT NULL,
+  `street_id` bigint NOT NULL,
+  `location_longitude` decimal(9, 6) NOT NULL,
+  `location_latitude` decimal(8, 6) NOT NULL,
+  PRIMARY KEY (`location_id`) USING BTREE,
+  INDEX `herb_id`(`herb_id` ASC) USING BTREE,
+  INDEX `herb_location_ibfk_2`(`district_id` ASC) USING BTREE,
+  INDEX `herb_location_ibfk_3`(`street_id` ASC) USING BTREE,
+  CONSTRAINT `herb_location_ibfk_1` FOREIGN KEY (`herb_id`) REFERENCES `herb` (`herb_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `herb_location_ibfk_2` FOREIGN KEY (`district_id`) REFERENCES `district` (`district_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `herb_location_ibfk_3` FOREIGN KEY (`street_id`) REFERENCES `street` (`street_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of herb_location
+-- ----------------------------
+INSERT INTO `herb_location` VALUES (1, 1, 2, 500101, 500101001, 24.000000, 12.000000);
+INSERT INTO `herb_location` VALUES (2, 2, 1, 500101, 500101001, 21.000000, 32.000000);
+
+-- ----------------------------
+-- Table structure for street
+-- ----------------------------
+DROP TABLE IF EXISTS `street`;
+CREATE TABLE `street`  (
+  `street_id` bigint NOT NULL,
+  `district_id` bigint NOT NULL,
+  `street_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  PRIMARY KEY (`street_id`) USING BTREE,
+  INDEX `idx_street_district`(`district_id` ASC) USING BTREE,
+  CONSTRAINT `street_ibfk_1` FOREIGN KEY (`district_id`) REFERENCES `district` (`district_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of street
+-- ----------------------------
+INSERT INTO `street` VALUES (500101001, 500101, '高笋塘街道');
+INSERT INTO `street` VALUES (500101002, 500101, '太白街道');
+INSERT INTO `street` VALUES (500101003, 500101, '牌楼街道');
+INSERT INTO `street` VALUES (500101004, 500101, '双河口街道');
+INSERT INTO `street` VALUES (500101005, 500101, '龙都街道');
+INSERT INTO `street` VALUES (500101006, 500101, '周家坝街道');
+INSERT INTO `street` VALUES (500101007, 500101, '沙河街道');
+INSERT INTO `street` VALUES (500101008, 500101, '钟鼓楼街道');
+INSERT INTO `street` VALUES (500101009, 500101, '百安坝街道');
+INSERT INTO `street` VALUES (500101010, 500101, '五桥街道');
+INSERT INTO `street` VALUES (500101011, 500101, '陈家坝街道');
+INSERT INTO `street` VALUES (500101012, 500101, '天城街道');
+INSERT INTO `street` VALUES (500101013, 500101, '熊家镇');
+INSERT INTO `street` VALUES (500101014, 500101, '小周镇');
+INSERT INTO `street` VALUES (500101015, 500101, '大周镇');
+INSERT INTO `street` VALUES (500102001, 500102, '敦仁街道');
+INSERT INTO `street` VALUES (500102002, 500102, '崇义街道');
+INSERT INTO `street` VALUES (500102003, 500102, '荔枝街道');
+INSERT INTO `street` VALUES (500102004, 500102, '江北街道');
+INSERT INTO `street` VALUES (500102005, 500102, '江东街道');
+INSERT INTO `street` VALUES (500102006, 500102, '李渡街道');
+INSERT INTO `street` VALUES (500102007, 500102, '龙桥街道');
+INSERT INTO `street` VALUES (500102008, 500102, '白涛街道');
+INSERT INTO `street` VALUES (500102009, 500102, '马鞍街道');
+INSERT INTO `street` VALUES (500102010, 500102, '蔺市镇');
+INSERT INTO `street` VALUES (500102011, 500102, '新妙镇');
+INSERT INTO `street` VALUES (500102012, 500102, '清溪镇');
+INSERT INTO `street` VALUES (500102013, 500102, '珍溪镇');
+INSERT INTO `street` VALUES (500102014, 500102, '南沱镇');
+INSERT INTO `street` VALUES (500102015, 500102, '义和镇');
+INSERT INTO `street` VALUES (500103001, 500103, '七星岗街道');
+INSERT INTO `street` VALUES (500103002, 500103, '解放碑街道');
+INSERT INTO `street` VALUES (500103003, 500103, '两路口街道');
+INSERT INTO `street` VALUES (500103004, 500103, '上清寺街道');
+INSERT INTO `street` VALUES (500103005, 500103, '菜园坝街道');
+INSERT INTO `street` VALUES (500103006, 500103, '南纪门街道');
+INSERT INTO `street` VALUES (500103007, 500103, '朝天门街道');
+INSERT INTO `street` VALUES (500103008, 500103, '大溪沟街道');
+INSERT INTO `street` VALUES (500103009, 500103, '大坪街道');
+INSERT INTO `street` VALUES (500103010, 500103, '化龙桥街道');
+INSERT INTO `street` VALUES (500103011, 500103, '石油路街道');
+INSERT INTO `street` VALUES (500104001, 500104, '新山村街道');
+INSERT INTO `street` VALUES (500104002, 500104, '跃进村街道');
+INSERT INTO `street` VALUES (500104003, 500104, '九宫庙街道');
+INSERT INTO `street` VALUES (500104004, 500104, '茄子溪街道');
+INSERT INTO `street` VALUES (500104005, 500104, '春晖路街道');
+INSERT INTO `street` VALUES (500104006, 500104, '八桥镇');
+INSERT INTO `street` VALUES (500104007, 500104, '建胜镇');
+INSERT INTO `street` VALUES (500104008, 500104, '跳磴镇');
+INSERT INTO `street` VALUES (500105001, 500105, '观音桥街道');
+INSERT INTO `street` VALUES (500105002, 500105, '华新街街道');
+INSERT INTO `street` VALUES (500105003, 500105, '五里店街道');
+INSERT INTO `street` VALUES (500105004, 500105, '石马河街道');
+INSERT INTO `street` VALUES (500105005, 500105, '大石坝街道');
+INSERT INTO `street` VALUES (500105006, 500105, '寸滩街道');
+INSERT INTO `street` VALUES (500105007, 500105, '铁山坪街道');
+INSERT INTO `street` VALUES (500105008, 500105, '郭家沱街道');
+INSERT INTO `street` VALUES (500105009, 500105, '鱼嘴镇');
+INSERT INTO `street` VALUES (500105010, 500105, '复盛镇');
+INSERT INTO `street` VALUES (500105011, 500105, '五宝镇');
+INSERT INTO `street` VALUES (500106001, 500106, '小龙坎街道');
+INSERT INTO `street` VALUES (500106002, 500106, '沙坪坝街道');
+INSERT INTO `street` VALUES (500106003, 500106, '磁器口街道');
+INSERT INTO `street` VALUES (500106004, 500106, '天星桥街道');
+INSERT INTO `street` VALUES (500106005, 500106, '土湾街道');
+INSERT INTO `street` VALUES (500106006, 500106, '新桥街道');
+INSERT INTO `street` VALUES (500106007, 500106, '覃家岗街道');
+INSERT INTO `street` VALUES (500106008, 500106, '井口街道');
+INSERT INTO `street` VALUES (500106009, 500106, '歌乐山街道');
+INSERT INTO `street` VALUES (500106010, 500106, '山洞街道');
+INSERT INTO `street` VALUES (500106011, 500106, '詹家溪街道');
+INSERT INTO `street` VALUES (500106012, 500106, '石井坡街道');
+INSERT INTO `street` VALUES (500106013, 500106, '童家桥街道');
+INSERT INTO `street` VALUES (500106014, 500106, '渝碚路街道');
+INSERT INTO `street` VALUES (500106015, 500106, '陈家桥街道');
+INSERT INTO `street` VALUES (500106016, 500106, '虎溪街道');
+INSERT INTO `street` VALUES (500106017, 500106, '西永街道');
+INSERT INTO `street` VALUES (500106018, 500106, '联芳街道');
+INSERT INTO `street` VALUES (500106019, 500106, '丰文街道');
+INSERT INTO `street` VALUES (500106020, 500106, '香炉山街道');
+INSERT INTO `street` VALUES (500107001, 500107, '杨家坪街道');
+INSERT INTO `street` VALUES (500107002, 500107, '谢家湾街道');
+INSERT INTO `street` VALUES (500107003, 500107, '石坪桥街道');
+INSERT INTO `street` VALUES (500107004, 500107, '黄桷坪街道');
+INSERT INTO `street` VALUES (500107005, 500107, '中梁山街道');
+INSERT INTO `street` VALUES (500107006, 500107, '渝州路街道');
+INSERT INTO `street` VALUES (500107007, 500107, '石桥铺街道');
+INSERT INTO `street` VALUES (500107008, 500107, '二郎街道');
+INSERT INTO `street` VALUES (500107009, 500107, '九龙镇');
+INSERT INTO `street` VALUES (500107010, 500107, '华岩镇');
+INSERT INTO `street` VALUES (500107011, 500107, '含谷镇');
+INSERT INTO `street` VALUES (500107012, 500107, '金凤镇');
+INSERT INTO `street` VALUES (500107013, 500107, '白市驿镇');
+INSERT INTO `street` VALUES (500107014, 500107, '走马镇');
+INSERT INTO `street` VALUES (500107015, 500107, '石板镇');
+INSERT INTO `street` VALUES (500107016, 500107, '巴福镇');
+INSERT INTO `street` VALUES (500107017, 500107, '陶家镇');
+INSERT INTO `street` VALUES (500107018, 500107, '西彭镇');
+INSERT INTO `street` VALUES (500107019, 500107, '铜罐驿镇');
+INSERT INTO `street` VALUES (500108001, 500108, '南坪街道');
+INSERT INTO `street` VALUES (500108002, 500108, '花园路街道');
+INSERT INTO `street` VALUES (500108003, 500108, '海棠溪街道');
+INSERT INTO `street` VALUES (500108004, 500108, '龙门浩街道');
+INSERT INTO `street` VALUES (500108005, 500108, '弹子石街道');
+INSERT INTO `street` VALUES (500108006, 500108, '铜元局街道');
+INSERT INTO `street` VALUES (500108007, 500108, '南山街道');
+INSERT INTO `street` VALUES (500108008, 500108, '天文街道');
+INSERT INTO `street` VALUES (500108009, 500108, '涂山镇');
+INSERT INTO `street` VALUES (500108010, 500108, '鸡冠石镇');
+INSERT INTO `street` VALUES (500108011, 500108, '峡口镇');
+INSERT INTO `street` VALUES (500108012, 500108, '长生桥镇');
+INSERT INTO `street` VALUES (500108013, 500108, '迎龙镇');
+INSERT INTO `street` VALUES (500108014, 500108, '广阳镇');
+INSERT INTO `street` VALUES (500109001, 500109, '天生街道');
+INSERT INTO `street` VALUES (500109002, 500109, '朝阳街道');
+INSERT INTO `street` VALUES (500109003, 500109, '北温泉街道');
+INSERT INTO `street` VALUES (500109004, 500109, '东阳街道');
+INSERT INTO `street` VALUES (500109005, 500109, '龙凤桥街道');
+INSERT INTO `street` VALUES (500109006, 500109, '歇马街道');
+INSERT INTO `street` VALUES (500109007, 500109, '蔡家岗街道');
+INSERT INTO `street` VALUES (500109008, 500109, '童家溪镇');
+INSERT INTO `street` VALUES (500109009, 500109, '施家梁镇');
+INSERT INTO `street` VALUES (500109010, 500109, '澄江镇');
+INSERT INTO `street` VALUES (500109011, 500109, '天府镇');
+INSERT INTO `street` VALUES (500109012, 500109, '静观镇');
+INSERT INTO `street` VALUES (500109013, 500109, '柳荫镇');
+INSERT INTO `street` VALUES (500109014, 500109, '复兴镇');
+INSERT INTO `street` VALUES (500109015, 500109, '三圣镇');
+INSERT INTO `street` VALUES (500109016, 500109, '金刀峡镇');
+INSERT INTO `street` VALUES (500110001, 500110, '古南街道');
+INSERT INTO `street` VALUES (500110002, 500110, '文龙街道');
+INSERT INTO `street` VALUES (500110003, 500110, '三江街道');
+INSERT INTO `street` VALUES (500110004, 500110, '万盛街道');
+INSERT INTO `street` VALUES (500110005, 500110, '东林街道');
+INSERT INTO `street` VALUES (500110006, 500110, '新盛街道');
+INSERT INTO `street` VALUES (500110007, 500110, '通惠街道');
+INSERT INTO `street` VALUES (500110008, 500110, '石角镇');
+INSERT INTO `street` VALUES (500110009, 500110, '东溪镇');
+INSERT INTO `street` VALUES (500110010, 500110, '赶水镇');
+INSERT INTO `street` VALUES (500110011, 500110, '打通镇');
+INSERT INTO `street` VALUES (500110012, 500110, '石壕镇');
+INSERT INTO `street` VALUES (500110013, 500110, '永新镇');
+INSERT INTO `street` VALUES (500110014, 500110, '三角镇');
+INSERT INTO `street` VALUES (500110015, 500110, '隆盛镇');
+INSERT INTO `street` VALUES (500110016, 500110, '郭扶镇');
+INSERT INTO `street` VALUES (500110017, 500110, '篆塘镇');
+INSERT INTO `street` VALUES (500110018, 500110, '丁山镇');
+INSERT INTO `street` VALUES (500110019, 500110, '安稳镇');
+INSERT INTO `street` VALUES (500110020, 500110, '扶欢镇');
+INSERT INTO `street` VALUES (500110021, 500110, '永城镇');
+INSERT INTO `street` VALUES (500110022, 500110, '中峰镇');
+INSERT INTO `street` VALUES (500110023, 500110, '横山镇');
+INSERT INTO `street` VALUES (500111001, 500111, '龙岗街道');
+INSERT INTO `street` VALUES (500111002, 500111, '棠香街道');
+INSERT INTO `street` VALUES (500111003, 500111, '龙滩子街道');
+INSERT INTO `street` VALUES (500111004, 500111, '双路街道');
+INSERT INTO `street` VALUES (500111005, 500111, '通桥街道');
+INSERT INTO `street` VALUES (500111006, 500111, '智凤街道');
+INSERT INTO `street` VALUES (500111007, 500111, '龙水镇');
+INSERT INTO `street` VALUES (500111008, 500111, '邮亭镇');
+INSERT INTO `street` VALUES (500111009, 500111, '宝顶镇');
+INSERT INTO `street` VALUES (500111010, 500111, '万古镇');
+INSERT INTO `street` VALUES (500111011, 500111, '珠溪镇');
+INSERT INTO `street` VALUES (500111012, 500111, '中敖镇');
+INSERT INTO `street` VALUES (500111013, 500111, '三驱镇');
+INSERT INTO `street` VALUES (500111014, 500111, '石马镇');
+INSERT INTO `street` VALUES (500111015, 500111, '拾万镇');
+INSERT INTO `street` VALUES (500111016, 500111, '回龙镇');
+INSERT INTO `street` VALUES (500111017, 500111, '金山镇');
+INSERT INTO `street` VALUES (500111018, 500111, '铁山镇');
+INSERT INTO `street` VALUES (500111019, 500111, '玉龙镇');
+INSERT INTO `street` VALUES (500111020, 500111, '雍溪镇');
+INSERT INTO `street` VALUES (500111021, 500111, '高升镇');
+INSERT INTO `street` VALUES (500111022, 500111, '季家镇');
+INSERT INTO `street` VALUES (500111023, 500111, '龙石镇');
+INSERT INTO `street` VALUES (500111024, 500111, '高坪镇');
+INSERT INTO `street` VALUES (500111025, 500111, '古龙镇');
+INSERT INTO `street` VALUES (500112001, 500112, '双凤桥街道');
+INSERT INTO `street` VALUES (500112002, 500112, '两路街道');
+INSERT INTO `street` VALUES (500112003, 500112, '龙溪街道');
+INSERT INTO `street` VALUES (500112004, 500112, '回兴街道');
+INSERT INTO `street` VALUES (500112005, 500112, '双龙湖街道');
+INSERT INTO `street` VALUES (500112006, 500112, '仙桃街道');
+INSERT INTO `street` VALUES (500112007, 500112, '宝圣湖街道');
+INSERT INTO `street` VALUES (500112008, 500112, '鸳鸯街道');
+INSERT INTO `street` VALUES (500112009, 500112, '人和街道');
+INSERT INTO `street` VALUES (500112010, 500112, '天宫殿街道');
+INSERT INTO `street` VALUES (500112011, 500112, '翠云街道');
+INSERT INTO `street` VALUES (500112012, 500112, '大竹林街道');
+INSERT INTO `street` VALUES (500112013, 500112, '礼嘉街道');
+INSERT INTO `street` VALUES (500112014, 500112, '悦来街道');
+INSERT INTO `street` VALUES (500112015, 500112, '木耳镇');
+INSERT INTO `street` VALUES (500112016, 500112, '兴隆镇');
+INSERT INTO `street` VALUES (500112017, 500112, '茨竹镇');
+INSERT INTO `street` VALUES (500112018, 500112, '大湾镇');
+INSERT INTO `street` VALUES (500112019, 500112, '洛碛镇');
+INSERT INTO `street` VALUES (500112020, 500112, '龙兴镇');
+INSERT INTO `street` VALUES (500112021, 500112, '石船镇');
+INSERT INTO `street` VALUES (500112022, 500112, '统景镇');
+INSERT INTO `street` VALUES (500112023, 500112, '古路镇');
+INSERT INTO `street` VALUES (500112024, 500112, '玉峰山镇');
+INSERT INTO `street` VALUES (500113001, 500113, '鱼洞街道');
+INSERT INTO `street` VALUES (500113002, 500113, '李家沱街道');
+INSERT INTO `street` VALUES (500113003, 500113, '花溪街道');
+INSERT INTO `street` VALUES (500113004, 500113, '龙洲湾街道');
+INSERT INTO `street` VALUES (500113005, 500113, '南泉街道');
+INSERT INTO `street` VALUES (500113006, 500113, '一品街道');
+INSERT INTO `street` VALUES (500113007, 500113, '南彭街道');
+INSERT INTO `street` VALUES (500113008, 500113, '惠民街道');
+INSERT INTO `street` VALUES (500113009, 500113, '界石镇');
+INSERT INTO `street` VALUES (500113010, 500113, '木洞镇');
+INSERT INTO `street` VALUES (500113011, 500113, '双河口镇');
+INSERT INTO `street` VALUES (500113012, 500113, '麻柳嘴镇');
+INSERT INTO `street` VALUES (500113013, 500113, '丰盛镇');
+INSERT INTO `street` VALUES (500113014, 500113, '二圣镇');
+INSERT INTO `street` VALUES (500113015, 500113, '东泉镇');
+INSERT INTO `street` VALUES (500113016, 500113, '姜家镇');
+INSERT INTO `street` VALUES (500113017, 500113, '天星寺镇');
+INSERT INTO `street` VALUES (500113018, 500113, '接龙镇');
+INSERT INTO `street` VALUES (500113019, 500113, '石滩镇');
+INSERT INTO `street` VALUES (500113020, 500113, '石龙镇');
+INSERT INTO `street` VALUES (500113021, 500113, '圣灯山镇');
+INSERT INTO `street` VALUES (500114001, 500114, '城东街道');
+INSERT INTO `street` VALUES (500114002, 500114, '城南街道');
+INSERT INTO `street` VALUES (500114003, 500114, '城西街道');
+INSERT INTO `street` VALUES (500114004, 500114, '舟白街道');
+INSERT INTO `street` VALUES (500114005, 500114, '正阳街道');
+INSERT INTO `street` VALUES (500114006, 500114, '冯家街道');
+INSERT INTO `street` VALUES (500114007, 500114, '阿蓬江镇');
+INSERT INTO `street` VALUES (500114008, 500114, '石会镇');
+INSERT INTO `street` VALUES (500114009, 500114, '黑溪镇');
+INSERT INTO `street` VALUES (500114010, 500114, '黄溪镇');
+INSERT INTO `street` VALUES (500114011, 500114, '黎水镇');
+INSERT INTO `street` VALUES (500114012, 500114, '金溪镇');
+INSERT INTO `street` VALUES (500114013, 500114, '马喇镇');
+INSERT INTO `street` VALUES (500114014, 500114, '濯水镇');
+INSERT INTO `street` VALUES (500114015, 500114, '石家镇');
+INSERT INTO `street` VALUES (500114016, 500114, '鹅池镇');
+INSERT INTO `street` VALUES (500114017, 500114, '小南海镇');
+INSERT INTO `street` VALUES (500114018, 500114, '沙坝镇');
+INSERT INTO `street` VALUES (500114019, 500114, '白石镇');
+INSERT INTO `street` VALUES (500114020, 500114, '杉岭乡');
+INSERT INTO `street` VALUES (500114021, 500114, '太极乡');
+INSERT INTO `street` VALUES (500114022, 500114, '水田乡');
+INSERT INTO `street` VALUES (500114023, 500114, '白土乡');
+INSERT INTO `street` VALUES (500114024, 500114, '金洞乡');
+INSERT INTO `street` VALUES (500114025, 500114, '五里乡');
+INSERT INTO `street` VALUES (500114026, 500114, '水市乡');
+INSERT INTO `street` VALUES (500114027, 500114, '蓬东乡');
+INSERT INTO `street` VALUES (500115001, 500115, '凤城街道');
+INSERT INTO `street` VALUES (500115002, 500115, '晏家街道');
+INSERT INTO `street` VALUES (500115003, 500115, '江南街道');
+INSERT INTO `street` VALUES (500115004, 500115, '渡舟街道');
+INSERT INTO `street` VALUES (500115005, 500115, '新市街道');
+INSERT INTO `street` VALUES (500115006, 500115, '八颗街道');
+INSERT INTO `street` VALUES (500115007, 500115, '菩提街道');
+INSERT INTO `street` VALUES (500115008, 500115, '邻封镇');
+INSERT INTO `street` VALUES (500115009, 500115, '但渡镇');
+INSERT INTO `street` VALUES (500115010, 500115, '云集镇');
+INSERT INTO `street` VALUES (500115011, 500115, '长寿湖镇');
+INSERT INTO `street` VALUES (500115012, 500115, '双龙镇');
+INSERT INTO `street` VALUES (500115013, 500115, '龙河镇');
+INSERT INTO `street` VALUES (500115014, 500115, '石堰镇');
+INSERT INTO `street` VALUES (500115015, 500115, '云台镇');
+INSERT INTO `street` VALUES (500115016, 500115, '海棠镇');
+INSERT INTO `street` VALUES (500115017, 500115, '葛兰镇');
+INSERT INTO `street` VALUES (500115018, 500115, '洪湖镇');
+INSERT INTO `street` VALUES (500115019, 500115, '万顺镇');
+INSERT INTO `street` VALUES (500115020, 500115, '称沱镇');
+INSERT INTO `street` VALUES (500116001, 500116, '几江街道');
+INSERT INTO `street` VALUES (500116002, 500116, '德感街道');
+INSERT INTO `street` VALUES (500116003, 500116, '双福街道');
+INSERT INTO `street` VALUES (500116004, 500116, '鼎山街道');
+INSERT INTO `street` VALUES (500116005, 500116, '圣泉街道');
+INSERT INTO `street` VALUES (500116101, 500116, '油溪镇');
+INSERT INTO `street` VALUES (500116102, 500116, '吴滩镇');
+INSERT INTO `street` VALUES (500116103, 500116, '石门镇');
+INSERT INTO `street` VALUES (500116104, 500116, '朱杨镇');
+INSERT INTO `street` VALUES (500116105, 500116, '永兴镇');
+INSERT INTO `street` VALUES (500116106, 500116, '塘河镇');
+INSERT INTO `street` VALUES (500116107, 500116, '白沙镇');
+INSERT INTO `street` VALUES (500116108, 500116, '龙华镇');
+INSERT INTO `street` VALUES (500116109, 500116, '李市镇');
+INSERT INTO `street` VALUES (500116110, 500116, '慈云镇');
+INSERT INTO `street` VALUES (500116111, 500116, '蔡家镇');
+INSERT INTO `street` VALUES (500116112, 500116, '中山镇');
+INSERT INTO `street` VALUES (500116113, 500116, '嘉平镇');
+INSERT INTO `street` VALUES (500116114, 500116, '柏林镇');
+INSERT INTO `street` VALUES (500116115, 500116, '先锋镇');
+INSERT INTO `street` VALUES (500116116, 500116, '珞璜镇');
+INSERT INTO `street` VALUES (500116117, 500116, '贾嗣镇');
+INSERT INTO `street` VALUES (500116118, 500116, '夏坝镇');
+INSERT INTO `street` VALUES (500116119, 500116, '西湖镇');
+INSERT INTO `street` VALUES (500116120, 500116, '杜市镇');
+INSERT INTO `street` VALUES (500116121, 500116, '广兴镇');
+INSERT INTO `street` VALUES (500116122, 500116, '四面山镇');
+INSERT INTO `street` VALUES (500116123, 500116, '支坪镇');
+INSERT INTO `street` VALUES (500116124, 500116, '四屏镇');
+INSERT INTO `street` VALUES (500117001, 500117, '合阳城街道');
+INSERT INTO `street` VALUES (500117002, 500117, '钓鱼城街道');
+INSERT INTO `street` VALUES (500117003, 500117, '南津街街道');
+INSERT INTO `street` VALUES (500117004, 500117, '盐井街道');
+INSERT INTO `street` VALUES (500117005, 500117, '草街街道');
+INSERT INTO `street` VALUES (500117006, 500117, '云门街道');
+INSERT INTO `street` VALUES (500117007, 500117, '大石街道');
+INSERT INTO `street` VALUES (500117100, 500117, '沙鱼镇');
+INSERT INTO `street` VALUES (500117101, 500117, '官渡镇');
+INSERT INTO `street` VALUES (500117102, 500117, '涞滩镇');
+INSERT INTO `street` VALUES (500117103, 500117, '肖家镇');
+INSERT INTO `street` VALUES (500117104, 500117, '古楼镇');
+INSERT INTO `street` VALUES (500117105, 500117, '三庙镇');
+INSERT INTO `street` VALUES (500117106, 500117, '二郎镇');
+INSERT INTO `street` VALUES (500117107, 500117, '龙凤镇');
+INSERT INTO `street` VALUES (500117108, 500117, '隆兴镇');
+INSERT INTO `street` VALUES (500117109, 500117, '铜溪镇');
+INSERT INTO `street` VALUES (500117112, 500117, '双凤镇');
+INSERT INTO `street` VALUES (500117113, 500117, '狮滩镇');
+INSERT INTO `street` VALUES (500117114, 500117, '清平镇');
+INSERT INTO `street` VALUES (500117115, 500117, '土场镇');
+INSERT INTO `street` VALUES (500117116, 500117, '小沔镇');
+INSERT INTO `street` VALUES (500117117, 500117, '三汇镇');
+INSERT INTO `street` VALUES (500117118, 500117, '香龙镇');
+INSERT INTO `street` VALUES (500117120, 500117, '钱塘镇');
+INSERT INTO `street` VALUES (500117121, 500117, '龙市镇');
+INSERT INTO `street` VALUES (500117123, 500117, '燕窝镇');
+INSERT INTO `street` VALUES (500117124, 500117, '太和镇');
+INSERT INTO `street` VALUES (500117125, 500117, '渭沱镇');
+INSERT INTO `street` VALUES (500117126, 500117, '双槐镇');
+INSERT INTO `street` VALUES (500118001, 500118, '中山路街道');
+INSERT INTO `street` VALUES (500118002, 500118, '胜利路街道');
+INSERT INTO `street` VALUES (500118003, 500118, '南大街街道');
+INSERT INTO `street` VALUES (500118004, 500118, '茶山竹海街道');
+INSERT INTO `street` VALUES (500118005, 500118, '大安街道');
+INSERT INTO `street` VALUES (500118006, 500118, '陈食街道');
+INSERT INTO `street` VALUES (500118007, 500118, '卫星湖街道');
+INSERT INTO `street` VALUES (500118100, 500118, '青峰镇');
+INSERT INTO `street` VALUES (500118102, 500118, '金龙镇');
+INSERT INTO `street` VALUES (500118103, 500118, '临江镇');
+INSERT INTO `street` VALUES (500118104, 500118, '何埂镇');
+INSERT INTO `street` VALUES (500118105, 500118, '松溉镇');
+INSERT INTO `street` VALUES (500118106, 500118, '仙龙镇');
+INSERT INTO `street` VALUES (500118107, 500118, '吉安镇');
+INSERT INTO `street` VALUES (500118108, 500118, '五间镇');
+INSERT INTO `street` VALUES (500118109, 500118, '来苏镇');
+INSERT INTO `street` VALUES (500118110, 500118, '宝峰镇');
+INSERT INTO `street` VALUES (500118111, 500118, '双石镇');
+INSERT INTO `street` VALUES (500118112, 500118, '红炉镇');
+INSERT INTO `street` VALUES (500118113, 500118, '永荣镇');
+INSERT INTO `street` VALUES (500118114, 500118, '三教镇');
+INSERT INTO `street` VALUES (500118115, 500118, '板桥镇');
+INSERT INTO `street` VALUES (500118116, 500118, '朱沱镇');
+INSERT INTO `street` VALUES (500119001, 500119, '东城街道');
+INSERT INTO `street` VALUES (500119002, 500119, '南城街道');
+INSERT INTO `street` VALUES (500119003, 500119, '西城街道');
+INSERT INTO `street` VALUES (500119004, 500119, '三泉镇');
+INSERT INTO `street` VALUES (500119005, 500119, '南平镇');
+INSERT INTO `street` VALUES (500119006, 500119, '神童镇');
+INSERT INTO `street` VALUES (500119007, 500119, '鸣玉镇');
+INSERT INTO `street` VALUES (500119008, 500119, '大观镇');
+INSERT INTO `street` VALUES (500119009, 500119, '兴隆镇');
+INSERT INTO `street` VALUES (500119010, 500119, '太平场镇');
+INSERT INTO `street` VALUES (500119011, 500119, '白沙镇');
+INSERT INTO `street` VALUES (500119012, 500119, '水江镇');
+INSERT INTO `street` VALUES (500119013, 500119, '石墙镇');
+INSERT INTO `street` VALUES (500119014, 500119, '金山镇');
+INSERT INTO `street` VALUES (500119015, 500119, '头渡镇');
+INSERT INTO `street` VALUES (500119016, 500119, '大有镇');
+INSERT INTO `street` VALUES (500119017, 500119, '合溪镇');
+INSERT INTO `street` VALUES (500119018, 500119, '黎香湖镇');
+INSERT INTO `street` VALUES (500119019, 500119, '山王坪镇');
+INSERT INTO `street` VALUES (500119020, 500119, '石溪镇');
+INSERT INTO `street` VALUES (500119021, 500119, '德隆镇');
+INSERT INTO `street` VALUES (500119022, 500119, '民主镇');
+INSERT INTO `street` VALUES (500119023, 500119, '福寿镇');
+INSERT INTO `street` VALUES (500119024, 500119, '河图镇');
+INSERT INTO `street` VALUES (500119025, 500119, '庆元镇');
+INSERT INTO `street` VALUES (500119026, 500119, '古花镇');
+INSERT INTO `street` VALUES (500119027, 500119, '石莲镇');
+INSERT INTO `street` VALUES (500119028, 500119, '乾丰镇');
+INSERT INTO `street` VALUES (500119029, 500119, '骑龙镇');
+INSERT INTO `street` VALUES (500119030, 500119, '冷水关镇');
+INSERT INTO `street` VALUES (500119031, 500119, '楠竹山镇');
+INSERT INTO `street` VALUES (500120001, 500120, '璧城街道');
+INSERT INTO `street` VALUES (500120002, 500120, '璧泉街道');
+INSERT INTO `street` VALUES (500120003, 500120, '青杠街道');
+INSERT INTO `street` VALUES (500120004, 500120, '来凤街道');
+INSERT INTO `street` VALUES (500120005, 500120, '丁家街道');
+INSERT INTO `street` VALUES (500120006, 500120, '大路街道');
+INSERT INTO `street` VALUES (500120007, 500120, '八塘镇');
+INSERT INTO `street` VALUES (500120008, 500120, '七塘镇');
+INSERT INTO `street` VALUES (500120009, 500120, '河边镇');
+INSERT INTO `street` VALUES (500120010, 500120, '福禄镇');
+INSERT INTO `street` VALUES (500120011, 500120, '大兴镇');
+INSERT INTO `street` VALUES (500120012, 500120, '正兴镇');
+INSERT INTO `street` VALUES (500120013, 500120, '广普镇');
+INSERT INTO `street` VALUES (500120014, 500120, '三合镇');
+INSERT INTO `street` VALUES (500120015, 500120, '健龙镇');
+INSERT INTO `street` VALUES (500151001, 500151, '巴川街道');
+INSERT INTO `street` VALUES (500151002, 500151, '东城街道');
+INSERT INTO `street` VALUES (500151003, 500151, '南城街道');
+INSERT INTO `street` VALUES (500151004, 500151, '蒲吕街道');
+INSERT INTO `street` VALUES (500151005, 500151, '旧县街道');
+INSERT INTO `street` VALUES (500151006, 500151, '土桥镇');
+INSERT INTO `street` VALUES (500151007, 500151, '二坪镇');
+INSERT INTO `street` VALUES (500151008, 500151, '水口镇');
+INSERT INTO `street` VALUES (500151009, 500151, '安居镇');
+INSERT INTO `street` VALUES (500151010, 500151, '白羊镇');
+INSERT INTO `street` VALUES (500151011, 500151, '平滩镇');
+INSERT INTO `street` VALUES (500151012, 500151, '小林镇');
+INSERT INTO `street` VALUES (500151013, 500151, '双山镇');
+INSERT INTO `street` VALUES (500151014, 500151, '虎峰镇');
+INSERT INTO `street` VALUES (500151015, 500151, '福果镇');
+INSERT INTO `street` VALUES (500151016, 500151, '庆隆镇');
+INSERT INTO `street` VALUES (500151017, 500151, '石鱼镇');
+INSERT INTO `street` VALUES (500151018, 500151, '少云镇');
+INSERT INTO `street` VALUES (500151019, 500151, '维新镇');
+INSERT INTO `street` VALUES (500151020, 500151, '高楼镇');
+INSERT INTO `street` VALUES (500151021, 500151, '大庙镇');
+INSERT INTO `street` VALUES (500151022, 500151, '围龙镇');
+INSERT INTO `street` VALUES (500151023, 500151, '华兴镇');
+INSERT INTO `street` VALUES (500151024, 500151, '永嘉镇');
+INSERT INTO `street` VALUES (500151025, 500151, '安溪镇');
+INSERT INTO `street` VALUES (500151026, 500151, '西河镇');
+INSERT INTO `street` VALUES (500151027, 500151, '侣俸镇');
+INSERT INTO `street` VALUES (500151028, 500151, '太平镇');
+INSERT INTO `street` VALUES (500152001, 500152, '桂林街道');
+INSERT INTO `street` VALUES (500152002, 500152, '梓潼街道');
+INSERT INTO `street` VALUES (500152003, 500152, '大佛街道');
+INSERT INTO `street` VALUES (500152004, 500152, '上和镇');
+INSERT INTO `street` VALUES (500152005, 500152, '龙形镇');
+INSERT INTO `street` VALUES (500152006, 500152, '古溪镇');
+INSERT INTO `street` VALUES (500152007, 500152, '宝龙镇');
+INSERT INTO `street` VALUES (500152008, 500152, '玉溪镇');
+INSERT INTO `street` VALUES (500152009, 500152, '米心镇');
+INSERT INTO `street` VALUES (500152010, 500152, '群力镇');
+INSERT INTO `street` VALUES (500152011, 500152, '双江镇');
+INSERT INTO `street` VALUES (500152012, 500152, '花岩镇');
+INSERT INTO `street` VALUES (500152013, 500152, '柏梓镇');
+INSERT INTO `street` VALUES (500152014, 500152, '崇龛镇');
+INSERT INTO `street` VALUES (500152015, 500152, '塘坝镇');
+INSERT INTO `street` VALUES (500152016, 500152, '新胜镇');
+INSERT INTO `street` VALUES (500152017, 500152, '太安镇');
+INSERT INTO `street` VALUES (500152018, 500152, '小渡镇');
+INSERT INTO `street` VALUES (500152019, 500152, '卧佛镇');
+INSERT INTO `street` VALUES (500152020, 500152, '五桂镇');
+INSERT INTO `street` VALUES (500152021, 500152, '田家镇');
+INSERT INTO `street` VALUES (500152022, 500152, '别口镇');
+INSERT INTO `street` VALUES (500152023, 500152, '寿桥镇');
+INSERT INTO `street` VALUES (500153001, 500153, '昌元街道');
+INSERT INTO `street` VALUES (500153002, 500153, '昌州街道');
+INSERT INTO `street` VALUES (500153003, 500153, '广顺街道');
+INSERT INTO `street` VALUES (500153004, 500153, '双河街道');
+INSERT INTO `street` VALUES (500153005, 500153, '安富街道');
+INSERT INTO `street` VALUES (500153006, 500153, '峰高街道');
+INSERT INTO `street` VALUES (500153007, 500153, '荣隆镇');
+INSERT INTO `street` VALUES (500153008, 500153, '仁义镇');
+INSERT INTO `street` VALUES (500153009, 500153, '盘龙镇');
+INSERT INTO `street` VALUES (500153010, 500153, '吴家镇');
+INSERT INTO `street` VALUES (500153011, 500153, '直升镇');
+INSERT INTO `street` VALUES (500153012, 500153, '万灵镇');
+INSERT INTO `street` VALUES (500153013, 500153, '清升镇');
+INSERT INTO `street` VALUES (500153014, 500153, '清江镇');
+INSERT INTO `street` VALUES (500153015, 500153, '古昌镇');
+INSERT INTO `street` VALUES (500153016, 500153, '河包镇');
+INSERT INTO `street` VALUES (500153017, 500153, '观胜镇');
+INSERT INTO `street` VALUES (500153018, 500153, '铜鼓镇');
+INSERT INTO `street` VALUES (500153019, 500153, '清流镇');
+INSERT INTO `street` VALUES (500153020, 500153, '远觉镇');
+INSERT INTO `street` VALUES (500153021, 500153, '龙集镇');
+INSERT INTO `street` VALUES (500154001, 500154, '汉丰街道');
+INSERT INTO `street` VALUES (500154002, 500154, '文峰街道');
+INSERT INTO `street` VALUES (500154003, 500154, '云枫街道');
+INSERT INTO `street` VALUES (500154004, 500154, '镇东街道');
+INSERT INTO `street` VALUES (500154005, 500154, '丰乐街道');
+INSERT INTO `street` VALUES (500154006, 500154, '白鹤街道');
+INSERT INTO `street` VALUES (500154007, 500154, '赵家街道');
+INSERT INTO `street` VALUES (500154008, 500154, '大德镇');
+INSERT INTO `street` VALUES (500154009, 500154, '镇安镇');
+INSERT INTO `street` VALUES (500154010, 500154, '厚坝镇');
+INSERT INTO `street` VALUES (500154011, 500154, '金峰镇');
+INSERT INTO `street` VALUES (500154012, 500154, '温泉镇');
+INSERT INTO `street` VALUES (500154013, 500154, '郭家镇');
+INSERT INTO `street` VALUES (500154014, 500154, '白桥镇');
+INSERT INTO `street` VALUES (500154015, 500154, '和谦镇');
+INSERT INTO `street` VALUES (500154016, 500154, '河堰镇');
+INSERT INTO `street` VALUES (500154017, 500154, '大进镇');
+INSERT INTO `street` VALUES (500154018, 500154, '谭家镇');
+INSERT INTO `street` VALUES (500154019, 500154, '高桥镇');
+INSERT INTO `street` VALUES (500154020, 500154, '九龙山镇');
+INSERT INTO `street` VALUES (500154021, 500154, '天和镇');
+INSERT INTO `street` VALUES (500154022, 500154, '中和镇');
+INSERT INTO `street` VALUES (500154023, 500154, '义和镇');
+INSERT INTO `street` VALUES (500154024, 500154, '临江镇');
+INSERT INTO `street` VALUES (500154025, 500154, '竹溪镇');
+INSERT INTO `street` VALUES (500154026, 500154, '铁桥镇');
+INSERT INTO `street` VALUES (500154027, 500154, '南雅镇');
+INSERT INTO `street` VALUES (500154028, 500154, '巫山镇');
+INSERT INTO `street` VALUES (500154029, 500154, '岳溪镇');
+INSERT INTO `street` VALUES (500154030, 500154, '长沙镇');
+INSERT INTO `street` VALUES (500154031, 500154, '南门镇');
+INSERT INTO `street` VALUES (500154032, 500154, '渠口镇');
+INSERT INTO `street` VALUES (500154033, 500154, '满月镇');
+INSERT INTO `street` VALUES (500154034, 500154, '雪宝山镇');
+INSERT INTO `street` VALUES (500154035, 500154, '关面乡');
+INSERT INTO `street` VALUES (500154036, 500154, '白泉乡');
+INSERT INTO `street` VALUES (500154037, 500154, '麻柳乡');
+INSERT INTO `street` VALUES (500155001, 500155, '梁山街道');
+INSERT INTO `street` VALUES (500155002, 500155, '双桂街道');
+INSERT INTO `street` VALUES (500155003, 500155, '仁贤街道');
+INSERT INTO `street` VALUES (500155004, 500155, '金带街道');
+INSERT INTO `street` VALUES (500155005, 500155, '合兴街道');
+INSERT INTO `street` VALUES (500155006, 500155, '礼让镇');
+INSERT INTO `street` VALUES (500155007, 500155, '云龙镇');
+INSERT INTO `street` VALUES (500155008, 500155, '屏锦镇');
+INSERT INTO `street` VALUES (500155009, 500155, '袁驿镇');
+INSERT INTO `street` VALUES (500155010, 500155, '新盛镇');
+INSERT INTO `street` VALUES (500155011, 500155, '福禄镇');
+INSERT INTO `street` VALUES (500155012, 500155, '聚奎镇');
+INSERT INTO `street` VALUES (500155013, 500155, '明达镇');
+INSERT INTO `street` VALUES (500155014, 500155, '荫平镇');
+INSERT INTO `street` VALUES (500155015, 500155, '和林镇');
+INSERT INTO `street` VALUES (500155016, 500155, '回龙镇');
+INSERT INTO `street` VALUES (500155017, 500155, '碧山镇');
+INSERT INTO `street` VALUES (500155018, 500155, '虎城镇');
+INSERT INTO `street` VALUES (500155019, 500155, '七星镇');
+INSERT INTO `street` VALUES (500155020, 500155, '龙门镇');
+INSERT INTO `street` VALUES (500155021, 500155, '文化镇');
+INSERT INTO `street` VALUES (500155022, 500155, '石安镇');
+INSERT INTO `street` VALUES (500155023, 500155, '柏家镇');
+INSERT INTO `street` VALUES (500155024, 500155, '大观镇');
+INSERT INTO `street` VALUES (500155025, 500155, '竹山镇');
+INSERT INTO `street` VALUES (500155026, 500155, '蟠龙镇');
+INSERT INTO `street` VALUES (500155027, 500155, '安胜镇');
+INSERT INTO `street` VALUES (500155028, 500155, '复平镇');
+INSERT INTO `street` VALUES (500155029, 500155, '星桥镇');
+INSERT INTO `street` VALUES (500155030, 500155, '曲水镇');
+INSERT INTO `street` VALUES (500155031, 500155, '铁门乡');
+INSERT INTO `street` VALUES (500155032, 500155, '龙胜乡');
+INSERT INTO `street` VALUES (500155033, 500155, '紫照乡');
+INSERT INTO `street` VALUES (500156001, 500156, '凤山街道');
+INSERT INTO `street` VALUES (500156002, 500156, '芙蓉街道');
+INSERT INTO `street` VALUES (500156003, 500156, '仙女山街道');
+INSERT INTO `street` VALUES (500156004, 500156, '羊角街道');
+INSERT INTO `street` VALUES (500156005, 500156, '白马镇');
+INSERT INTO `street` VALUES (500156006, 500156, '江口镇');
+INSERT INTO `street` VALUES (500156007, 500156, '火炉镇');
+INSERT INTO `street` VALUES (500156008, 500156, '鸭江镇');
+INSERT INTO `street` VALUES (500156009, 500156, '长坝镇');
+INSERT INTO `street` VALUES (500156010, 500156, '平桥镇');
+INSERT INTO `street` VALUES (500156011, 500156, '桐梓镇');
+INSERT INTO `street` VALUES (500156012, 500156, '和顺镇');
+INSERT INTO `street` VALUES (500156013, 500156, '双河镇');
+INSERT INTO `street` VALUES (500156014, 500156, '土坎镇');
+INSERT INTO `street` VALUES (500156015, 500156, '黄莺乡');
+INSERT INTO `street` VALUES (500156016, 500156, '沧沟乡');
+INSERT INTO `street` VALUES (500156017, 500156, '文复乡');
+INSERT INTO `street` VALUES (500156018, 500156, '后坪乡');
+INSERT INTO `street` VALUES (500156019, 500156, '浩口乡');
+INSERT INTO `street` VALUES (500156020, 500156, '接龙乡');
+INSERT INTO `street` VALUES (500156021, 500156, '庙垭乡');
+INSERT INTO `street` VALUES (500156022, 500156, '石桥乡');
+INSERT INTO `street` VALUES (500156023, 500156, '白云乡');
+INSERT INTO `street` VALUES (500156024, 500156, '大洞河乡');
+INSERT INTO `street` VALUES (500156025, 500156, '赵家乡');
+INSERT INTO `street` VALUES (500229001, 500229, '葛城街道');
+INSERT INTO `street` VALUES (500229002, 500229, '复兴街道');
+INSERT INTO `street` VALUES (500229003, 500229, '巴山镇');
+INSERT INTO `street` VALUES (500229004, 500229, '坪坝镇');
+INSERT INTO `street` VALUES (500229005, 500229, '庙坝镇');
+INSERT INTO `street` VALUES (500229006, 500229, '明通镇');
+INSERT INTO `street` VALUES (500229007, 500229, '修齐镇');
+INSERT INTO `street` VALUES (500229008, 500229, '高观镇');
+INSERT INTO `street` VALUES (500229009, 500229, '高燕镇');
+INSERT INTO `street` VALUES (500229010, 500229, '东安镇');
+INSERT INTO `street` VALUES (500229011, 500229, '咸宜镇');
+INSERT INTO `street` VALUES (500229012, 500229, '高楠镇');
+INSERT INTO `street` VALUES (500229013, 500229, '龙田乡');
+INSERT INTO `street` VALUES (500229014, 500229, '北屏乡');
+INSERT INTO `street` VALUES (500229015, 500229, '左岚乡');
+INSERT INTO `street` VALUES (500229016, 500229, '沿河乡');
+INSERT INTO `street` VALUES (500229017, 500229, '双河乡');
+INSERT INTO `street` VALUES (500229018, 500229, '蓼子乡');
+INSERT INTO `street` VALUES (500229019, 500229, '鸡鸣乡');
+INSERT INTO `street` VALUES (500229020, 500229, '周溪乡');
+INSERT INTO `street` VALUES (500229021, 500229, '明中乡');
+INSERT INTO `street` VALUES (500229022, 500229, '治平乡');
+INSERT INTO `street` VALUES (500229023, 500229, '岚天乡');
+INSERT INTO `street` VALUES (500229024, 500229, '厚坪乡');
+INSERT INTO `street` VALUES (500229025, 500229, '河鱼乡');
+INSERT INTO `street` VALUES (500230001, 500230, '三合街道');
+INSERT INTO `street` VALUES (500230002, 500230, '名山街道');
+INSERT INTO `street` VALUES (500230003, 500230, '虎威镇');
+INSERT INTO `street` VALUES (500230004, 500230, '社坛镇');
+INSERT INTO `street` VALUES (500230005, 500230, '三元镇');
+INSERT INTO `street` VALUES (500230006, 500230, '许明寺镇');
+INSERT INTO `street` VALUES (500230007, 500230, '董家镇');
+INSERT INTO `street` VALUES (500230008, 500230, '树人镇');
+INSERT INTO `street` VALUES (500230009, 500230, '十直镇');
+INSERT INTO `street` VALUES (500230010, 500230, '高家镇');
+INSERT INTO `street` VALUES (500230011, 500230, '兴义镇');
+INSERT INTO `street` VALUES (500230012, 500230, '双路镇');
+INSERT INTO `street` VALUES (500230013, 500230, '江池镇');
+INSERT INTO `street` VALUES (500230014, 500230, '龙河镇');
+INSERT INTO `street` VALUES (500230015, 500230, '武平镇');
+INSERT INTO `street` VALUES (500230016, 500230, '包鸾镇');
+INSERT INTO `street` VALUES (500230017, 500230, '湛普镇');
+INSERT INTO `street` VALUES (500230018, 500230, '南天湖镇');
+INSERT INTO `street` VALUES (500230019, 500230, '保合镇');
+INSERT INTO `street` VALUES (500230020, 500230, '兴龙镇');
+INSERT INTO `street` VALUES (500230021, 500230, '仁沙镇');
+INSERT INTO `street` VALUES (500230022, 500230, '龙孔镇');
+INSERT INTO `street` VALUES (500230023, 500230, '暨龙镇');
+INSERT INTO `street` VALUES (500230024, 500230, '双龙镇');
+INSERT INTO `street` VALUES (500230025, 500230, '仙女湖镇');
+INSERT INTO `street` VALUES (500230026, 500230, '青龙乡');
+INSERT INTO `street` VALUES (500230027, 500230, '太平坝乡');
+INSERT INTO `street` VALUES (500230028, 500230, '都督乡');
+INSERT INTO `street` VALUES (500230029, 500230, '栗子乡');
+INSERT INTO `street` VALUES (500230030, 500230, '三建乡');
+INSERT INTO `street` VALUES (500231001, 500231, '桂溪街道');
+INSERT INTO `street` VALUES (500231002, 500231, '桂阳街道');
+INSERT INTO `street` VALUES (500231003, 500231, '新民镇');
+INSERT INTO `street` VALUES (500231004, 500231, '沙坪镇');
+INSERT INTO `street` VALUES (500231005, 500231, '周嘉镇');
+INSERT INTO `street` VALUES (500231006, 500231, '普顺镇');
+INSERT INTO `street` VALUES (500231007, 500231, '永安镇');
+INSERT INTO `street` VALUES (500231008, 500231, '高安镇');
+INSERT INTO `street` VALUES (500231009, 500231, '高峰镇');
+INSERT INTO `street` VALUES (500231010, 500231, '五洞镇');
+INSERT INTO `street` VALUES (500231011, 500231, '澄溪镇');
+INSERT INTO `street` VALUES (500231012, 500231, '太平镇');
+INSERT INTO `street` VALUES (500231013, 500231, '鹤游镇');
+INSERT INTO `street` VALUES (500231014, 500231, '坪山镇');
+INSERT INTO `street` VALUES (500231015, 500231, '砚台镇');
+INSERT INTO `street` VALUES (500231016, 500231, '曹回镇');
+INSERT INTO `street` VALUES (500231017, 500231, '杠家镇');
+INSERT INTO `street` VALUES (500231018, 500231, '包家镇');
+INSERT INTO `street` VALUES (500231019, 500231, '白家镇');
+INSERT INTO `street` VALUES (500231020, 500231, '永平镇');
+INSERT INTO `street` VALUES (500231021, 500231, '三溪镇');
+INSERT INTO `street` VALUES (500231022, 500231, '裴兴镇');
+INSERT INTO `street` VALUES (500231023, 500231, '黄沙镇');
+INSERT INTO `street` VALUES (500231024, 500231, '长龙镇');
+INSERT INTO `street` VALUES (500231025, 500231, '沙河乡');
+INSERT INTO `street` VALUES (500231026, 500231, '大石乡');
+INSERT INTO `street` VALUES (500233001, 500233, '忠州街道');
+INSERT INTO `street` VALUES (500233002, 500233, '白公街道');
+INSERT INTO `street` VALUES (500233003, 500233, '乌杨街道');
+INSERT INTO `street` VALUES (500233004, 500233, '新生街道');
+INSERT INTO `street` VALUES (500233005, 500233, '任家镇');
+INSERT INTO `street` VALUES (500233006, 500233, '洋渡镇');
+INSERT INTO `street` VALUES (500233007, 500233, '东溪镇');
+INSERT INTO `street` VALUES (500233008, 500233, '复兴镇');
+INSERT INTO `street` VALUES (500233009, 500233, '石宝镇');
+INSERT INTO `street` VALUES (500233010, 500233, '汝溪镇');
+INSERT INTO `street` VALUES (500233011, 500233, '野鹤镇');
+INSERT INTO `street` VALUES (500233012, 500233, '官坝镇');
+INSERT INTO `street` VALUES (500233013, 500233, '石黄镇');
+INSERT INTO `street` VALUES (500233014, 500233, '马灌镇');
+INSERT INTO `street` VALUES (500233015, 500233, '金鸡镇');
+INSERT INTO `street` VALUES (500233016, 500233, '新立镇');
+INSERT INTO `street` VALUES (500233017, 500233, '双桂镇');
+INSERT INTO `street` VALUES (500233018, 500233, '拔山镇');
+INSERT INTO `street` VALUES (500233019, 500233, '花桥镇');
+INSERT INTO `street` VALUES (500233020, 500233, '永丰镇');
+INSERT INTO `street` VALUES (500233021, 500233, '三汇镇');
+INSERT INTO `street` VALUES (500233022, 500233, '白石镇');
+INSERT INTO `street` VALUES (500233023, 500233, '黄金镇');
+INSERT INTO `street` VALUES (500233024, 500233, '善广乡');
+INSERT INTO `street` VALUES (500233025, 500233, '石子乡');
+INSERT INTO `street` VALUES (500233026, 500233, '磨子土家族乡');
+INSERT INTO `street` VALUES (500233027, 500233, '涂井乡');
+INSERT INTO `street` VALUES (500233028, 500233, '金声乡');
+INSERT INTO `street` VALUES (500233029, 500233, '兴峰乡');
+INSERT INTO `street` VALUES (500235001, 500235, '双江街道');
+INSERT INTO `street` VALUES (500235002, 500235, '青龙街道');
+INSERT INTO `street` VALUES (500235003, 500235, '人和街道');
+INSERT INTO `street` VALUES (500235004, 500235, '盘龙街道');
+INSERT INTO `street` VALUES (500235101, 500235, '龙角镇');
+INSERT INTO `street` VALUES (500235102, 500235, '故陵镇');
+INSERT INTO `street` VALUES (500235103, 500235, '红狮镇');
+INSERT INTO `street` VALUES (500235104, 500235, '路阳镇');
+INSERT INTO `street` VALUES (500235105, 500235, '农坝镇');
+INSERT INTO `street` VALUES (500235106, 500235, '渠马镇');
+INSERT INTO `street` VALUES (500235107, 500235, '黄石镇');
+INSERT INTO `street` VALUES (500235108, 500235, '巴阳镇');
+INSERT INTO `street` VALUES (500235109, 500235, '沙市镇');
+INSERT INTO `street` VALUES (500235110, 500235, '鱼泉镇');
+INSERT INTO `street` VALUES (500235111, 500235, '凤鸣镇');
+INSERT INTO `street` VALUES (500235112, 500235, '宝坪镇');
+INSERT INTO `street` VALUES (500235113, 500235, '南溪镇');
+INSERT INTO `street` VALUES (500235114, 500235, '双土镇');
+INSERT INTO `street` VALUES (500235115, 500235, '桑坪镇');
+INSERT INTO `street` VALUES (500235116, 500235, '江口镇');
+INSERT INTO `street` VALUES (500235117, 500235, '高阳镇');
+INSERT INTO `street` VALUES (500235118, 500235, '平安镇');
+INSERT INTO `street` VALUES (500235119, 500235, '云阳镇');
+INSERT INTO `street` VALUES (500235120, 500235, '云安镇');
+INSERT INTO `street` VALUES (500235121, 500235, '栖霞镇');
+INSERT INTO `street` VALUES (500235122, 500235, '双龙镇');
+INSERT INTO `street` VALUES (500235123, 500235, '泥溪镇');
+INSERT INTO `street` VALUES (500235124, 500235, '蔈草镇');
+INSERT INTO `street` VALUES (500235125, 500235, '养鹿镇');
+INSERT INTO `street` VALUES (500235126, 500235, '水口镇');
+INSERT INTO `street` VALUES (500235127, 500235, '堰坪镇');
+INSERT INTO `street` VALUES (500235128, 500235, '龙洞镇');
+INSERT INTO `street` VALUES (500235129, 500235, '后叶镇');
+INSERT INTO `street` VALUES (500235130, 500235, '耀灵镇');
+INSERT INTO `street` VALUES (500235131, 500235, '大阳镇');
+INSERT INTO `street` VALUES (500235201, 500235, '外郎乡');
+INSERT INTO `street` VALUES (500235202, 500235, '新津乡');
+INSERT INTO `street` VALUES (500235203, 500235, '普安乡');
+INSERT INTO `street` VALUES (500235204, 500235, '洞鹿乡');
+INSERT INTO `street` VALUES (500235205, 500235, '石门乡');
+INSERT INTO `street` VALUES (500235206, 500235, '上坝乡');
+INSERT INTO `street` VALUES (500235207, 500235, '清水土家族乡');
+INSERT INTO `street` VALUES (500236001, 500236, '永安街道');
+INSERT INTO `street` VALUES (500236002, 500236, '鱼复街道');
+INSERT INTO `street` VALUES (500236003, 500236, '夔门街道');
+INSERT INTO `street` VALUES (500236004, 500236, '夔州街道');
+INSERT INTO `street` VALUES (500236101, 500236, '白帝镇');
+INSERT INTO `street` VALUES (500236102, 500236, '草堂镇');
+INSERT INTO `street` VALUES (500236103, 500236, '汾河镇');
+INSERT INTO `street` VALUES (500236104, 500236, '康乐镇');
+INSERT INTO `street` VALUES (500236105, 500236, '大树镇');
+INSERT INTO `street` VALUES (500236106, 500236, '竹园镇');
+INSERT INTO `street` VALUES (500236107, 500236, '公平镇');
+INSERT INTO `street` VALUES (500236108, 500236, '朱衣镇');
+INSERT INTO `street` VALUES (500236109, 500236, '甲高镇');
+INSERT INTO `street` VALUES (500236110, 500236, '羊市镇');
+INSERT INTO `street` VALUES (500236111, 500236, '吐祥镇');
+INSERT INTO `street` VALUES (500236112, 500236, '兴隆镇');
+INSERT INTO `street` VALUES (500236113, 500236, '青龙镇');
+INSERT INTO `street` VALUES (500236114, 500236, '新民镇');
+INSERT INTO `street` VALUES (500236115, 500236, '永乐镇');
+INSERT INTO `street` VALUES (500236116, 500236, '安坪镇');
+INSERT INTO `street` VALUES (500236117, 500236, '五马镇');
+INSERT INTO `street` VALUES (500236118, 500236, '青莲镇');
+INSERT INTO `street` VALUES (500236201, 500236, '岩湾乡');
+INSERT INTO `street` VALUES (500236202, 500236, '平安乡');
+INSERT INTO `street` VALUES (500236203, 500236, '红土乡');
+INSERT INTO `street` VALUES (500236204, 500236, '石岗乡');
+INSERT INTO `street` VALUES (500236205, 500236, '康坪乡');
+INSERT INTO `street` VALUES (500236206, 500236, '太和土家族乡');
+INSERT INTO `street` VALUES (500236207, 500236, '鹤峰乡');
+INSERT INTO `street` VALUES (500236208, 500236, '冯坪乡');
+INSERT INTO `street` VALUES (500236209, 500236, '长安土家族乡');
+INSERT INTO `street` VALUES (500236210, 500236, '龙桥土家族乡');
+INSERT INTO `street` VALUES (500236211, 500236, '云雾土家族乡');
+INSERT INTO `street` VALUES (500237001, 500237, '高唐街道');
+INSERT INTO `street` VALUES (500237002, 500237, '龙门街道');
+INSERT INTO `street` VALUES (500237101, 500237, '庙宇镇');
+INSERT INTO `street` VALUES (500237102, 500237, '大昌镇');
+INSERT INTO `street` VALUES (500237103, 500237, '福田镇');
+INSERT INTO `street` VALUES (500237104, 500237, '龙溪镇');
+INSERT INTO `street` VALUES (500237105, 500237, '双龙镇');
+INSERT INTO `street` VALUES (500237106, 500237, '官阳镇');
+INSERT INTO `street` VALUES (500237107, 500237, '骡坪镇');
+INSERT INTO `street` VALUES (500237108, 500237, '抱龙镇');
+INSERT INTO `street` VALUES (500237109, 500237, '官渡镇');
+INSERT INTO `street` VALUES (500237110, 500237, '铜鼓镇');
+INSERT INTO `street` VALUES (500237111, 500237, '巫峡镇');
+INSERT INTO `street` VALUES (500237201, 500237, '红椿乡');
+INSERT INTO `street` VALUES (500237202, 500237, '两坪乡');
+INSERT INTO `street` VALUES (500237203, 500237, '曲尺乡');
+INSERT INTO `street` VALUES (500237204, 500237, '建平乡');
+INSERT INTO `street` VALUES (500237205, 500237, '大溪乡');
+INSERT INTO `street` VALUES (500237206, 500237, '金坪乡');
+INSERT INTO `street` VALUES (500237207, 500237, '平河乡');
+INSERT INTO `street` VALUES (500237208, 500237, '当阳乡');
+INSERT INTO `street` VALUES (500237209, 500237, '竹贤乡');
+INSERT INTO `street` VALUES (500237210, 500237, '三溪乡');
+INSERT INTO `street` VALUES (500237211, 500237, '培石乡');
+INSERT INTO `street` VALUES (500237212, 500237, '笃坪乡');
+INSERT INTO `street` VALUES (500237213, 500237, '邓家乡');
+INSERT INTO `street` VALUES (500238001, 500238, '宁河街道');
+INSERT INTO `street` VALUES (500238002, 500238, '柏杨街道');
+INSERT INTO `street` VALUES (500238101, 500238, '城厢镇');
+INSERT INTO `street` VALUES (500238102, 500238, '凤凰镇');
+INSERT INTO `street` VALUES (500238103, 500238, '宁厂镇');
+INSERT INTO `street` VALUES (500238104, 500238, '上磺镇');
+INSERT INTO `street` VALUES (500238105, 500238, '古路镇');
+INSERT INTO `street` VALUES (500238106, 500238, '文峰镇');
+INSERT INTO `street` VALUES (500238107, 500238, '徐家镇');
+INSERT INTO `street` VALUES (500238108, 500238, '白鹿镇');
+INSERT INTO `street` VALUES (500238109, 500238, '尖山镇');
+INSERT INTO `street` VALUES (500238110, 500238, '下堡镇');
+INSERT INTO `street` VALUES (500238111, 500238, '峰灵镇');
+INSERT INTO `street` VALUES (500238112, 500238, '塘坊镇');
+INSERT INTO `street` VALUES (500238113, 500238, '朝阳镇');
+INSERT INTO `street` VALUES (500238114, 500238, '田坝镇');
+INSERT INTO `street` VALUES (500238115, 500238, '通城镇');
+INSERT INTO `street` VALUES (500238116, 500238, '菱角镇');
+INSERT INTO `street` VALUES (500238117, 500238, '蒲莲镇');
+INSERT INTO `street` VALUES (500238118, 500238, '土城镇');
+INSERT INTO `street` VALUES (500238119, 500238, '红池坝镇');
+INSERT INTO `street` VALUES (500238201, 500238, '胜利乡');
+INSERT INTO `street` VALUES (500238202, 500238, '大河乡');
+INSERT INTO `street` VALUES (500238203, 500238, '天星乡');
+INSERT INTO `street` VALUES (500238204, 500238, '长桂乡');
+INSERT INTO `street` VALUES (500238205, 500238, '鱼鳞乡');
+INSERT INTO `street` VALUES (500238206, 500238, '乌龙乡');
+INSERT INTO `street` VALUES (500238207, 500238, '花台乡');
+INSERT INTO `street` VALUES (500238208, 500238, '兰英乡');
+INSERT INTO `street` VALUES (500238209, 500238, '双阳乡');
+INSERT INTO `street` VALUES (500238210, 500238, '中梁乡');
+INSERT INTO `street` VALUES (500238211, 500238, '天元乡');
+INSERT INTO `street` VALUES (500240001, 500240, '南宾街道');
+INSERT INTO `street` VALUES (500240002, 500240, '万安街道');
+INSERT INTO `street` VALUES (500240003, 500240, '下路街道');
+INSERT INTO `street` VALUES (500240101, 500240, '西沱镇');
+INSERT INTO `street` VALUES (500240102, 500240, '悦崃镇');
+INSERT INTO `street` VALUES (500240103, 500240, '临溪镇');
+INSERT INTO `street` VALUES (500240104, 500240, '黄水镇');
+INSERT INTO `street` VALUES (500240105, 500240, '马武镇');
+INSERT INTO `street` VALUES (500240106, 500240, '沙子镇');
+INSERT INTO `street` VALUES (500240107, 500240, '王场镇');
+INSERT INTO `street` VALUES (500240108, 500240, '沿溪镇');
+INSERT INTO `street` VALUES (500240109, 500240, '龙沙镇');
+INSERT INTO `street` VALUES (500240110, 500240, '鱼池镇');
+INSERT INTO `street` VALUES (500240111, 500240, '三河镇');
+INSERT INTO `street` VALUES (500240112, 500240, '大歇镇');
+INSERT INTO `street` VALUES (500240113, 500240, '桥头镇');
+INSERT INTO `street` VALUES (500240114, 500240, '万朝镇');
+INSERT INTO `street` VALUES (500240115, 500240, '冷水镇');
+INSERT INTO `street` VALUES (500240116, 500240, '黄鹤镇');
+INSERT INTO `street` VALUES (500240117, 500240, '枫木镇');
+INSERT INTO `street` VALUES (500240201, 500240, '黎场乡');
+INSERT INTO `street` VALUES (500240202, 500240, '三星乡');
+INSERT INTO `street` VALUES (500240203, 500240, '六塘乡');
+INSERT INTO `street` VALUES (500240204, 500240, '三益乡');
+INSERT INTO `street` VALUES (500240205, 500240, '王家乡');
+INSERT INTO `street` VALUES (500240206, 500240, '河嘴乡');
+INSERT INTO `street` VALUES (500240207, 500240, '石家乡');
+INSERT INTO `street` VALUES (500240208, 500240, '中益乡');
+INSERT INTO `street` VALUES (500240209, 500240, '洗新乡');
+INSERT INTO `street` VALUES (500240210, 500240, '龙潭乡');
+INSERT INTO `street` VALUES (500240211, 500240, '新乐乡');
+INSERT INTO `street` VALUES (500240212, 500240, '金铃乡');
+INSERT INTO `street` VALUES (500240213, 500240, '金竹乡');
+INSERT INTO `street` VALUES (500241001, 500241, '中和街道');
+INSERT INTO `street` VALUES (500241002, 500241, '乌杨街道');
+INSERT INTO `street` VALUES (500241003, 500241, '平凯街道');
+INSERT INTO `street` VALUES (500241004, 500241, '官庄街道');
+INSERT INTO `street` VALUES (500241101, 500241, '清溪场镇');
+INSERT INTO `street` VALUES (500241102, 500241, '隘口镇');
+INSERT INTO `street` VALUES (500241103, 500241, '溶溪镇');
+INSERT INTO `street` VALUES (500241104, 500241, '龙池镇');
+INSERT INTO `street` VALUES (500241105, 500241, '石堤镇');
+INSERT INTO `street` VALUES (500241106, 500241, '峨溶镇');
+INSERT INTO `street` VALUES (500241107, 500241, '洪安镇');
+INSERT INTO `street` VALUES (500241108, 500241, '雅江镇');
+INSERT INTO `street` VALUES (500241109, 500241, '石耶镇');
+INSERT INTO `street` VALUES (500241110, 500241, '梅江镇');
+INSERT INTO `street` VALUES (500241111, 500241, '兰桥镇');
+INSERT INTO `street` VALUES (500241112, 500241, '膏田镇');
+INSERT INTO `street` VALUES (500241113, 500241, '溪口镇');
+INSERT INTO `street` VALUES (500241114, 500241, '妙泉镇');
+INSERT INTO `street` VALUES (500241115, 500241, '宋农镇');
+INSERT INTO `street` VALUES (500241116, 500241, '里仁镇');
+INSERT INTO `street` VALUES (500241117, 500241, '钟灵镇');
+INSERT INTO `street` VALUES (500241201, 500241, '孝溪乡');
+INSERT INTO `street` VALUES (500241202, 500241, '海洋乡');
+INSERT INTO `street` VALUES (500241203, 500241, '大溪乡');
+INSERT INTO `street` VALUES (500241204, 500241, '涌洞乡');
+INSERT INTO `street` VALUES (500241205, 500241, '中平乡');
+INSERT INTO `street` VALUES (500241206, 500241, '岑溪乡');
+INSERT INTO `street` VALUES (500242001, 500242, '桃花源街道');
+INSERT INTO `street` VALUES (500242002, 500242, '钟多街道');
+INSERT INTO `street` VALUES (500242101, 500242, '龙潭镇');
+INSERT INTO `street` VALUES (500242102, 500242, '麻旺镇');
+INSERT INTO `street` VALUES (500242103, 500242, '酉酬镇');
+INSERT INTO `street` VALUES (500242104, 500242, '大溪镇');
+INSERT INTO `street` VALUES (500242105, 500242, '兴隆镇');
+INSERT INTO `street` VALUES (500242106, 500242, '黑水镇');
+INSERT INTO `street` VALUES (500242107, 500242, '丁市镇');
+INSERT INTO `street` VALUES (500242108, 500242, '龚滩镇');
+INSERT INTO `street` VALUES (500242109, 500242, '李溪镇');
+INSERT INTO `street` VALUES (500242110, 500242, '泔溪镇');
+INSERT INTO `street` VALUES (500242111, 500242, '酉水河镇');
+INSERT INTO `street` VALUES (500242112, 500242, '苍岭镇');
+INSERT INTO `street` VALUES (500242113, 500242, '小河镇');
+INSERT INTO `street` VALUES (500242114, 500242, '板溪镇');
+INSERT INTO `street` VALUES (500242115, 500242, '涂市镇');
+INSERT INTO `street` VALUES (500242116, 500242, '铜鼓镇');
+INSERT INTO `street` VALUES (500242117, 500242, '五福镇');
+INSERT INTO `street` VALUES (500242118, 500242, '万木镇');
+INSERT INTO `street` VALUES (500242119, 500242, '南腰界镇');
+INSERT INTO `street` VALUES (500242201, 500242, '可大乡');
+INSERT INTO `street` VALUES (500242202, 500242, '偏柏乡');
+INSERT INTO `street` VALUES (500242203, 500242, '木叶乡');
+INSERT INTO `street` VALUES (500242204, 500242, '毛坝乡');
+INSERT INTO `street` VALUES (500242205, 500242, '花田乡');
+INSERT INTO `street` VALUES (500242206, 500242, '后坪乡');
+INSERT INTO `street` VALUES (500242207, 500242, '天馆乡');
+INSERT INTO `street` VALUES (500242208, 500242, '宜居乡');
+INSERT INTO `street` VALUES (500242209, 500242, '两罾乡');
+INSERT INTO `street` VALUES (500242210, 500242, '板桥乡');
+INSERT INTO `street` VALUES (500242211, 500242, '官清乡');
+INSERT INTO `street` VALUES (500242212, 500242, '车田乡');
+INSERT INTO `street` VALUES (500242213, 500242, '腴地乡');
+INSERT INTO `street` VALUES (500242214, 500242, '清泉乡');
+INSERT INTO `street` VALUES (500242215, 500242, '庙溪乡');
+INSERT INTO `street` VALUES (500242216, 500242, '浪坪乡');
+INSERT INTO `street` VALUES (500242217, 500242, '双泉乡');
+INSERT INTO `street` VALUES (500242218, 500242, '楠木乡');
+INSERT INTO `street` VALUES (500243001, 500243, '汉葭街道');
+INSERT INTO `street` VALUES (500243002, 500243, '绍庆街道');
+INSERT INTO `street` VALUES (500243003, 500243, '靛水街道');
+INSERT INTO `street` VALUES (500243101, 500243, '保家镇');
+INSERT INTO `street` VALUES (500243102, 500243, '郁山镇');
+INSERT INTO `street` VALUES (500243103, 500243, '高谷镇');
+INSERT INTO `street` VALUES (500243104, 500243, '桑柘镇');
+INSERT INTO `street` VALUES (500243105, 500243, '鹿角镇');
+INSERT INTO `street` VALUES (500243106, 500243, '黄家镇');
+INSERT INTO `street` VALUES (500243107, 500243, '普子镇');
+INSERT INTO `street` VALUES (500243108, 500243, '龙射镇');
+INSERT INTO `street` VALUES (500243109, 500243, '连湖镇');
+INSERT INTO `street` VALUES (500243110, 500243, '万足镇');
+INSERT INTO `street` VALUES (500243111, 500243, '平安镇');
+INSERT INTO `street` VALUES (500243112, 500243, '长生镇');
+INSERT INTO `street` VALUES (500243113, 500243, '新田镇');
+INSERT INTO `street` VALUES (500243114, 500243, '鞍子镇');
+INSERT INTO `street` VALUES (500243115, 500243, '太原镇');
+INSERT INTO `street` VALUES (500243116, 500243, '龙溪镇');
+INSERT INTO `street` VALUES (500243117, 500243, '梅子垭镇');
+INSERT INTO `street` VALUES (500243118, 500243, '大同镇');
+INSERT INTO `street` VALUES (500243201, 500243, '岩东乡');
+INSERT INTO `street` VALUES (500243202, 500243, '鹿鸣乡');
+INSERT INTO `street` VALUES (500243203, 500243, '棣棠乡');
+INSERT INTO `street` VALUES (500243204, 500243, '三义乡');
+INSERT INTO `street` VALUES (500243205, 500243, '联合乡');
+INSERT INTO `street` VALUES (500243206, 500243, '石柳乡');
+INSERT INTO `street` VALUES (500243207, 500243, '走马乡');
+INSERT INTO `street` VALUES (500243208, 500243, '芦塘乡');
+INSERT INTO `street` VALUES (500243209, 500243, '乔梓乡');
+INSERT INTO `street` VALUES (500243210, 500243, '诸佛乡');
+INSERT INTO `street` VALUES (500243211, 500243, '桐楼乡');
+INSERT INTO `street` VALUES (500243212, 500243, '善感乡');
+INSERT INTO `street` VALUES (500243213, 500243, '双龙乡');
+INSERT INTO `street` VALUES (500243214, 500243, '石盘乡');
+INSERT INTO `street` VALUES (500243215, 500243, '大垭乡');
+INSERT INTO `street` VALUES (500243216, 500243, '润溪乡');
+INSERT INTO `street` VALUES (500243217, 500243, '朗溪乡');
+INSERT INTO `street` VALUES (500243218, 500243, '龙塘乡');
+
+SET FOREIGN_KEY_CHECKS = 1;
