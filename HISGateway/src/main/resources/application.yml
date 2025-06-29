@@ -24,6 +24,12 @@ spring:
                 - Path=/herb-info-service/**
               filters:
                 - StripPrefix=1
+            - id: Research
+              uri: lb://research
+              predicates:
+                - Path=/research/**
+              filters:
+                - StripPrefix=1
 
 eureka:
   client:
