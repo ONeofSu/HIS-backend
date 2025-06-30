@@ -26,7 +26,7 @@ public class HerbGrowthController {
     public ResponseEntity<?> addGrowth(@RequestHeader("Authorization") String authHeader,
                                        @RequestBody HerbGrowthDTO herbGrowthDTO) {
         String token = authHeader.substring(7);
-        System.out.println(userService.getUserId(token));
+        int user_id = userService.getUserId(token);
         return null;
     }
 

@@ -2,6 +2,7 @@ package org.csu.hisuser.controller;
 
 import org.csu.hisuser.DTO.LoginDTO;
 import org.csu.hisuser.DTO.RegisterDTO;
+import org.csu.hisuser.VO.UserVO;
 import org.csu.hisuser.entity.User;
 import org.csu.hisuser.service.AuthService;
 import org.csu.hisuser.service.UserService;
@@ -36,9 +37,12 @@ public class UserAuthController {
             );
         }
 
+        UserVO userVO = userService.transferUserToUserVO(userService.getUserByUsername(loginDTO.getUsername()));
+
         return ResponseEntity.ok(
                 Map.of("code",0,
-                        "token",token)
+                        "token",token,
+                        "user",userVO)
         );
     }
 
@@ -63,9 +67,13 @@ public class UserAuthController {
         if(token == null) {
             return ResponseEntity.internalServerError().body("error to register");
         }
+
+        UserVO userVO = userService.transferUserToUserVO(user);
+
         return ResponseEntity.ok(
                 Map.of("code",0,
-                        "token",token)
+                        "token",token,
+                        "user",userVO)
         );
     }
 }
