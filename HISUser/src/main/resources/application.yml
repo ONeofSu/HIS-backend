@@ -1,0 +1,15 @@
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8080/eureka/
+
+server:
+  port: 8081
+
+spring:
+  application:
+    name: his-user-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/his_userinfo
+    username: root
+    password: 123456

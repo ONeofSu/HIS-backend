@@ -1,4 +1,4 @@
-package org.csu.hisgateway.utils;
+package org.csu.hisuser.util;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

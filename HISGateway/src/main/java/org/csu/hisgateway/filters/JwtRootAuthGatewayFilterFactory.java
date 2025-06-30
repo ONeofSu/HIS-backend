@@ -10,18 +10,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Component
-public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<JwtAuthGatewayFilterFactory.Config> {
+public class JwtRootAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<JwtRootAuthGatewayFilterFactory.Config> {
     private final JwtUtil jwtUtil;
 
-    JwtAuthGatewayFilterFactory(JwtUtil jwtUtil) {
-        super(Config.class);
+    JwtRootAuthGatewayFilterFactory(JwtUtil jwtUtil) {
+        super(JwtRootAuthGatewayFilterFactory.Config.class);
         this.jwtUtil = jwtUtil;
     }
 
     @Override
-    public GatewayFilter apply(Config config) {
+    public GatewayFilter apply(JwtRootAuthGatewayFilterFactory.Config config) {
         return (exchange, chain) -> {
-            System.out.println("run JwtAuth");
             //请求头获取Token
             String token = exchange.getRequest()
                     .getHeaders()
@@ -45,6 +44,19 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
             ServerHttpRequest request = exchange.getRequest().mutate()
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)  // 保留原始 Token
                     .build();
+
+            //提取权限并验证
+            Integer userRoleLevel = jwtUtil.extractRoleLevel(token);
+            if (userRoleLevel == null) {
+                exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                return exchange.getResponse().setComplete();
+            }
+
+            if(userRoleLevel!=3){
+                //System.out.println("userRoleLevel:"+userRoleLevel);
+                exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                return exchange.getResponse().setComplete();
+            }
 
             //继续路由
             return chain.filter(exchange.mutate().request(request).build());
