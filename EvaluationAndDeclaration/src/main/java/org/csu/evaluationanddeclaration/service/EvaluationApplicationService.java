@@ -12,7 +12,6 @@ public interface EvaluationApplicationService {
     public List<EvaluationApplication>GetAllApplications();
     public EvaluationApplication GetApplicationById(int id);
     public HerbEvaluation GetEvaluation(int id);
-    public int GetApplicationType(int id);
     public String GetApplicationState(int id);
     public EvaluationApplication GetApplicationByEvaluationId(int id);
 

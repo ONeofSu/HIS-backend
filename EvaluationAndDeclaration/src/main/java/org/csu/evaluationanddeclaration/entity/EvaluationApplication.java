@@ -12,9 +12,6 @@ public class EvaluationApplication {
     @TableField("evaluation_id")
     private Long evaluationId;
 
-    @TableField("application_type")
-    private Long applicationType;
-
     @TableField("application_state")
     private String applicationState;
 
