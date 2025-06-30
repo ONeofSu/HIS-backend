@@ -2,6 +2,8 @@ package org.csu.evaluationanddeclaration.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.csu.evaluationanddeclaration.entity.HerbRating;
+import org.csu.evaluationanddeclaration.entity.HerbRatingDetail;
+import org.csu.evaluationanddeclaration.mapper.HerbRatingDetailMapper;
 import org.csu.evaluationanddeclaration.mapper.HerbRatingMapper;
 import org.csu.evaluationanddeclaration.service.HerbEvaluationService;
 import org.csu.evaluationanddeclaration.entity.EvaluationDetail;
@@ -24,6 +26,8 @@ public class HerbEvaluationServiceImpl implements HerbEvaluationService {
     private EvaluationDetailMapper evaluationDetailMapper;
     @Autowired
     HerbRatingMapper herbRatingMapper;
+    @Autowired
+    HerbRatingDetailMapper herbRatingDetailMapper;
 
     @Override
     public List<HerbEvaluation> GetAllHerbEvaluations() {
@@ -185,5 +189,38 @@ public class HerbEvaluationServiceImpl implements HerbEvaluationService {
     @Override
     public boolean IsRatingExit(int id) {
         return herbRatingMapper.selectById(id) != null;
+    }
+
+    @Override
+    public boolean AddRatingDetail(HerbRatingDetail herbRatingDetail) {
+        if (herbRatingDetail == null) {
+            return false;
+        }
+        herbRatingDetailMapper.insert(herbRatingDetail); // 假设存在 herbRatingDetailMapper
+        return true;
+    }
+
+    @Override
+    public boolean DeleteRatingDetail(int id) {
+        HerbRatingDetail detail = herbRatingDetailMapper.selectById(id); // 假设存在 selectById 方法
+        if (detail == null) {
+            return false;
+        }
+        herbRatingDetailMapper.deleteById(id);
+        return true;
+    }
+
+    @Override
+    public boolean UpdateRatingDetail(HerbRatingDetail herbRatingDetail) {
+        if (herbRatingDetail == null) {
+            return false;
+        }
+        herbRatingDetailMapper.updateById(herbRatingDetail); // 假设存在 updateById 方法
+        return true;
+    }
+
+    @Override
+    public boolean IsRatingDetailExit(int id) {
+        return herbRatingDetailMapper.selectById(id) != null;
     }
 }

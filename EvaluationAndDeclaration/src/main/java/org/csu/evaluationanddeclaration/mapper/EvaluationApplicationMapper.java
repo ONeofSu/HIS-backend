@@ -9,6 +9,8 @@ import org.csu.evaluationanddeclaration.entity.EvaluationApplication;
 import org.csu.evaluationanddeclaration.entity.HerbEvaluation;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 
 public interface EvaluationApplicationMapper extends BaseMapper<EvaluationApplication> {
 //    @Select("""
@@ -20,4 +22,12 @@ public interface EvaluationApplicationMapper extends BaseMapper<EvaluationApplic
 //    HerbEvaluation GetHerbEvaluationBy
     @Select("SELECT COUNT(*) FROM evaluation_application")
     Long count();
+
+    @Select("SELECT * FROM evaluation_application WHERE application_id = #{applicationId}")
+    EvaluationApplication getApplicationById(Long applicationId);
+
+    @Select("SELECT * FROM evaluation_application WHERE application_state = #{applicationState}")
+    List<EvaluationApplication> getApplications(String applicationState);
+
+
 }

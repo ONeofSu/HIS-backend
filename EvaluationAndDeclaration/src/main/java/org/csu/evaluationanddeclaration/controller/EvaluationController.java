@@ -19,10 +19,12 @@ import java.util.Map;
 
 @RestController
 public class EvaluationController {
-    float indicator1Weight = 0.25f;
-    float indicator2Weight = 0.25f;
-    float indicator3Weight = 0.25f;
-    float indicator4Weight = 0.25f;
+    float indicator1Weight = 0.20f;
+    float indicator2Weight = 0.10f;
+    float indicator3Weight = 0.15f;
+    float indicator4Weight = 0.20f;
+    float indicator5Weight = 0.20f;
+    float indicator6Weight = 0.15f;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -70,8 +72,9 @@ public class EvaluationController {
     @Autowired
     EvaluationApplicationServiceImpl applicationService;
 
-    @GetMapping("/herbEvaluations/{herbId}")
-    public ResponseEntity<?> GetHerbEvaluationsByHerbName(@PathVariable int herbId){
+    @GetMapping("/GetHerbEvaluationsByHerbId")
+    public ResponseEntity<?> GetHerbEvaluationsByHerbName(
+            @RequestParam(name="herbId")int herbId){
         ResponseEntity<List<HerbEvaluation>> result = null;
         List<HerbEvaluation> herbEvaluations = evaluationService.GetHerbEvaluationsByHerbId(herbId);
         if(herbEvaluations.isEmpty()){
@@ -190,7 +193,6 @@ public class EvaluationController {
             @RequestParam(name = "herbId")int herbId,
             @RequestParam(name = "commentTime")String commentTime,
             @RequestParam(name = "userId")int userId,
-            @RequestParam(name = "evaluationState")String evaluationState,
             @RequestParam(name = "comment1")String comment1,
             @RequestParam(name = "material1")String material1,
             @RequestParam(name = "score1")float score1,
@@ -202,7 +204,13 @@ public class EvaluationController {
             @RequestParam(name = "score3")float score3,
             @RequestParam(name = "comment4")String comment4,
             @RequestParam(name = "material4")String material4,
-            @RequestParam(name = "score4")float score4
+            @RequestParam(name = "score4")float score4,
+            @RequestParam(name = "comment5")String comment5,
+            @RequestParam(name = "material5")String material5,
+            @RequestParam(name = "score5")float score5,
+            @RequestParam(name = "comment6")String comment6,
+            @RequestParam(name = "material6")String material6,
+            @RequestParam(name = "score6")float score6
     ){
         ResponseEntity<?>result = null;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -217,6 +225,8 @@ public class EvaluationController {
         EvaluationDetail detail2 = new EvaluationDetail();
         EvaluationDetail detail3 = new EvaluationDetail();
         EvaluationDetail detail4 = new EvaluationDetail();
+        EvaluationDetail detail5 = new EvaluationDetail();
+        EvaluationDetail detail6 = new EvaluationDetail();
         HerbRating rating;
 
         //todo:检查各种参数是否合法，例如：herb_id是否存在数据库中
@@ -226,9 +236,11 @@ public class EvaluationController {
         evaluation.setUserId((long)userId);
         evaluation.setEvaluateTime(date);
         evaluation.setAuditorId((long)100);
-        evaluation.setEvaluationState(evaluationState);
+        evaluation.setEvaluationState("审核中");
 
-        float totalScore = indicator1Weight*score1 + indicator2Weight*score2 + indicator3Weight*score3 + indicator4Weight*score4;
+        float totalScore = indicator1Weight*score1 + indicator2Weight*score2
+                + indicator3Weight*score3 + indicator4Weight*score4
+                + indicator5Weight*score5 + indicator6Weight*score6;
         evaluation.setTotalScore(totalScore);
 
         //重置自增
@@ -237,7 +249,7 @@ public class EvaluationController {
         evaluationService.AddHerbEvaluation(evaluation);
         Long evaluationId = evaluation.getEvaluationId();
 
-        //指标1~4
+        //指标1~6
 
         //重置自增
         resetAutoIncrement("evaluation_detail", evaluationDetailMapper.count().intValue());
@@ -274,39 +286,74 @@ public class EvaluationController {
         detail4.setIndicatorScore((double) score4); // 对应的得分
         evaluationService.AddDetail(detail4);
 
+        // 设置第五个指标
+        detail5.setEvaluationId(evaluationId);
+        detail5.setIndicatorId((long) 5); // 指标ID为4
+        detail5.setComment(comment5);   // 对应的评语
+        detail5.setMaterial(material5); // 对应的材料
+        detail5.setIndicatorScore((double) score5); // 对应的得分
+        evaluationService.AddDetail(detail5);
+
+        // 设置第六个指标
+        detail6.setEvaluationId(evaluationId);
+        detail6.setIndicatorId((long) 6); // 指标ID为4
+        detail6.setComment(comment6);   // 对应的评语
+        detail6.setMaterial(material6); // 对应的材料
+        detail6.setIndicatorScore((double) score6); // 对应的得分
+        evaluationService.AddDetail(detail6);
+
         //审核
         //重置自增
         resetAutoIncrement("evaluation_application", evaluationApplicationMapper.count().intValue());
 
-        application.setApplicationState(evaluationState);
-        application.setApplicationType((long)3);
+        application.setApplicationState("审核中");
         application.setEvaluationId(evaluationId);
         application.setUserId((long)100);
         applicationService.AddApplication(application);
 
         //单个药材评分
-        //重置自增
-        resetAutoIncrement("herb_rating", herbRatingMapper.count().intValue());
-
-        rating = herbRatingMapper.selectByHerbId(herbId);
-        if(rating == null){
-            rating = new HerbRating();
-            rating.setTotalScore((double) totalScore);
-            rating.setHerbId((long) herbId);
-            evaluationService.AddRating(rating);
-        }
-        else{
-            int cnt = 1;
-            for(HerbEvaluation e : herbEvaluationMapper.getEvaluationsByHerbId(herbId)){
-                totalScore += e.getTotalScore().floatValue();
-                cnt++;
-            }
-            totalScore /= cnt;
-            rating.setTotalScore((double) totalScore);
-            evaluationService.UpdateRating(rating);
-        }
+//        重置自增
+//        resetAutoIncrement("herb_rating", herbRatingMapper.count().intValue());
+//        rating = herbRatingMapper.selectByHerbId(herbId);
+//        if(rating == null){
+//            rating = new HerbRating();
+//            rating.setTotalScore((double) totalScore);
+//            rating.setHerbId((long) herbId);
+//            evaluationService.AddRating(rating);
+//        }
+//        else{
+//            //重置自增
+//            resetAutoIncrement("herb_rating", herbRatingMapper.count().intValue());
+//            int cnt = 1;
+//            for(HerbEvaluation e : herbEvaluationMapper.getEvaluationsByHerbId(herbId)){
+//                totalScore += e.getTotalScore().floatValue();
+//                cnt++;
+//            }
+//            totalScore /= cnt;
+//            rating.setTotalScore((double) totalScore);
+//            evaluationService.UpdateRating(rating);
+//        }
         return result.ok(Map.of(
                 "code",0
+        ));
+    }
+
+    @GetMapping("/GetHerbEvaluationScoreByHerbId")
+    public ResponseEntity<?> GetHerbEvaluationScoreByHerbId(
+            @RequestParam(name = "herbId")int herbId
+    ){
+        ResponseEntity<List<EvaluationDetail>> result = null;
+        HerbRating herbRating = herbRatingMapper.selectByHerbId(herbId);
+        if(herbRating == null){
+            return result.ok(Map.of(
+                    "code",-1,
+                    "message","不存在该herbId"
+            ));
+        }
+        float score = herbRating.getTotalScore().floatValue();
+        return result.ok(Map.of(
+                "code",0,
+                "herbScore",score
         ));
     }
 }

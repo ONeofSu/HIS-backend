@@ -13,4 +13,5 @@ public interface HerbRatingMapper extends BaseMapper<HerbRating> {
 
     @Select("SELECT * FROM herb_rating WHERE herb_id = #{herbId}")
     HerbRating selectByHerbId(int herbId);
+
 }

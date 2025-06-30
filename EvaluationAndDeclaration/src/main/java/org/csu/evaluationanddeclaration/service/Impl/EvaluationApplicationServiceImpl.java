@@ -2,7 +2,6 @@ package org.csu.evaluationanddeclaration.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.csu.evaluationanddeclaration.entity.EvaluationApplication;
-import org.csu.evaluationanddeclaration.entity.EvaluationDetail;
 import org.csu.evaluationanddeclaration.entity.HerbEvaluation;
 import org.csu.evaluationanddeclaration.mapper.EvaluationApplicationMapper;
 import org.csu.evaluationanddeclaration.mapper.HerbEvaluationMapper;
@@ -32,13 +31,9 @@ public class EvaluationApplicationServiceImpl implements EvaluationApplicationSe
     public HerbEvaluation GetEvaluation(int id) {
 
         int Id = evaluationApplicationMapper.selectById(id) != null ?evaluationApplicationMapper.selectById(id).getApplicationId().intValue():0;
-        return herbEvaluationMapper.getEvaluation(Id);
+        return herbEvaluationMapper.getEvaluationById(Id);
     }
 
-    @Override
-    public int GetApplicationType(int id) {
-        return evaluationApplicationMapper.selectById(id) != null ?evaluationApplicationMapper.selectById(id).getApplicationType().intValue():0;
-    }
 
     @Override
     public String GetApplicationState(int id) {
