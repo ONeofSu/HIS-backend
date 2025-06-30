@@ -20,6 +20,7 @@ spring:
                   - POST
                   - PUT
                   - DELETE
+                allowed-headers: "*"
 
           routes:
             - id: user-service-provider
