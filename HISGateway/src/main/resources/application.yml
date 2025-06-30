@@ -61,6 +61,7 @@ spring:
                 - Path=/herb-info-service/**
               filters:
                 - StripPrefix=1
+                - name: JwtAuth
 
             - id: Research
               uri: lb://research
