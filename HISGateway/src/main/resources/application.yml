@@ -70,13 +70,24 @@ spring:
               filters:
                 - StripPrefix=1
 
-            #课程管理
-            - id: herb-teaching-service
+            #课程管理(仅教师、管理员)
+            - id: herb-teaching-service-write
               uri: lb://herb-teaching-service
               predicates:
                 - Path=/herb-teaching-service/**
+                - Method=POST,PUT,DELETE
               filters:
                 - StripPrefix=1
+                - name: JwtTeacherAuth
+            #课程查看
+            - id: herb-teaching-service-read
+              uri: lb://herb-teaching-service
+              predicates:
+                - Path=/herb-teaching-service/**
+                - Method=GET
+              filters:
+                - StripPrefix=1
+                - name: JwtAuth
 
 
 
