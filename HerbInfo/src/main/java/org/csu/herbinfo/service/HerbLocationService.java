@@ -12,6 +12,7 @@ public interface HerbLocationService {
     public HerbLocation getHerbLocationById(int id);
     public List<HerbLocation> getHerbLocationsByHerbId(int herbId);
     public List<HerbLocation> getHerbLocationsByDistrictName(String district);
+    public int getHerbCountsByDistrictName(String district);
     public List<HerbLocation> getHerbLocationsByStreetName(String street);
     public boolean addHerbLocation(HerbLocation herbLocation);
     public int isHerbLocationInfoExists(HerbLocation herbLocation); //若存在位置相同的返回HerbLocation id 不存在返回-1

@@ -80,6 +80,19 @@ public class HerbLocationServiceImpl implements HerbLocationService {
     }
 
     @Override
+    public int getHerbCountsByDistrictName(String district) {
+        int count = 0;
+        int district_id = districtStreetService.getDistrictIdByName(district);
+        QueryWrapper<HerbLocation> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("district_id", district_id);
+        List<HerbLocation> list = herbLocationMapper.selectList(queryWrapper);
+        for(HerbLocation herbLocation : list){
+            count+=herbLocation.getCount();
+        }
+        return count;
+    }
+
+    @Override
     public List<HerbLocation> getHerbLocationsByStreetName(String street) {
         ArrayList<HerbLocation> list = new ArrayList<>();
         int street_id = districtStreetService.getStreetIdByName(street);
