@@ -3,6 +3,7 @@ package org.csu.evaluationanddeclaration.service;
 import org.csu.evaluationanddeclaration.entity.EvaluationDetail;
 import org.csu.evaluationanddeclaration.entity.HerbEvaluation;
 import org.csu.evaluationanddeclaration.entity.HerbRating;
+import org.csu.evaluationanddeclaration.entity.HerbRatingDetail;
 import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
@@ -39,4 +40,10 @@ public interface HerbEvaluationService{
     public boolean DeleteRating(int id);
     public boolean UpdateRating(HerbRating rating);
     public boolean IsRatingExit(int id);
+
+    //单个药材评分明细
+    public boolean AddRatingDetail(HerbRatingDetail herbRatingDetail);
+    public boolean DeleteRatingDetail(int id);
+    public boolean UpdateRatingDetail(HerbRatingDetail herbRatingDetail);
+    public boolean IsRatingDetailExit(int id);
 }
