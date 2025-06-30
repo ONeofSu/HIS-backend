@@ -69,6 +69,14 @@ spring:
               filters:
                 - StripPrefix=1
 
+            #课程管理
+            - id: herb-teaching-service
+              uri: lb://herb-teaching-service
+              predicates:
+                - Path=/herb-teaching-service/**
+              filters:
+                - StripPrefix=1
+
 
 
 eureka:

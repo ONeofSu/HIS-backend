@@ -1,0 +1,28 @@
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8080/eureka/
+
+server:
+  port: 8084
+
+spring:
+  application:
+    name: herb-teaching-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/his_herb_teaching
+    username: root
+    password: gq
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+# 自定义文件上传配置
+app:
+  upload:
+    path: ./uploads/
+    video-path: ./uploads/videos/
+    image-path: ./uploads/images/
+    document-path: ./uploads/documents/
