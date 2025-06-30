@@ -50,7 +50,7 @@ public class JwtTeacherAuthGatewayFilterFactory extends AbstractGatewayFilterFac
                 return exchange.getResponse().setComplete();
             }
 
-            if(userRoleLevel!=2){
+            if(userRoleLevel<2){
                 //System.out.println("userRoleLevel:"+userRoleLevel);
                 exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
                 return exchange.getResponse().setComplete();
