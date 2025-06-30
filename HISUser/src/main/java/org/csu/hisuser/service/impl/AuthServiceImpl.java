@@ -1,6 +1,7 @@
 package org.csu.hisuser.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.csu.hisuser.DTO.RegisterDTO;
 import org.csu.hisuser.entity.User;
 import org.csu.hisuser.mapper.UserMapper;
 import org.csu.hisuser.service.AuthService;
@@ -87,6 +88,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public int getUserCategoryIdFromToken(String token) {
+        if(!jwtUtil.validateToken(token)) {
+            return -1;
+        }
+        return jwtUtil.extractRoleLevel(token);
+    }
+
+    @Override
     public boolean isTokenValid(String token) {
         if(!jwtUtil.validateToken(token)) {
             return false;
@@ -97,5 +106,35 @@ public class AuthServiceImpl implements AuthService {
             return false;
         }
         return userService.isUsernameExist(username);
+    }
+
+    @Override
+    public boolean isAuthHeaderValid(String authHeader) {
+        if(authHeader == null) {
+            return false;
+        }
+        String token = authHeader.substring(7);
+        return isTokenValid(token);
+    }
+
+    @Override
+    public boolean isRootTokenValid(String token) {
+        if(getUserCategoryIdFromToken(token) != 3) {
+            return false;
+        }
+        return isTokenValid(token);
+    }
+
+    @Override
+    public User transferRegisterDTOToUser(RegisterDTO registerDTO) {
+        User user = new User();
+        user.setUsername(registerDTO.getUsername());
+        user.setPassword(registerDTO.getPassword());
+        user.setEmail(registerDTO.getEmail());
+        user.setPhone(registerDTO.getPhone());
+        if(registerDTO.getAvatarUrl()!=null){
+            user.setAvatarUrl(registerDTO.getAvatarUrl());
+        }
+        return user;
     }
 }

@@ -1,0 +1,122 @@
+package org.csu.hisuser.controller;
+
+import org.csu.hisuser.DTO.UpdateUserDTO;
+import org.csu.hisuser.VO.UserVO;
+import org.csu.hisuser.entity.User;
+import org.csu.hisuser.service.AuthService;
+import org.csu.hisuser.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/root")
+public class RootController {
+    @Autowired
+    UserService userService;
+    @Autowired
+    AuthService authService;
+
+    @GetMapping("/user/info/all")
+    public ResponseEntity<?> getAllUsers(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        if(!authService.isRootTokenValid(token)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
+        List<User> users = userService.getAllUsers();
+        List<UserVO> userVOS = userService.transferUsersToUserVOs(users);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "users",userVOS)
+        );
+    }
+
+    @GetMapping("/user/info/{userId}")
+    public ResponseEntity<?> getUserById(@RequestHeader("Authorization") String authHeader,
+                                         @PathVariable int userId) {
+        String token = authHeader.substring(7);
+        if(!authService.isRootTokenValid(token)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
+        if(!userService.isUserExist(userId)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-2,
+                            "message","the user does not exist")
+            );
+        }
+
+        User user = userService.getUserById(userId);
+        UserVO userVO = userService.transferUserToUserVO(user);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "user",userVO)
+        );
+    }
+
+    @PutMapping("/user/info")
+    public ResponseEntity<?> updateUser(@RequestHeader("Authorization") String authHeader,
+                                        @RequestBody UpdateUserDTO updateUserDTO) {
+        String token = authHeader.substring(7);
+        if(!authService.isRootTokenValid(token)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
+        if(!userService.isUserExist(updateUserDTO.getUserId())) {
+            return ResponseEntity.ok(
+                    Map.of("code",-2,
+                            "message","the user does not exist")
+            );
+        }
+
+        User user = userService.transferUpdateUserToUserVO(updateUserDTO);
+        if(!userService.updateUserInfo(user)){
+            return ResponseEntity.internalServerError().body("error to update user");
+        }
+        UserVO userVO = userService.transferUserToUserVO(user);
+        return ResponseEntity.ok(
+                Map.of("code",0
+                        ,"user",userVO)
+        );
+    }
+
+    @GetMapping("/user/category/{categoryName}")
+    public ResponseEntity<?> getUserByCategory(@RequestHeader("Authorization") String authHeader,
+                                               @PathVariable String categoryName) {
+        String token = authHeader.substring(7);
+        if(!authService.isRootTokenValid(token)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
+        if(!userService.isUserCategoryExistByName(categoryName)){
+            return ResponseEntity.ok(
+                    Map.of("code",-2,
+                            "message","invalid categoryName")
+            );
+        }
+
+        int categoryId = userService.getUserCategoryIdByCategoryName(categoryName);
+        List<User> user = userService.getAllUserOfCategory(categoryId);
+        List<UserVO> userVOS = userService.transferUsersToUserVOs(user);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "users",userVOS)
+        );
+    }
+}

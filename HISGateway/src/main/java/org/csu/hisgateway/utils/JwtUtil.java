@@ -49,7 +49,7 @@ public class JwtUtil {
                     .getBody()
                     .get("userCategory", Integer.class);  // 获取 int 类型的 roleLevel
         } catch (Exception e) {
-            return null;
+            return -1;
         }
     }
 

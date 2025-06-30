@@ -28,12 +28,39 @@ spring:
                 - Path=/user-service/hello
               filters:
                 - StripPrefix=1
+
+            #登录认证
+            - id: his-user-service-auth
+              uri: lb://his-user-service
+              predicates:
+                - Path=/auth/*
+
+            #管理员用户管理
+            - id: his-user-service-root
+              uri: lb://his-user-service
+              predicates:
+                - Path=/his-user-service/root/**
+              filters:
+                - StripPrefix=1
+                - name: JwtRootAuth
+
+            #用户服务
+            - id: his-user-service
+              uri: lb://his-user-service
+              predicates:
+                - Path=/his-user-service/**
+              filters:
+                - StripPrefix=1
+                - name: JwtAuth
+
+            #中药信息(地理位置 成长记录)
             - id: herb-info-service
               uri: lb://herb-info-service
               predicates:
                 - Path=/herb-info-service/**
               filters:
                 - StripPrefix=1
+
             - id: Research
               uri: lb://research
               predicates:

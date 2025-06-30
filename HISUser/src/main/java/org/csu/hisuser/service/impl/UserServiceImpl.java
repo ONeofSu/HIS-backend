@@ -1,6 +1,8 @@
 package org.csu.hisuser.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.csu.hisuser.DTO.UpdateUserDTO;
+import org.csu.hisuser.VO.UserVO;
 import org.csu.hisuser.entity.User;
 import org.csu.hisuser.entity.UserCategory;
 import org.csu.hisuser.entity.UserLinkCategory;
@@ -76,6 +78,8 @@ public class UserServiceImpl implements UserService {
         newUser.setPhone(user.getPhone());
         if(user.getAvatarUrl() != null) {
             newUser.setAvatarUrl(user.getAvatarUrl());
+        }else{
+            newUser.setAvatarUrl(null);
         }
 
         userMapper.updateById(user);
@@ -155,6 +159,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public int getUserCategoryIdByCategoryName(String categoryName) {
+        QueryWrapper<UserCategory> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("category_name", categoryName);
+        UserCategory userCategory = userCategoryMapper.selectOne(queryWrapper);
+        if(userCategory == null) {
+            return -1;
+        }
+        return userCategory.getId();
+    }
+
+    @Override
     public UserCategory getUserCategoryById(int id) {
         return userCategoryMapper.selectById(id);
     }
@@ -225,4 +240,49 @@ public class UserServiceImpl implements UserService {
         }
         return getUserCategoryById(userLinkCategory.getCategoryId());
     }
+
+    //---------------------------------------------------ELSE--------------------------------------------------
+    @Override
+    public UserVO transferUserToUserVO(User user) {
+        UserVO userVO = new UserVO();
+        userVO.setId(user.getId());
+        userVO.setUsername(user.getUsername());
+        userVO.setEmail(user.getEmail());
+        userVO.setPhone(user.getPhone());
+        if(user.getAvatarUrl() != null) {
+            userVO.setAvatarUrl(user.getAvatarUrl());
+        }
+
+        UserCategory category = getCategoryOnUser(user.getId());
+        if(category != null) {
+            userVO.setRole(category.getName());
+        }else{
+            userVO.setRole("null");
+        }
+
+        return userVO;
+    }
+
+    @Override
+    public List<UserVO> transferUsersToUserVOs(List<User> users) {
+        List<UserVO> userVOs = new ArrayList<>();
+        for(User user : users) {
+            UserVO userVO = transferUserToUserVO(user);
+            userVOs.add(userVO);
+        }
+        return userVOs;
+    }
+
+    @Override
+    public User transferUpdateUserToUserVO(UpdateUserDTO updateUserDTO) {
+        User user = getUserById(updateUserDTO.getUserId());
+        user.setEmail(updateUserDTO.getEmail());
+        user.setPhone(updateUserDTO.getPhone());
+        if(updateUserDTO.getAvatarUrl() != null) {
+            user.setAvatarUrl(updateUserDTO.getAvatarUrl());
+        }
+        return user;
+    }
+
+
 }

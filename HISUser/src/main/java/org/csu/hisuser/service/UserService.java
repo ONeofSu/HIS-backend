@@ -1,5 +1,7 @@
 package org.csu.hisuser.service;
 
+import org.csu.hisuser.DTO.UpdateUserDTO;
+import org.csu.hisuser.VO.UserVO;
 import org.csu.hisuser.entity.User;
 import org.csu.hisuser.entity.UserCategory;
 import org.csu.hisuser.entity.UserLinkCategory;
@@ -20,6 +22,7 @@ public interface UserService {
 
     public List<UserCategory> getAllUserCategory();
     public UserCategory getUserCategoryByCategoryName(String categoryName);
+    public int getUserCategoryIdByCategoryName(String categoryName);
     public UserCategory getUserCategoryById(int id);
     public boolean isUserCategoryExistByName(String categoryName);
     public boolean isUserCategoryExistById(int id);
@@ -29,4 +32,8 @@ public interface UserService {
     public boolean deleteLinkOnUser(int userId);
     public List<User> getAllUserOfCategory(int categoryId);
     public UserCategory getCategoryOnUser(int userId);
+
+    public UserVO transferUserToUserVO(User user);
+    public List<UserVO> transferUsersToUserVOs(List<User> users);
+    public User transferUpdateUserToUserVO(UpdateUserDTO updateUserDTO);
 }
