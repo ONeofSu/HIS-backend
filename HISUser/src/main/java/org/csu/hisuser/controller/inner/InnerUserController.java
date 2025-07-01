@@ -36,6 +36,11 @@ public class InnerUserController {
         return authService.getUserIdFromToken(token);
     }
 
+    @GetMapping("/user/info/token/userId/{userId}/username")
+    public String getUsernameById(@PathVariable int userId) {
+        return userService.getUserById(userId).getUsername();
+    }
+
     @GetMapping("/user/exist/userId/{userId}")
     public boolean isExistUserId(@PathVariable int userId) {
         return userService.isUserExist(userId);
