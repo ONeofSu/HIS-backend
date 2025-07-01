@@ -3,10 +3,8 @@ package org.csu.herb_teaching.VO;
 import lombok.Data;
 
 @Data
-public class HerbVO {
+public class HerbSimpleVO {
     private int herbId;
     private String herbName;
-    private String origin;
-    private String image;
-    private int relatedLabCount;
+    private String herbImageUrl;
 } 

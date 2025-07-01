@@ -6,17 +6,17 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
-@TableName("lab")
-public class Lab {
-    @TableId(value = "lab_id", type = IdType.AUTO)
-    private int labId;
+@TableName("user_course_collection")
+public class UserCourseCollection {
+    @TableId(value = "collection_id", type = IdType.AUTO)
+    private int collectionId;
     @TableField("course_id")
     private int courseId;
-    @TableField("lab_name")
-    private String labName;
-    @TableField("lab_steps")
-    private String labSteps;
-    @TableField("lab_order")
-    private int labOrder;
-}
+    @TableField("user_id")
+    private int userId;
+    @TableField("created_at")
+    private LocalDateTime createdAt;
+} 

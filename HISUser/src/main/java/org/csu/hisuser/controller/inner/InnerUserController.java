@@ -50,4 +50,22 @@ public class InnerUserController {
     public boolean isExistUserName(@PathVariable String userName) {
         return userService.isUsernameExist(userName);
     }
+    //根据用户id获取详细信息，提供HerbTeaching调用
+    @GetMapping("/user/info/id/{userId}")
+    public org.springframework.http.ResponseEntity<org.csu.hisuser.VO.UserVO> getUserInfoById(@PathVariable int userId) {
+        if (userId <= 0) {
+            return org.springframework.http.ResponseEntity.ok(null);
+        }
+        org.csu.hisuser.entity.User user = userService.getUserById(userId);
+        if (user == null) {
+            return org.springframework.http.ResponseEntity.ok(null);
+        }
+        return org.springframework.http.ResponseEntity.ok(userService.transferUserToUserVO(user));
+    }
+    //判断是否为教师，提供HerbTeaching调用
+    @GetMapping("/user/is-real-teacher/{userId}")
+    public boolean isUserRealTeacher(@PathVariable int userId) {
+        // categoryId=2为教师
+        return userService.isUserLinkCategoryExist(userId, 2);
+    }
 }
