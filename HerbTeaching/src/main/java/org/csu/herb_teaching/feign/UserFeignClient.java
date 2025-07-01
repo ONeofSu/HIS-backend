@@ -15,4 +15,10 @@ public interface UserFeignClient {
 
     @GetMapping("/inner/user/info/id/{userId}")
     UserVO getUserInfoById(@PathVariable("userId") int userId);
+
+    @GetMapping("/inner/user/is-real-teacher/{userId}")
+    Boolean isUserRealTeacher(@PathVariable("userId") int userId);
+
+    @GetMapping("/inner/user/exist/userId/{userId}")
+    Boolean isUserExist(@PathVariable("userId") int userId);
 } 

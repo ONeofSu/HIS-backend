@@ -17,6 +17,10 @@ public interface CourseService extends IService<Course> {
     // --- Course Management ---
     PageVO<Course> getCourseList(int pageNum, int pageSize, String keyword, int courseType, int courseObject);
     CourseDetailVO getCourseDetail(int courseId);
+    /**
+     * @param courseDTO 课程信息
+     * @return Course对象，若失败可抛出异常或返回null（建议配合Controller优化返回信息）
+     */
     Course createCourse(CourseDTO courseDTO);
     Course updateCourse(CourseDTO courseDTO);
     boolean deleteCourse(int courseId);
@@ -34,5 +38,8 @@ public interface CourseService extends IService<Course> {
     boolean removeHerbFromCourse(int courseId, int herbId);
     boolean updateCourseHerbs(int courseId, List<Integer> herbIds);
     List<Integer> getCourseHerbIds(int courseId);
+
+    // 判断某课程和某中草药是否已关联
+    boolean isHerbLinkedToCourse(int courseId, int herbId);
 
 }

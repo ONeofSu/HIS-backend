@@ -38,9 +38,13 @@ public class ResourceServiceImpl extends ServiceImpl<CourseResourceMapper, Cours
         if (courseMapper.selectById(courseId) == null) {
             return null;
         }
+        // 自动分配courseResourceOrder
+        Integer maxOrder = courseResourceMapper.selectMaxCourseResourceOrderByCourseId(courseId);
+        int nextOrder = (maxOrder == null ? 1 : maxOrder + 1);
         CourseResource resource = new CourseResource();
         BeanUtils.copyProperties(resourceDTO, resource);
         resource.setCourseId(courseId);
+        resource.setCourseResourceOrder(nextOrder);
         resource.setCourseResourceTime(LocalDateTime.now());
         resource.setCourseResourceIsvalid(true);
         courseResourceMapper.insert(resource);
@@ -54,11 +58,22 @@ public class ResourceServiceImpl extends ServiceImpl<CourseResourceMapper, Cours
             return null;
         }
 
-        existingResource.setCourseResourceType(resourceDTO.getCourseResourceType());
-        existingResource.setCourseResourceOrder(resourceDTO.getCourseResourceOrder());
-        existingResource.setCourseResourceTitle(resourceDTO.getCourseResourceTitle());
-        existingResource.setCourseResourceContent(resourceDTO.getCourseResourceContent());
-        existingResource.setCourseResourceMetadata(resourceDTO.getCourseResourceMetadata());
+        // 只更新前端传了的字段
+        if (resourceDTO.getCourseResourceType() != null) {
+            existingResource.setCourseResourceType(resourceDTO.getCourseResourceType());
+        }
+        if (resourceDTO.getCourseResourceOrder() != null) {
+            existingResource.setCourseResourceOrder(resourceDTO.getCourseResourceOrder());
+        }
+        if (resourceDTO.getCourseResourceTitle() != null) {
+            existingResource.setCourseResourceTitle(resourceDTO.getCourseResourceTitle());
+        }
+        if (resourceDTO.getCourseResourceContent() != null) {
+            existingResource.setCourseResourceContent(resourceDTO.getCourseResourceContent());
+        }
+        if (resourceDTO.getCourseResourceMetadata() != null) {
+            existingResource.setCourseResourceMetadata(resourceDTO.getCourseResourceMetadata());
+        }
 
         courseResourceMapper.updateById(existingResource);
         return existingResource;

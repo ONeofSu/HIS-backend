@@ -6,10 +6,10 @@ import lombok.Data;
 @Data
 public class CourseResourceDTO {
     @JsonProperty("resourceType")
-    private int courseResourceType;
+    private Integer courseResourceType;
 
     @JsonProperty("resourceOrder")
-    private int courseResourceOrder;
+    private Integer courseResourceOrder;
     
     @JsonProperty("resourceTitle")
     private String courseResourceTitle;

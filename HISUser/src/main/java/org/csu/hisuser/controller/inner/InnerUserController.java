@@ -57,4 +57,10 @@ public class InnerUserController {
         }
         return org.springframework.http.ResponseEntity.ok(userService.transferUserToUserVO(user));
     }
+    //判断是否为教师，提供HerbTeaching调用
+    @GetMapping("/user/is-real-teacher/{userId}")
+    public boolean isUserRealTeacher(@PathVariable int userId) {
+        // categoryId=2为教师
+        return userService.isUserLinkCategoryExist(userId, 2);
+    }
 }

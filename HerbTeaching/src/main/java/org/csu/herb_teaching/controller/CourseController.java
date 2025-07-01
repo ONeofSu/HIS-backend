@@ -16,19 +16,25 @@ import org.csu.herb_teaching.service.CourseService;
 import org.csu.herb_teaching.service.LabService;
 import org.csu.herb_teaching.service.ResourceService;
 import org.csu.herb_teaching.utils.ResponseUtil;
+import org.csu.herb_teaching.feign.UserFeignClient;
+import org.csu.herb_teaching.feign.HerbInfoFeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/courses")
-@RequiredArgsConstructor
 public class CourseController {
 
     private final CourseService courseService;
     private final LabService labService;
     private final ResourceService resourceService;
+    private final UserFeignClient userFeignClient;
+    private final HerbInfoFeignClient herbInfoFeignClient;
 
     // GET /courses/{courseId} - Get course details
     @GetMapping("/{courseId}")
@@ -54,12 +60,43 @@ public class CourseController {
 
     // POST /courses - Create a new course (Teacher+)
     @PostMapping
-    public ResponseUtil<Course> createCourse(@RequestBody CourseDTO courseDTO) {
+    public ResponseEntity<?> createCourse(@RequestBody CourseDTO courseDTO) {
+        // 课程名校验
+        if (courseService.getCourseList(1, 1, courseDTO.getCourseName(), 0, 0).getList().size() > 0) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "课程名已存在");
+            return ResponseEntity.ok(result);
+        }
+        // 教师校验
+        Boolean isTeacher;
+        try {
+            isTeacher = userFeignClient.isUserRealTeacher(courseDTO.getTeacherId());
+        } catch (Exception e) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "teacherId不是有效教师");
+            return ResponseEntity.ok(result);
+        }
+        if (isTeacher == null || !isTeacher) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "teacherId不是有效教师");
+            return ResponseEntity.ok(result);
+        }
         Course newCourse = courseService.createCourse(courseDTO);
         if (newCourse != null) {
-            return new ResponseUtil<>(0, "Course created successfully.", newCourse);
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", 0);
+            result.put("course", newCourse);
+            result.put("teacherId", newCourse.getTeacherId());
+            result.put("courseName", newCourse.getCourseName());
+            return ResponseEntity.ok(result);
         }
-        return new ResponseUtil<>(-1, "课程名已存在", null);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("code", -1);
+        result.put("message", "未知错误");
+        return ResponseEntity.ok(result);
     }
 
     // PUT /courses/{courseId} - Update a course (Teacher+)
@@ -85,40 +122,138 @@ public class CourseController {
 
     // POST /courses/{courseId}/ratings - Rate a course
     @PostMapping("/{courseId}/ratings")
-    public ResponseUtil<CourseRating> rateCourse(
+    public ResponseEntity<?> rateCourse(
             @PathVariable int courseId,
             @RequestBody Map<String, Integer> payload,
             @RequestHeader("userId") int userId) {
-        try {
-            int rating = payload.get("ratingValue");
-            CourseRating courseRating = courseService.rateCourse(courseId, userId, rating);
-            if (courseRating == null) {
-                return new ResponseUtil<>(-1, "Course not found.", null);
-            }
-            return new ResponseUtil<>(0, "Rating submitted successfully.", courseRating);
-        } catch (Exception e) {
-            return new ResponseUtil<>(-1, e.getMessage(), null);
+        // 校验课程是否存在
+        if (courseService.getCourseDetail(courseId) == null) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "课程不存在");
+            return ResponseEntity.ok(result);
         }
+        // 校验用户是否存在
+        Boolean userExist;
+        try {
+            userExist = userFeignClient.isUserExist(userId);
+        } catch (Exception e) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        if (userExist == null || !userExist) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        // 校验评分范围
+        int rating = payload.get("ratingValue");
+        if (rating < 0 || rating > 5) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "评分必须在0到5之间");
+            return ResponseEntity.ok(result);
+        }
+        CourseRating courseRating = courseService.rateCourse(courseId, userId, rating);
+        if (courseRating == null) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "未知错误");
+            return ResponseEntity.ok(result);
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("code", 0);
+        result.put("courseRating", courseRating);
+        result.put("courseId", courseId);
+        result.put("userId", userId);
+        result.put("rating", rating);
+        return ResponseEntity.ok(result);
     }
 
     // POST /courses/{courseId}/collections - Collect a course
     @PostMapping("/{courseId}/collections")
-    public ResponseUtil<UserCourseCollection> collectCourse(@PathVariable int courseId, @RequestHeader("userId") int userId) {
-        UserCourseCollection collection = courseService.collectCourse(courseId, userId);
-        if (collection != null) {
-            return new ResponseUtil<>(0, "Course collected successfully.", collection);
+    public ResponseEntity<?> collectCourse(@PathVariable int courseId, @RequestHeader("userId") int userId) {
+        // 校验课程是否存在
+        if (courseService.getCourseDetail(courseId) == null) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "课程不存在");
+            return ResponseEntity.ok(result);
         }
-        return new ResponseUtil<>(-1, "Course already in collection or does not exist.", null);
+        // 校验用户是否存在
+        Boolean userExist;
+        try {
+            userExist = userFeignClient.isUserExist(userId);
+        } catch (Exception e) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        if (userExist == null || !userExist) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        // 只调用一次collectCourse
+        UserCourseCollection collection = courseService.collectCourse(courseId, userId);
+        if (collection == null) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "已收藏，无需重复收藏");
+            return ResponseEntity.ok(result);
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("code", 0);
+        result.put("collection", collection);
+        result.put("courseId", courseId);
+        result.put("userId", userId);
+        return ResponseEntity.ok(result);
     }
 
     // DELETE /courses/{courseId}/collections - Uncollect a course
     @DeleteMapping("/{courseId}/collections")
-    public ResponseUtil<Object> removeCollection(@PathVariable int courseId, @RequestHeader("userId") int userId) {
-        boolean success = courseService.removeCollection(courseId, userId);
-        if (success) {
-            return new ResponseUtil<>(0, "Course uncollected successfully.", null);
+    public ResponseEntity<?> removeCollection(@PathVariable int courseId, @RequestHeader("userId") int userId) {
+        // 校验课程是否存在
+        if (courseService.getCourseDetail(courseId) == null) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "课程不存在");
+            return ResponseEntity.ok(result);
         }
-        return new ResponseUtil<>(-1, "Course not in collection or does not exist.", null);
+        // 校验用户是否存在
+        Boolean userExist;
+        try {
+            userExist = userFeignClient.isUserExist(userId);
+        } catch (Exception e) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        if (userExist == null || !userExist) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        // 校验是否已收藏
+        boolean success = courseService.removeCollection(courseId, userId);
+        if (!success) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "未收藏，无需取消");
+            return ResponseEntity.ok(result);
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("code", 0);
+        result.put("courseId", courseId);
+        result.put("userId", userId);
+        return ResponseEntity.ok(result);
     }
 
     // POST /courses/{courseId}/labs - Create a new lab for a course (Teacher+)
@@ -165,33 +300,115 @@ public class CourseController {
 
     // POST /courses/{courseId}/herbs/{herbId} - Add a herb to a course (Teacher+)
     @PostMapping("/{courseId}/herbs/{herbId}")
-    public ResponseUtil<Object> addHerbToCourse(@PathVariable int courseId, @PathVariable int herbId) {
+    public ResponseEntity<?> addHerbToCourse(@PathVariable int courseId, @PathVariable int herbId) {
+        // 校验课程是否存在
+        if (courseService.getCourseDetail(courseId) == null) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "课程不存在");
+            return ResponseEntity.ok(result);
+        }
+        // 校验中草药是否存在
+        Map<String, Object> herbInfo = herbInfoFeignClient.getHerbInfoById(herbId);
+        if (herbInfo == null || herbInfo.get("herbId") == null) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "中草药不存在");
+            return ResponseEntity.ok(result);
+        }
+        // 校验是否已存在关联
+        if (courseService.isHerbLinkedToCourse(courseId, herbId)) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "该中草药已在课程中，无需重复添加");
+            return ResponseEntity.ok(result);
+        }
         boolean success = courseService.addHerbToCourse(courseId, herbId);
         if (success) {
-            return new ResponseUtil<>(0, "Herb added to course successfully.", null);
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", 0);
+            result.put("courseId", courseId);
+            result.put("herbId", herbId);
+            return ResponseEntity.ok(result);
         }
-        return new ResponseUtil<>(-1, "Failed to add herb to course. Course not found, herb not found, or herb already exists in course.", null);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("code", -1);
+        result.put("message", "未知错误");
+        return ResponseEntity.ok(result);
     }
 
     // DELETE /courses/{courseId}/herbs/{herbId} - Remove a herb from a course (Teacher+)
     @DeleteMapping("/{courseId}/herbs/{herbId}")
-    public ResponseUtil<Object> removeHerbFromCourse(@PathVariable int courseId, @PathVariable int herbId) {
+    public ResponseEntity<?> removeHerbFromCourse(@PathVariable int courseId, @PathVariable int herbId) {
+        // 校验课程是否存在
+        if (courseService.getCourseDetail(courseId) == null) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "课程不存在");
+            return ResponseEntity.ok(result);
+        }
+        // 校验中草药是否存在
+        Map<String, Object> herbInfo = herbInfoFeignClient.getHerbInfoById(herbId);
+        if (herbInfo == null || herbInfo.get("herbId") == null) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "中草药不存在");
+            return ResponseEntity.ok(result);
+        }
+        // 校验是否已存在关联
+        if (!courseService.isHerbLinkedToCourse(courseId, herbId)) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "该中草药未关联到课程，无需删除");
+            return ResponseEntity.ok(result);
+        }
         boolean success = courseService.removeHerbFromCourse(courseId, herbId);
         if (success) {
-            return new ResponseUtil<>(0, "Herb removed from course successfully.", null);
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", 0);
+            result.put("courseId", courseId);
+            result.put("herbId", herbId);
+            return ResponseEntity.ok(result);
         }
-        return new ResponseUtil<>(-1, "Failed to remove herb from course. Course not found or herb not in course.", null);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("code", -1);
+        result.put("message", "未知错误");
+        return ResponseEntity.ok(result);
     }
 
     // PUT /courses/{courseId}/herbs - Update all herbs for a course (Teacher+)
     @PutMapping("/{courseId}/herbs")
-    public ResponseUtil<Object> updateCourseHerbs(@PathVariable int courseId, @RequestBody CourseHerbDTO courseHerbDTO) {
+    public ResponseEntity<?> updateCourseHerbs(@PathVariable int courseId, @RequestBody CourseHerbDTO courseHerbDTO) {
         courseHerbDTO.setCourseId(courseId); // 确保courseId一致
+        // 校验课程是否存在
+        if (courseService.getCourseDetail(courseId) == null) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "课程不存在");
+            return ResponseEntity.ok(result);
+        }
+        // 校验所有中草药是否存在
+        for (Integer herbId : courseHerbDTO.getHerbIds()) {
+            Map<String, Object> herbInfo = herbInfoFeignClient.getHerbInfoById(herbId);
+            if (herbInfo == null || herbInfo.get("herbId") == null) {
+                Map<String, Object> result = new LinkedHashMap<>();
+                result.put("code", -1);
+                result.put("message", "中草药不存在，herbId=" + herbId);
+                return ResponseEntity.ok(result);
+            }
+        }
         boolean success = courseService.updateCourseHerbs(courseId, courseHerbDTO.getHerbIds());
         if (success) {
-            return new ResponseUtil<>(0, "Course herbs updated successfully.", null);
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", 0);
+            result.put("courseId", courseId);
+            result.put("herbIds", courseHerbDTO.getHerbIds());
+            return ResponseEntity.ok(result);
         }
-        return new ResponseUtil<>(-1, "Failed to update course herbs. Course not found or some herbs not found.", null);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("code", -1);
+        result.put("message", "未知错误");
+        return ResponseEntity.ok(result);
     }
 
     // GET /courses/{courseId}/herbs - Get all herb IDs for a course
@@ -202,5 +419,33 @@ public class CourseController {
             return new ResponseUtil<>(-1, "Course not found.", null);
         }
         return new ResponseUtil<>(0, "Course herb IDs retrieved successfully.", herbIds);
+    }
+
+    @GetMapping("/collections")
+    public ResponseEntity<?> getCollectedCoursesByUserId(@RequestHeader("userId") int userId,
+                                                        @RequestParam(defaultValue = "1") int pageNum,
+                                                        @RequestParam(defaultValue = "10") int pageSize) {
+        // 校验用户是否存在
+        Boolean userExist;
+        try {
+            userExist = userFeignClient.isUserExist(userId);
+        } catch (Exception e) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        if (userExist == null || !userExist) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        PageVO<Course> pageVO = courseService.getCollectedCoursesByUserId(userId, pageNum, pageSize);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("code", 0);
+        result.put("data", pageVO);
+        result.put("userId", userId);
+        return ResponseEntity.ok(result);
     }
 } 

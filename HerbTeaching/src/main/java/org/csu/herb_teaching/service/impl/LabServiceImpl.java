@@ -36,9 +36,13 @@ public class LabServiceImpl extends ServiceImpl<LabMapper, Lab> implements LabSe
         if (courseMapper.selectById(courseId) == null) {
             return null;
         }
+        // 自动分配labOrder
+        Integer maxOrder = labMapper.selectMaxLabOrderByCourseId(courseId);
+        int nextOrder = (maxOrder == null ? 1 : maxOrder + 1);
         Lab lab = new Lab();
         BeanUtils.copyProperties(labDTO, lab);
         lab.setCourseId(courseId);
+        lab.setLabOrder(nextOrder);
         labMapper.insert(lab);
         return lab;
     }
@@ -51,12 +55,17 @@ public class LabServiceImpl extends ServiceImpl<LabMapper, Lab> implements LabSe
             return null; // or throw a specific exception
         }
 
-        // 2. 手动将DTO中的非空属性复制到已存在的实体上
-        existingLab.setLabName(labDTO.getLabName());
-        existingLab.setLabSteps(labDTO.getLabSteps());
-        existingLab.setLabOrder(labDTO.getLabOrder());
+        // 只更新非null字段
+        if (labDTO.getLabName() != null) {
+            existingLab.setLabName(labDTO.getLabName());
+        }
+        if (labDTO.getLabSteps() != null) {
+            existingLab.setLabSteps(labDTO.getLabSteps());
+        }
+        if (labDTO.getLabOrder() != 0) { // 假如0不是合法顺序号
+            existingLab.setLabOrder(labDTO.getLabOrder());
+        }
 
-        // 3. 执行更新操作并返回更新后的对象
         labMapper.updateById(existingLab);
         return existingLab;
     }

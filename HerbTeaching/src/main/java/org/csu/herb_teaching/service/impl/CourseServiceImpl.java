@@ -106,6 +106,12 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
             return null; // Name exists
         }
 
+        // 新增：校验teacherId是否为教师（只能是教师，不能是管理员）
+        Boolean isTeacher = userFeignClient.isUserRealTeacher(courseDTO.getTeacherId());
+        if (isTeacher == null || !isTeacher) {
+            return null; // teacher_id无效
+        }
+
         Course course = new Course();
         BeanUtils.copyProperties(courseDTO, course);
         course.setCourseAverageRating(BigDecimal.ZERO);
@@ -206,6 +212,10 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
     public UserCourseCollection collectCourse(int courseId, int userId) {
         // 校验课程是否存在
         if (courseMapper.selectById(courseId) == null) {
+            return null;
+        }
+        // 校验用户是否存在
+        if (userFeignClient.isUserExist(userId) == null || !userFeignClient.isUserExist(userId)) {
             return null;
         }
         QueryWrapper<UserCourseCollection> queryWrapper = new QueryWrapper<>();
@@ -360,5 +370,12 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         return links.stream()
                 .map(CourseHerbLink::getHerbId)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean isHerbLinkedToCourse(int courseId, int herbId) {
+        QueryWrapper<CourseHerbLink> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("course_id", courseId).eq("herb_id", herbId);
+        return courseHerbLinkMapper.selectCount(queryWrapper) > 0;
     }
 }
