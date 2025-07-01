@@ -43,6 +43,26 @@ public class HerbInfoController {
         );
     }
 
+    @GetMapping("herbs/info/id/{herbId}")
+    public ResponseEntity<?> getHerbInfoById(@PathVariable int herbId) {
+        if(!herbService.isHerbIdExist(herbId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","herb does not exist")
+            );
+        }
+        Herb herb = herbService.getHerbById(herbId);
+        if(herb == null){
+            return ResponseEntity.status(500).body("error to get");
+        }
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "herbId", herbId,
+                        "herbName", herb.getName() != null ? herb.getName() : "",
+                        "herbImageUrl", herb.getImage() != null ? herb.getImage() : "")
+        );
+    }
+
     @GetMapping("/herbs")
     public ResponseEntity<?> getAllHerbs() {
         ResponseEntity<List<Herb>> result = null;

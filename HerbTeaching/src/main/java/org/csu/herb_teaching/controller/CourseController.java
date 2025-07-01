@@ -1,176 +1,206 @@
 package org.csu.herb_teaching.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.csu.herb_teaching.DTO.CourseDTO;
+import org.csu.herb_teaching.DTO.CourseResourceDTO;
+import org.csu.herb_teaching.DTO.LabDTO;
+import org.csu.herb_teaching.DTO.CourseHerbDTO;
+import org.csu.herb_teaching.VO.CourseDetailVO;
+import org.csu.herb_teaching.VO.PageVO;
 import org.csu.herb_teaching.entity.Course;
+import org.csu.herb_teaching.entity.CourseRating;
+import org.csu.herb_teaching.entity.CourseResource;
 import org.csu.herb_teaching.entity.Lab;
-import org.csu.herb_teaching.entity.LabResource;
+import org.csu.herb_teaching.entity.UserCourseCollection;
 import org.csu.herb_teaching.service.CourseService;
-import org.csu.herb_teaching.utils.DataConvertUtil;
+import org.csu.herb_teaching.service.LabService;
+import org.csu.herb_teaching.service.ResourceService;
 import org.csu.herb_teaching.utils.ResponseUtil;
-import org.csu.herb_teaching.VO.CourseVO;
-import org.csu.herb_teaching.VO.LabVO;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/courses")
+@RequiredArgsConstructor
 public class CourseController {
 
-    @Autowired
-    private CourseService courseService;
+    private final CourseService courseService;
+    private final LabService labService;
+    private final ResourceService resourceService;
 
-    // 1.1获取所有课程信息
-    @GetMapping("")
-    public ResponseEntity<Map<String, Object>> getAllCourses() {
-        try {
-            List<Course> courses = courseService.getAllCourses();
-            
-            List<CourseVO> courseVOs = courses.stream()
-                .map(course -> {
-                    // 获取每个课程的实验数量
-                    List<Lab> labs = courseService.getLabsByCourseId(course.getId());
-                    return DataConvertUtil.courseToVO(course, labs.size());
-                })
-                .collect(Collectors.toList());
-            
-            Map<String, Object> data = new HashMap<>();
-            data.put("courses", courseVOs);
-            
-            return ResponseUtil.success(data);
-        } catch (Exception e) {
-            return ResponseUtil.error("获取课程列表失败");
+    // GET /courses/{courseId} - Get course details
+    @GetMapping("/{courseId}")
+    public ResponseUtil<CourseDetailVO> getCourseDetail(@PathVariable int courseId) {
+        CourseDetailVO courseDetails = courseService.getCourseDetail(courseId);
+        if (courseDetails == null) {
+            return new ResponseUtil<>(-1, "Course not found.", null);
         }
+        return new ResponseUtil<>(0, "Course details retrieved successfully.", courseDetails);
     }
 
-    // 1.2根据课程名获取课程（使用查询参数）
-    @GetMapping("/coursename")
-    public ResponseEntity<Map<String, Object>> getCourseByName(@RequestParam String name) {
-        try {
-            // 处理URL编码问题
-            String decodedName = java.net.URLDecoder.decode(name, "UTF-8");
-            
-            Course course = courseService.getCourseByName(decodedName);
-            if (course == null) {
-                return ResponseUtil.error("课程不存在: " + decodedName);
-            }
-            
-            // 获取实验数量
-            List<Lab> labs = courseService.getLabsByCourseId(course.getId());
-            CourseVO courseVO = DataConvertUtil.courseToVO(course, labs.size());
-            
-            // 获取最近的实验（取前3个）
-            List<LabVO> recentLabs = labs.stream()
-                .limit(3)
-                .map(lab -> {
-                    List<LabResource> resources = courseService.getLabResourcesByLabId(lab.getId());
-                    return DataConvertUtil.labToVO(lab, course, resources.size(), null);
-                })
-                .collect(Collectors.toList());
-            courseVO.setRecentLabs(recentLabs);
-            
-            Map<String, Object> data = new HashMap<>();
-            data.put("course", courseVO);
-            
-            return ResponseUtil.success(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseUtil.error("查询课程失败: " + e.getMessage());
-        }
+    // GET /courses - Get all courses with optional filters and pagination
+    @GetMapping
+    public ResponseUtil<PageVO<Course>> getCourseList(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false, defaultValue = "0") int courseType,
+            @RequestParam(required = false, defaultValue = "0") int courseObject,
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        PageVO<Course> courses = courseService.getCourseList(pageNum, pageSize, keyword, courseType, courseObject);
+        return new ResponseUtil<>(0, "Courses retrieved successfully.", courses);
     }
 
-    // 1.3根据课程名获取课程（备用方法，支持路径参数）
-    @GetMapping("/search/{courseName}")
-    public ResponseEntity<Map<String, Object>> getCourseByNamePath(@PathVariable String courseName) {
-        try {
-            // 处理URL编码问题
-            String decodedName = java.net.URLDecoder.decode(courseName, "UTF-8");
-            
-            Course course = courseService.getCourseByName(decodedName);
-            if (course == null) {
-                return ResponseUtil.error("课程不存在: " + decodedName);
-            }
-            
-            // 获取实验数量
-            List<Lab> labs = courseService.getLabsByCourseId(course.getId());
-            CourseVO courseVO = DataConvertUtil.courseToVO(course, labs.size());
-            
-            // 获取最近的实验（取前3个）
-            List<LabVO> recentLabs = labs.stream()
-                .limit(3)
-                .map(lab -> {
-                    List<LabResource> resources = courseService.getLabResourcesByLabId(lab.getId());
-                    return DataConvertUtil.labToVO(lab, course, resources.size(), null);
-                })
-                .collect(Collectors.toList());
-            courseVO.setRecentLabs(recentLabs);
-            
-            Map<String, Object> data = new HashMap<>();
-            data.put("course", courseVO);
-            
-            return ResponseUtil.success(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseUtil.error("查询课程失败: " + e.getMessage());
+    // POST /courses - Create a new course (Teacher+)
+    @PostMapping
+    public ResponseUtil<Course> createCourse(@RequestBody CourseDTO courseDTO) {
+        Course newCourse = courseService.createCourse(courseDTO);
+        if (newCourse != null) {
+            return new ResponseUtil<>(0, "Course created successfully.", newCourse);
         }
+        return new ResponseUtil<>(-1, "课程名已存在", null);
     }
 
-    // 2.1新增课程信息
-    @PostMapping("")
-    public ResponseEntity<Map<String, Object>> addCourse(@RequestBody CourseDTO courseDTO) {
-        try {
-            // 检查课程名是否已存在
-            if (courseService.isCourseNameExist(courseDTO.getCourseName())) {
-                return ResponseUtil.error("课程名已存在");
-            }
-
-            // 转换DTO为实体
-            Course course = courseService.transferDTOToCourse(courseDTO);
-            
-            // 保存课程
-            if (courseService.addCourse(course)) {
-                CourseVO courseVO = DataConvertUtil.courseToVO(course, 0);
-                
-                Map<String, Object> data = new HashMap<>();
-                data.put("course", courseVO);
-                
-                return ResponseUtil.success(data);
-            } else {
-                return ResponseUtil.error("添加课程失败");
-            }
-        } catch (Exception e) {
-            return ResponseUtil.error("添加课程失败");
+    // PUT /courses/{courseId} - Update a course (Teacher+)
+    @PutMapping("/{courseId}")
+    public ResponseUtil<Course> updateCourse(@PathVariable int courseId, @RequestBody CourseDTO courseDTO) {
+        courseDTO.setCourseId(courseId); // Manually set the ID from path variable
+        Course updatedCourse = courseService.updateCourse(courseDTO);
+        if (updatedCourse != null) {
+            return new ResponseUtil<>(0, "Course updated successfully.", updatedCourse);
         }
+        return new ResponseUtil<>(-1, "Course not found.", null);
     }
 
-    // 2.2删除课程信息
+    // DELETE /courses/{courseId} - Delete a course (Teacher+)
     @DeleteMapping("/{courseId}")
-    public ResponseEntity<Map<String, Object>> deleteCourse(@PathVariable int courseId) {
-        try {
-            if (!courseService.isCourseIdExist(courseId)) {
-                return ResponseUtil.error("该课程不存在");
-            }
-
-            Course course = courseService.getCourseById(courseId);
-            if (courseService.deleteCourseById(courseId)) {
-                Map<String, Object> deletedCourse = new HashMap<>();
-                deletedCourse.put("courseId", courseId);
-                deletedCourse.put("courseName", course.getName());
-                
-                Map<String, Object> data = new HashMap<>();
-                data.put("deletedCourse", deletedCourse);
-                
-                return ResponseUtil.success(data);
-            } else {
-                return ResponseUtil.error("删除课程失败");
-            }
-        } catch (Exception e) {
-            return ResponseUtil.error("删除课程失败");
+    public ResponseUtil<Object> deleteCourse(@PathVariable int courseId) {
+        boolean success = courseService.deleteCourse(courseId);
+        if (success) {
+            return new ResponseUtil<>(0, "Course deleted successfully.", null);
         }
+        return new ResponseUtil<>(-1, "Course not found.", null);
+    }
+
+    // POST /courses/{courseId}/ratings - Rate a course
+    @PostMapping("/{courseId}/ratings")
+    public ResponseUtil<CourseRating> rateCourse(
+            @PathVariable int courseId,
+            @RequestBody Map<String, Integer> payload,
+            @RequestHeader("userId") int userId) {
+        try {
+            int rating = payload.get("ratingValue");
+            CourseRating courseRating = courseService.rateCourse(courseId, userId, rating);
+            if (courseRating == null) {
+                return new ResponseUtil<>(-1, "Course not found.", null);
+            }
+            return new ResponseUtil<>(0, "Rating submitted successfully.", courseRating);
+        } catch (Exception e) {
+            return new ResponseUtil<>(-1, e.getMessage(), null);
+        }
+    }
+
+    // POST /courses/{courseId}/collections - Collect a course
+    @PostMapping("/{courseId}/collections")
+    public ResponseUtil<UserCourseCollection> collectCourse(@PathVariable int courseId, @RequestHeader("userId") int userId) {
+        UserCourseCollection collection = courseService.collectCourse(courseId, userId);
+        if (collection != null) {
+            return new ResponseUtil<>(0, "Course collected successfully.", collection);
+        }
+        return new ResponseUtil<>(-1, "Course already in collection or does not exist.", null);
+    }
+
+    // DELETE /courses/{courseId}/collections - Uncollect a course
+    @DeleteMapping("/{courseId}/collections")
+    public ResponseUtil<Object> removeCollection(@PathVariable int courseId, @RequestHeader("userId") int userId) {
+        boolean success = courseService.removeCollection(courseId, userId);
+        if (success) {
+            return new ResponseUtil<>(0, "Course uncollected successfully.", null);
+        }
+        return new ResponseUtil<>(-1, "Course not in collection or does not exist.", null);
+    }
+
+    // POST /courses/{courseId}/labs - Create a new lab for a course (Teacher+)
+    @PostMapping("/{courseId}/labs")
+    public ResponseUtil<Lab> createLab(@PathVariable int courseId, @RequestBody LabDTO labDTO) {
+        Lab newLab = labService.createLab(courseId, labDTO);
+        if (newLab != null) {
+            return new ResponseUtil<>(0, "Lab created successfully.", newLab);
+        }
+        return new ResponseUtil<>(-1, "Failed to create lab.", null);
+    }
+
+    // GET /courses/{courseId}/labs - Get all labs for a course
+    @GetMapping("/{courseId}/labs")
+    public ResponseUtil<List<Lab>> getLabsByCourse(@PathVariable int courseId) {
+        if (courseService.getCourseDetail(courseId) == null) {
+            return new ResponseUtil<>(-1, "Course not found.", null);
+        }
+        List<Lab> labs = labService.getLabsByCourseId(courseId);
+        return new ResponseUtil<>(0, "Success", labs);
+    }
+
+    // POST /courses/{courseId}/resources - Add a resource to a course (Teacher+)
+    @PostMapping("/{courseId}/resources")
+    public ResponseUtil<CourseResource> createResource(@PathVariable int courseId, @RequestBody CourseResourceDTO resourceDTO) {
+        CourseResource newResource = resourceService.createResource(courseId, resourceDTO);
+        if (newResource != null) {
+            return new ResponseUtil<>(0, "Resource created successfully.", newResource);
+        }
+        return new ResponseUtil<>(-1, "Failed to add resource.", null);
+    }
+
+    // GET /courses/{courseId}/resources - Get all resources for a course
+    @GetMapping("/{courseId}/resources")
+    public ResponseUtil<List<CourseResource>> getResourcesByCourse(@PathVariable int courseId) {
+        if (courseService.getCourseDetail(courseId) == null) {
+            return new ResponseUtil<>(-1, "Course not found.", null);
+        }
+        List<CourseResource> resources = resourceService.getResourcesByCourseId(courseId);
+        return new ResponseUtil<>(0, "Success", resources);
+    }
+
+    // --- Course Herb Management APIs ---
+
+    // POST /courses/{courseId}/herbs/{herbId} - Add a herb to a course (Teacher+)
+    @PostMapping("/{courseId}/herbs/{herbId}")
+    public ResponseUtil<Object> addHerbToCourse(@PathVariable int courseId, @PathVariable int herbId) {
+        boolean success = courseService.addHerbToCourse(courseId, herbId);
+        if (success) {
+            return new ResponseUtil<>(0, "Herb added to course successfully.", null);
+        }
+        return new ResponseUtil<>(-1, "Failed to add herb to course. Course not found, herb not found, or herb already exists in course.", null);
+    }
+
+    // DELETE /courses/{courseId}/herbs/{herbId} - Remove a herb from a course (Teacher+)
+    @DeleteMapping("/{courseId}/herbs/{herbId}")
+    public ResponseUtil<Object> removeHerbFromCourse(@PathVariable int courseId, @PathVariable int herbId) {
+        boolean success = courseService.removeHerbFromCourse(courseId, herbId);
+        if (success) {
+            return new ResponseUtil<>(0, "Herb removed from course successfully.", null);
+        }
+        return new ResponseUtil<>(-1, "Failed to remove herb from course. Course not found or herb not in course.", null);
+    }
+
+    // PUT /courses/{courseId}/herbs - Update all herbs for a course (Teacher+)
+    @PutMapping("/{courseId}/herbs")
+    public ResponseUtil<Object> updateCourseHerbs(@PathVariable int courseId, @RequestBody CourseHerbDTO courseHerbDTO) {
+        courseHerbDTO.setCourseId(courseId); // 确保courseId一致
+        boolean success = courseService.updateCourseHerbs(courseId, courseHerbDTO.getHerbIds());
+        if (success) {
+            return new ResponseUtil<>(0, "Course herbs updated successfully.", null);
+        }
+        return new ResponseUtil<>(-1, "Failed to update course herbs. Course not found or some herbs not found.", null);
+    }
+
+    // GET /courses/{courseId}/herbs - Get all herb IDs for a course
+    @GetMapping("/{courseId}/herbs")
+    public ResponseUtil<List<Integer>> getCourseHerbIds(@PathVariable int courseId) {
+        List<Integer> herbIds = courseService.getCourseHerbIds(courseId);
+        if (herbIds.isEmpty() && courseService.getCourseDetail(courseId) == null) {
+            return new ResponseUtil<>(-1, "Course not found.", null);
+        }
+        return new ResponseUtil<>(0, "Course herb IDs retrieved successfully.", herbIds);
     }
 } 
