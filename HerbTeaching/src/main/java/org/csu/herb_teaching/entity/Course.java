@@ -34,4 +34,24 @@ public class Course {
     private BigDecimal courseAverageRating;
     @TableField("course_rating_count")
     private int courseRatingCount;
+    @TableField(exist = false)
+    private String courseTypeName;
+    @TableField(exist = false)
+    private String courseObjectName;
+
+    public String getCourseTypeName() {
+        switch (courseType) {
+            case 0: return "选修";
+            case 1: return "必修";
+            default: return "未知";
+        }
+    }
+    public String getCourseObjectName() {
+        switch (courseObject) {
+            case 0: return "本科生";
+            case 1: return "研究生";
+            case 2: return "博士生";
+            default: return "未知";
+        }
+    }
 }
