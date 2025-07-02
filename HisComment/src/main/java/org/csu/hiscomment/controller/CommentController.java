@@ -5,6 +5,7 @@ import org.csu.hiscomment.VO.CommentVO;
 import org.csu.hiscomment.entity.Comment;
 import org.csu.hiscomment.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
@@ -24,19 +25,19 @@ public class CommentController {
 
     // 发布评论/回复
     @PostMapping("/comments")
-    public Map<String, Object> addComment(@RequestBody CommentDTO dto, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> addComment(@RequestBody CommentDTO dto, @RequestHeader("Authorization") String authHeader) {
         String token = authHeader.substring(7);
         int userId = userFeignClient.getUserIdByToken(token);
         Map<String, Object> result = new HashMap<>();
         if (!userFeignClient.isUserExist(userId)) {
             result.put("code", -1);
             result.put("message", "用户不存在");
-            return result;
+            return ResponseEntity.ok(result);
         }
         if ("course".equals(dto.getTargetType()) && !courseFeignClient.isCourseExist(dto.getTargetId())) {
             result.put("code", -1);
             result.put("message", "课程不存在");
-            return result;
+            return ResponseEntity.ok(result);
         }
         if ("herb".equals(dto.getTargetType())) {
             try {
@@ -44,12 +45,12 @@ public class CommentController {
                 if (!exist) {
                     result.put("code", -1);
                     result.put("message", "中药不存在");
-                    return result;
+                    return ResponseEntity.ok(result);
                 }
             } catch (Exception e) {
                 result.put("code", -1);
                 result.put("message", "中药服务异常，请稍后重试");
-                return result;
+                return ResponseEntity.ok(result);
             }
         }
         // 回复评论时校验parentId对应评论的targetType/targetId一致
@@ -58,12 +59,12 @@ public class CommentController {
             if (parent == null || parent.getIsDeleted() == 1) {
                 result.put("code", -1);
                 result.put("message", "被回复的评论不存在");
-                return result;
+                return ResponseEntity.ok(result);
             }
             if (!parent.getTargetType().equals(dto.getTargetType()) || parent.getTargetId() != dto.getTargetId()) {
                 result.put("code", -1);
                 result.put("message", "目标对象不一致，无法回复");
-                return result;
+                return ResponseEntity.ok(result);
             }
         }
         CommentVO vo = commentService.addComment(dto, userId);
@@ -74,12 +75,12 @@ public class CommentController {
             result.put("code", -1);
             result.put("message", "评论发布失败");
         }
-        return result;
+        return ResponseEntity.ok(result);
     }
 
     // 获取评论列表
     @GetMapping("/comments")
-    public Map<String, Object> listComments(@RequestParam String targetType,
+    public ResponseEntity<?> listComments(@RequestParam String targetType,
                                             @RequestParam int targetId,
                                             @RequestParam(defaultValue = "new") String sort,
                                             @RequestParam(defaultValue = "1") int page,
@@ -95,12 +96,12 @@ public class CommentController {
                 if (!exist) {
                     result.put("code", -1);
                     result.put("message", "中药不存在");
-                    return result;
+                    return ResponseEntity.ok(result);
                 }
             } catch (Exception e) {
                 result.put("code", -1);
                 result.put("message", "中药服务异常，请稍后重试");
-                return result;
+                return ResponseEntity.ok(result);
             }
         }
         if ("course".equals(targetType)) {
@@ -109,19 +110,19 @@ public class CommentController {
                 if (!exist) {
                     result.put("code", -1);
                     result.put("message", "课程不存在");
-                    return result;
+                    return ResponseEntity.ok(result);
                 }
             } catch (Exception e) {
                 result.put("code", -1);
                 result.put("message", "课程服务异常，请稍后重试");
-                return result;
+                return ResponseEntity.ok(result);
             }
         }
         // 校验userId存在性
         if (userId != -1 && !userFeignClient.isUserExist(userId)) {
             result.put("code", -1);
             result.put("message", "用户不存在");
-            return result;
+            return ResponseEntity.ok(result);
         }
         List<CommentVO> list = commentService.listComments(targetType, targetId, sort, page, size, userId);
         result.put("code", 0);
@@ -131,12 +132,12 @@ public class CommentController {
         data.put("size", size);
         data.put("total", list != null ? list.size() : 0); // 可根据实际分页返回总数
         result.put("data", data);
-        return result;
+        return ResponseEntity.ok(result);
     }
 
     // 点赞评论
     @PostMapping("/comments/{commentId}/like")
-    public Map<String, Object> likeComment(@PathVariable int commentId, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> likeComment(@PathVariable int commentId, @RequestHeader("Authorization") String authHeader) {
         String token = authHeader.substring(7);
         int userId = userFeignClient.getUserIdByToken(token);
         Map<String, Object> result = new HashMap<>();
@@ -144,12 +145,12 @@ public class CommentController {
         if (!userFeignClient.isUserExist(userId)) {
             result.put("code", -1);
             result.put("message", "用户不存在");
-            return result;
+            return ResponseEntity.ok(result);
         }
         if (commentService.getCommentDetail(commentId, null) == null) {
             result.put("code", -1);
             result.put("message", "评论不存在");
-            return result;
+            return ResponseEntity.ok(result);
         }
         boolean ok = commentService.likeComment(commentId, userId);
         if (ok) {
@@ -158,12 +159,12 @@ public class CommentController {
             result.put("code", -1);
             result.put("message", "已点赞或点赞失败");
         }
-        return result;
+        return ResponseEntity.ok(result);
     }
 
     // 取消点赞
     @DeleteMapping("/comments/{commentId}/like")
-    public Map<String, Object> unlikeComment(@PathVariable int commentId, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> unlikeComment(@PathVariable int commentId, @RequestHeader("Authorization") String authHeader) {
         String token = authHeader.substring(7);
         int userId = userFeignClient.getUserIdByToken(token);
         Map<String, Object> result = new HashMap<>();
@@ -171,12 +172,12 @@ public class CommentController {
         if (!userFeignClient.isUserExist(userId)) {
             result.put("code", -1);
             result.put("message", "用户不存在");
-            return result;
+            return ResponseEntity.ok(result);
         }
         if (commentService.getCommentDetail(commentId, null) == null) {
             result.put("code", -1);
             result.put("message", "评论不存在");
-            return result;
+            return ResponseEntity.ok(result);
         }
         boolean ok = commentService.unlikeComment(commentId, userId);
         if (ok) {
@@ -185,12 +186,12 @@ public class CommentController {
             result.put("code", -1);
             result.put("message", "未点赞或取消失败");
         }
-        return result;
+        return ResponseEntity.ok(result);
     }
 
     // 删除评论
     @DeleteMapping("/comments/{commentId}")
-    public Map<String, Object> deleteComment(@PathVariable int commentId, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> deleteComment(@PathVariable int commentId, @RequestHeader("Authorization") String authHeader) {
         String token = authHeader.substring(7);
         int userId = userFeignClient.getUserIdByToken(token);
         Map<String, Object> result = new HashMap<>();
@@ -200,7 +201,7 @@ public class CommentController {
         } catch (Exception e) {
             result.put("code", -1);
             result.put("message", "用户服务异常，请稍后重试");
-            return result;
+            return ResponseEntity.ok(result);
         }
         boolean ok = commentService.deleteComment(commentId, userId, isAdmin);
         if (ok) {
@@ -209,12 +210,12 @@ public class CommentController {
             result.put("code", -1);
             result.put("message", "无权限或评论不存在");
         }
-        return result;
+        return ResponseEntity.ok(result);
     }
 
     // 获取单条评论详情
     @GetMapping("/comments/{commentId}")
-    public Map<String, Object> getCommentDetail(@PathVariable int commentId, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> getCommentDetail(@PathVariable int commentId, @RequestHeader(value = "Authorization", required = false) String authHeader) {
         String token = authHeader.substring(7);
         int userId = userFeignClient.getUserIdByToken(token);
         Map<String, Object> result = new HashMap<>();
@@ -226,6 +227,6 @@ public class CommentController {
             result.put("code", -1);
             result.put("message", "评论不存在");
         }
-        return result;
+        return ResponseEntity.ok(result);
     }
 } 
