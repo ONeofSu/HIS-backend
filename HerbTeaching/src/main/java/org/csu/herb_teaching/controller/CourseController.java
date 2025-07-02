@@ -448,4 +448,9 @@ public class CourseController {
         result.put("userId", userId);
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping("/{courseId}/exist")
+    public boolean isCourseExist(@PathVariable int courseId) {
+        return courseService.getById(courseId) != null;
+    }
 } 

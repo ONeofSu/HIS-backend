@@ -279,4 +279,9 @@ public class HerbInfoController {
         );
     }
 
+    @GetMapping("/herbs/{herbId}/exist")
+    public boolean isHerbExist(@PathVariable int herbId) {
+        return herbService.isHerbIdExist(herbId);
+    }
+
 }

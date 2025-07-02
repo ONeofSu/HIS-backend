@@ -101,12 +101,31 @@ spring:
               filters:
                 - StripPrefix=1
                 - name: JwtTeacherAuth
+
             #课程查看
             - id: herb-teaching-service-read
               uri: lb://herb-teaching-service
               predicates:
                 - Path=/herb-teaching-service/**
                 - Method=GET
+              filters:
+                - StripPrefix=1
+                - name: JwtAuth
+
+            #培训资料
+            - id: herb-training-service
+              uri: lb://herb-training-service
+              predicates:
+                - Path=/herb-training-service/**
+              filters:
+                - StripPrefix=1
+                - name: JwtAuth
+
+            #评论
+            - id: comment-service
+              uri: lb://comment-service
+              predicates:
+                - Path=/comment-service/**
               filters:
                 - StripPrefix=1
                 - name: JwtAuth

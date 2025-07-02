@@ -5,8 +5,13 @@ import org.csu.hisuser.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/inner")
@@ -36,6 +41,11 @@ public class InnerUserController {
         return authService.getUserIdFromToken(token);
     }
 
+    @GetMapping("/user/info/token/userId/{userId}/username")
+    public String getUsernameById(@PathVariable int userId) {
+        return userService.getUserById(userId).getUsername();
+    }
+
     @GetMapping("/user/exist/userId/{userId}")
     public boolean isExistUserId(@PathVariable int userId) {
         return userService.isUserExist(userId);
@@ -62,5 +72,27 @@ public class InnerUserController {
     public boolean isUserRealTeacher(@PathVariable int userId) {
         // categoryId=2为教师
         return userService.isUserLinkCategoryExist(userId, 2);
+    }
+
+    // 判断是否为管理员，提供HerbTeaching调用
+    @GetMapping("/user/is-admin/{userId}")
+    public boolean isUserAdmin(@PathVariable int userId) {
+        // category_id=3为管理员
+        return userService.isUserLinkCategoryExist(userId, 3);
+    }
+
+    // 批量查询用户信息，返回Map<userId, UserVO>
+    @PostMapping("/user/info/batch")
+    public org.springframework.http.ResponseEntity<Map<Integer, org.csu.hisuser.VO.UserVO>> getUserInfoBatch(@RequestBody List<Integer> userIdList) {
+        List<org.csu.hisuser.entity.User> userList = userIdList.stream()
+            .map(userService::getUserById)
+            .filter(java.util.Objects::nonNull)
+            .toList();
+        List<org.csu.hisuser.VO.UserVO> userVOList = userService.transferUsersToUserVOs(userList);
+        Map<Integer, org.csu.hisuser.VO.UserVO> result = new java.util.HashMap<>();
+        for (org.csu.hisuser.VO.UserVO vo : userVOList) {
+            result.put(vo.getId(), vo);
+        }
+        return org.springframework.http.ResponseEntity.ok(result);
     }
 }
