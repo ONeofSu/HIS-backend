@@ -19,9 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -47,14 +45,14 @@ public class LiveRecordServiceImpl implements LiveRecordService {
     private void startRecordingProcess(LiveRoom liveRoom,LiveRecord liveRecord) {
         CompletableFuture.runAsync(() -> {
            try {
-               ProcessBuilder pbT = new ProcessBuilder("ffmpeg", "-version");
-               pbT.redirectErrorStream(true);
-               Process processT = pbT.start();
-               BufferedReader reader = new BufferedReader(new InputStreamReader(processT.getInputStream()));
-               String line;
-               while ((line = reader.readLine()) != null) {
-                   System.out.println(line);
-               }
+//               ProcessBuilder pbT = new ProcessBuilder("ffmpeg", "-version");
+//               pbT.redirectErrorStream(true);
+//               Process processT = pbT.start();
+//               BufferedReader reader = new BufferedReader(new InputStreamReader(processT.getInputStream()));
+//               String line;
+//               while ((line = reader.readLine()) != null) {
+//                   System.out.println(line);
+//               }
 
                File saveDir = new File(recordSavePath);
                if(!saveDir.exists()){
@@ -91,7 +89,7 @@ public class LiveRecordServiceImpl implements LiveRecordService {
 
                recordingProcesses.remove(liveRecord.getId());
 
-               if(exitCode == 1){
+               if(exitCode == 0){
                     uploadRecording(liveRecord,new File(outputPath));
                }
            }catch (Exception e){
@@ -112,18 +110,20 @@ public class LiveRecordServiceImpl implements LiveRecordService {
         try {
             Process process = recordingProcesses.get(liveRecord.getId());
             if (process != null && process.isAlive()) {
-                // 先尝试正常停止
-                process.destroy();
-
-                // 等待一段时间让进程正常退出
-                if (!process.waitFor(5, TimeUnit.SECONDS)) {
-                    // 如果超时，强制终止
-                    process.destroyForcibly();
-                    log.warn("强制终止录制进程, recordingId={}", liveRecord.getId());
+                // 尝试通过标准输入发送 'q' 命令（优雅退出）
+                try (OutputStream os = process.getOutputStream()) {
+                    os.write("q\n".getBytes());
+                    os.flush();
                 }
 
+                // 等待最多 10 秒
+                if (!process.waitFor(10, TimeUnit.SECONDS)) {
+                    log.warn("ffmpeg 未正常退出，强制终止");
+                    process.destroyForcibly(); // 最终手段
+                }
 
-                log.info("成功停止录制, recordingId={}", liveRecord.getId());
+                log.info("成功停止录制, recordingId={}, exitCode={}",
+                        liveRecord.getId(), process.exitValue());
             } else {
                 log.warn("未找到活跃的录制进程, recordingId={}", liveRecord.getId());
             }
@@ -154,8 +154,30 @@ public class LiveRecordServiceImpl implements LiveRecordService {
             };
 
             Process process = Runtime.getRuntime().exec(cmd);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String durationStr = reader.readLine();
+
+            String durationStr;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                durationStr = reader.readLine();
+            }
+
+            try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                String errorLine;
+                while ((errorLine = errorReader.readLine()) != null) {
+                    log.error("ffprobe 错误输出: {}", errorLine);
+                }
+            }
+
+            File saveDir = new File(recordSavePath);
+            if (!saveDir.exists() && !saveDir.mkdirs()) {
+                throw new IOException("无法创建目录: " + recordSavePath);
+            }
+
+            if (!saveDir.canWrite()) {
+                throw new IOException("目录不可写: " + recordSavePath);
+            }
+
+//            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+//            durationStr = reader.readLine();
             int duration = Integer.parseInt(durationStr);
 
             //Minio

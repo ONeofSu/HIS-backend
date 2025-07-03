@@ -222,47 +222,47 @@ public class LiveController {
         );
     }
 
-    @PostMapping("/record/{recordId}/stop")
-    public ResponseEntity<?> liveRecordStop(@PathVariable Long recordId) {
-        LiveRecord liveRecord = liveRecordService.stopRecord(recordId);
-        if(liveRecord == null){
-            return ResponseEntity.ok(
-                    Map.of("code",-1,
-                            "message","invalid roomId")
-            );
-        }
-
-        if(!liveRecordService.isLiveRecording(recordId)){
-            return ResponseEntity.ok(
-                    Map.of("code",-2,
-                            "message","it's not recording")
-            );
-        }
-
-        liveRecord = liveRecordService.stopRecord(recordId);
-        return ResponseEntity.ok(
-                Map.of("code",0,
-                        "liveRecord",liveRecord)
-        );
-    }
-
-    @GetMapping("/room/{roomId}/recordings")
-    public ResponseEntity<?> getLiveRecordings(@PathVariable Long roomId,
-                                               @RequestParam(defaultValue = "1") int page,
-                                               @RequestParam(defaultValue = "10") int size) {
-        LiveRoom liveRoom = liveRoomMapper.selectById(roomId);
-        if(liveRoom == null){
-            return ResponseEntity.ok(
-                    Map.of("code",-1,
-                            "message","invalid roomId")
-            );
-        }
-
-        List<LiveRecord> recordList = liveRecordService.getRecordsByRoomId(roomId,page,size);
-        return ResponseEntity.ok(
-                Map.of("code",0,
-                        "recordings",recordList)
-        );
-    }
+//    @PostMapping("/record/{recordId}/stop")
+//    public ResponseEntity<?> liveRecordStop(@PathVariable Long recordId) {
+//        LiveRecord liveRecord = liveRecordService.stopRecord(recordId);
+//        if(liveRecord == null){
+//            return ResponseEntity.ok(
+//                    Map.of("code",-1,
+//                            "message","invalid roomId")
+//            );
+//        }
+//
+//        if(!liveRecordService.isLiveRecording(recordId)){
+//            return ResponseEntity.ok(
+//                    Map.of("code",-2,
+//                            "message","it's not recording")
+//            );
+//        }
+//
+//        liveRecord = liveRecordService.stopRecord(recordId);
+//        return ResponseEntity.ok(
+//                Map.of("code",0,
+//                        "liveRecord",liveRecord)
+//        );
+//    }
+//
+//    @GetMapping("/room/{roomId}/recordings")
+//    public ResponseEntity<?> getLiveRecordings(@PathVariable Long roomId,
+//                                               @RequestParam(defaultValue = "1") int page,
+//                                               @RequestParam(defaultValue = "10") int size) {
+//        LiveRoom liveRoom = liveRoomMapper.selectById(roomId);
+//        if(liveRoom == null){
+//            return ResponseEntity.ok(
+//                    Map.of("code",-1,
+//                            "message","invalid roomId")
+//            );
+//        }
+//
+//        List<LiveRecord> recordList = liveRecordService.getRecordsByRoomId(roomId,page,size);
+//        return ResponseEntity.ok(
+//                Map.of("code",0,
+//                        "recordings",recordList)
+//        );
+//    }
 
 }
