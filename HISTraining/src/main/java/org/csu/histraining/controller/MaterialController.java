@@ -175,6 +175,10 @@ public class MaterialController {
 
         Material material = materialService.getMaterialById(materialId);
         List<Content> contents = materialService.getContentByMaterialId(materialId);
+
+        material.setCount(material.getCount()+1);
+        materialService.updateMaterial(material);
+
         MaterialModel materialModel = new MaterialModel(material,contents);
 
         MaterialVO materialVO = materialService.transferModelToMaterialVO(materialModel);
