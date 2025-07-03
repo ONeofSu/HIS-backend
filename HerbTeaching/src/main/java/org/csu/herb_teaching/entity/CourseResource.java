@@ -29,4 +29,14 @@ public class CourseResource {
     private LocalDateTime courseResourceTime;
     @TableField("course_resource_isvalid")
     private boolean courseResourceIsvalid;
+    @TableField(exist = false)
+    private String courseResourceTypeName;
+
+    public String getCourseResourceTypeName() {
+        switch (courseResourceType) {
+            case 0: return "视频";
+            case 1: return "文件";
+            default: return "未知";
+        }
+    }
 } 

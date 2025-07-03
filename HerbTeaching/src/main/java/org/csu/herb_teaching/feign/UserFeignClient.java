@@ -21,4 +21,7 @@ public interface UserFeignClient {
 
     @GetMapping("/inner/user/exist/userId/{userId}")
     Boolean isUserExist(@PathVariable("userId") int userId);
+
+    @GetMapping("/inner/user/info/token/{token}/userId")
+    int getUserIdByToken(@PathVariable("token") String token);
 } 

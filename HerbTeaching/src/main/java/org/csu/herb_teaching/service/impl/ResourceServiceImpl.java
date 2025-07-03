@@ -42,8 +42,11 @@ public class ResourceServiceImpl extends ServiceImpl<CourseResourceMapper, Cours
         Integer maxOrder = courseResourceMapper.selectMaxCourseResourceOrderByCourseId(courseId);
         int nextOrder = (maxOrder == null ? 1 : maxOrder + 1);
         CourseResource resource = new CourseResource();
-        BeanUtils.copyProperties(resourceDTO, resource);
         resource.setCourseId(courseId);
+        resource.setCourseResourceType(resourceDTO.getCourseResourceType());
+        resource.setCourseResourceTitle(resourceDTO.getCourseResourceTitle());
+        resource.setCourseResourceContent(resourceDTO.getCourseResourceContent());
+        resource.setCourseResourceMetadata(resourceDTO.getCourseResourceMetadata());
         resource.setCourseResourceOrder(nextOrder);
         resource.setCourseResourceTime(LocalDateTime.now());
         resource.setCourseResourceIsvalid(true);

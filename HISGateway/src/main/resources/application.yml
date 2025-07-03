@@ -12,6 +12,7 @@ spring:
             locator:
               enabled: true
           globalcors:
+            add-to-simple-url-handler-mapping: true
             cors-configurations:
               '[/**]':  #允许跨域访问的资源
                 allowedOrigins: "*" #跨域允许的来源
@@ -20,6 +21,7 @@ spring:
                   - POST
                   - PUT
                   - DELETE
+                  - OPTIONS
                 allowed-headers: "*"
 
           routes:
@@ -115,6 +117,15 @@ spring:
               uri: lb://herb-training-service
               predicates:
                 - Path=/herb-training-service/**
+              filters:
+                - StripPrefix=1
+                - name: JwtAuth
+
+            #评论
+            - id: comment-service
+              uri: lb://comment-service
+              predicates:
+                - Path=/comment-service/**
               filters:
                 - StripPrefix=1
                 - name: JwtAuth

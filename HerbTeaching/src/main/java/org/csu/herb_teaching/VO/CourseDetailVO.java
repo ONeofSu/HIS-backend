@@ -33,4 +33,23 @@ public class CourseDetailVO {
     private List<Lab> labs;
     private List<CourseResource> resources;
     private List<HerbSimpleVO> herbs;
+
+    private String courseTypeName;
+    private String courseObjectName;
+
+    public String getCourseTypeName() {
+        switch (courseType) {
+            case 0: return "选修";
+            case 1: return "必修";
+            default: return "未知";
+        }
+    }
+    public String getCourseObjectName() {
+        switch (courseObject) {
+            case 0: return "本科生";
+            case 1: return "研究生";
+            case 2: return "博士生";
+            default: return "未知";
+        }
+    }
 }

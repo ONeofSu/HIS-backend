@@ -15,7 +15,6 @@ import org.csu.herb_teaching.entity.UserCourseCollection;
 import org.csu.herb_teaching.service.CourseService;
 import org.csu.herb_teaching.service.LabService;
 import org.csu.herb_teaching.service.ResourceService;
-import org.csu.herb_teaching.utils.ResponseUtil;
 import org.csu.herb_teaching.feign.UserFeignClient;
 import org.csu.herb_teaching.feign.HerbInfoFeignClient;
 import org.springframework.http.ResponseEntity;
@@ -38,24 +37,35 @@ public class CourseController {
 
     // GET /courses/{courseId} - Get course details
     @GetMapping("/{courseId}")
-    public ResponseUtil<CourseDetailVO> getCourseDetail(@PathVariable int courseId) {
+    public ResponseEntity<?> getCourseDetail(@PathVariable int courseId) {
         CourseDetailVO courseDetails = courseService.getCourseDetail(courseId);
         if (courseDetails == null) {
-            return new ResponseUtil<>(-1, "Course not found.", null);
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "Course not found.");
+            return ResponseEntity.ok(result);
         }
-        return new ResponseUtil<>(0, "Course details retrieved successfully.", courseDetails);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("code", 0);
+        response.put("message", "Course details retrieved successfully.");
+        response.put("data", courseDetails);
+        return ResponseEntity.ok(response);
     }
 
     // GET /courses - Get all courses with optional filters and pagination
     @GetMapping
-    public ResponseUtil<PageVO<Course>> getCourseList(
+    public ResponseEntity<?> getCourseList(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false, defaultValue = "0") int courseType,
             @RequestParam(required = false, defaultValue = "0") int courseObject,
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "10") int pageSize) {
         PageVO<Course> courses = courseService.getCourseList(pageNum, pageSize, keyword, courseType, courseObject);
-        return new ResponseUtil<>(0, "Courses retrieved successfully.", courses);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("code", 0);
+        response.put("message", "Courses retrieved successfully.");
+        response.put("data", courses);
+        return ResponseEntity.ok(response);
     }
 
     // POST /courses - Create a new course (Teacher+)
@@ -101,23 +111,36 @@ public class CourseController {
 
     // PUT /courses/{courseId} - Update a course (Teacher+)
     @PutMapping("/{courseId}")
-    public ResponseUtil<Course> updateCourse(@PathVariable int courseId, @RequestBody CourseDTO courseDTO) {
+    public ResponseEntity<?> updateCourse(@PathVariable int courseId, @RequestBody CourseDTO courseDTO) {
         courseDTO.setCourseId(courseId); // Manually set the ID from path variable
         Course updatedCourse = courseService.updateCourse(courseDTO);
         if (updatedCourse != null) {
-            return new ResponseUtil<>(0, "Course updated successfully.", updatedCourse);
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("code", 0);
+            response.put("message", "Course updated successfully.");
+            response.put("data", updatedCourse);
+            return ResponseEntity.ok(response);
         }
-        return new ResponseUtil<>(-1, "Course not found.", null);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("code", -1);
+        result.put("message", "Course not found.");
+        return ResponseEntity.ok(result);
     }
 
     // DELETE /courses/{courseId} - Delete a course (Teacher+)
     @DeleteMapping("/{courseId}")
-    public ResponseUtil<Object> deleteCourse(@PathVariable int courseId) {
+    public ResponseEntity<?> deleteCourse(@PathVariable int courseId) {
         boolean success = courseService.deleteCourse(courseId);
         if (success) {
-            return new ResponseUtil<>(0, "Course deleted successfully.", null);
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", 0);
+            result.put("message", "Course deleted successfully.");
+            return ResponseEntity.ok(result);
         }
-        return new ResponseUtil<>(-1, "Course not found.", null);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("code", -1);
+        result.put("message", "Course not found.");
+        return ResponseEntity.ok(result);
     }
 
     // POST /courses/{courseId}/ratings - Rate a course
@@ -125,7 +148,9 @@ public class CourseController {
     public ResponseEntity<?> rateCourse(
             @PathVariable int courseId,
             @RequestBody Map<String, Integer> payload,
-            @RequestHeader("userId") int userId) {
+            @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        int userId = userFeignClient.getUserIdByToken(token);
         // 校验课程是否存在
         if (courseService.getCourseDetail(courseId) == null) {
             Map<String, Object> result = new LinkedHashMap<>();
@@ -164,18 +189,21 @@ public class CourseController {
             result.put("message", "未知错误");
             return ResponseEntity.ok(result);
         }
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("code", 0);
-        result.put("courseRating", courseRating);
-        result.put("courseId", courseId);
-        result.put("userId", userId);
-        result.put("rating", rating);
-        return ResponseEntity.ok(result);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("code", 0);
+        response.put("message", "Course rating recorded successfully.");
+        response.put("courseRating", courseRating);
+        response.put("courseId", courseId);
+        response.put("userId", userId);
+        response.put("rating", rating);
+        return ResponseEntity.ok(response);
     }
 
     // POST /courses/{courseId}/collections - Collect a course
     @PostMapping("/{courseId}/collections")
-    public ResponseEntity<?> collectCourse(@PathVariable int courseId, @RequestHeader("userId") int userId) {
+    public ResponseEntity<?> collectCourse(@PathVariable int courseId, @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        int userId = userFeignClient.getUserIdByToken(token);
         // 校验课程是否存在
         if (courseService.getCourseDetail(courseId) == null) {
             Map<String, Object> result = new LinkedHashMap<>();
@@ -207,17 +235,20 @@ public class CourseController {
             result.put("message", "已收藏，无需重复收藏");
             return ResponseEntity.ok(result);
         }
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("code", 0);
-        result.put("collection", collection);
-        result.put("courseId", courseId);
-        result.put("userId", userId);
-        return ResponseEntity.ok(result);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("code", 0);
+        response.put("message", "Course collection recorded successfully.");
+        response.put("collection", collection);
+        response.put("courseId", courseId);
+        response.put("userId", userId);
+        return ResponseEntity.ok(response);
     }
 
     // DELETE /courses/{courseId}/collections - Uncollect a course
     @DeleteMapping("/{courseId}/collections")
-    public ResponseEntity<?> removeCollection(@PathVariable int courseId, @RequestHeader("userId") int userId) {
+    public ResponseEntity<?> removeCollection(@PathVariable int courseId, @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        int userId = userFeignClient.getUserIdByToken(token);
         // 校验课程是否存在
         if (courseService.getCourseDetail(courseId) == null) {
             Map<String, Object> result = new LinkedHashMap<>();
@@ -249,51 +280,80 @@ public class CourseController {
             result.put("message", "未收藏，无需取消");
             return ResponseEntity.ok(result);
         }
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("code", 0);
-        result.put("courseId", courseId);
-        result.put("userId", userId);
-        return ResponseEntity.ok(result);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("code", 0);
+        response.put("message", "Course collection removed successfully.");
+        response.put("courseId", courseId);
+        response.put("userId", userId);
+        return ResponseEntity.ok(response);
     }
 
     // POST /courses/{courseId}/labs - Create a new lab for a course (Teacher+)
     @PostMapping("/{courseId}/labs")
-    public ResponseUtil<Lab> createLab(@PathVariable int courseId, @RequestBody LabDTO labDTO) {
+    public ResponseEntity<?> createLab(@PathVariable int courseId, @RequestBody LabDTO labDTO) {
         Lab newLab = labService.createLab(courseId, labDTO);
         if (newLab != null) {
-            return new ResponseUtil<>(0, "Lab created successfully.", newLab);
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("code", 0);
+            response.put("message", "Lab created successfully.");
+            response.put("data", newLab);
+            return ResponseEntity.ok(response);
         }
-        return new ResponseUtil<>(-1, "Failed to create lab.", null);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("code", -1);
+        result.put("message", "Failed to create lab.");
+        return ResponseEntity.ok(result);
     }
 
     // GET /courses/{courseId}/labs - Get all labs for a course
     @GetMapping("/{courseId}/labs")
-    public ResponseUtil<List<Lab>> getLabsByCourse(@PathVariable int courseId) {
+    public ResponseEntity<?> getLabsByCourse(@PathVariable int courseId) {
         if (courseService.getCourseDetail(courseId) == null) {
-            return new ResponseUtil<>(-1, "Course not found.", null);
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "Course not found.");
+            return ResponseEntity.ok(result);
         }
         List<Lab> labs = labService.getLabsByCourseId(courseId);
-        return new ResponseUtil<>(0, "Success", labs);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("code", 0);
+        response.put("message", "Success");
+        response.put("data", labs);
+        return ResponseEntity.ok(response);
     }
 
     // POST /courses/{courseId}/resources - Add a resource to a course (Teacher+)
     @PostMapping("/{courseId}/resources")
-    public ResponseUtil<CourseResource> createResource(@PathVariable int courseId, @RequestBody CourseResourceDTO resourceDTO) {
+    public ResponseEntity<?> createResource(@PathVariable int courseId, @RequestBody CourseResourceDTO resourceDTO) {
         CourseResource newResource = resourceService.createResource(courseId, resourceDTO);
         if (newResource != null) {
-            return new ResponseUtil<>(0, "Resource created successfully.", newResource);
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("code", 0);
+            response.put("message", "Resource created successfully.");
+            response.put("data", newResource);
+            return ResponseEntity.ok(response);
         }
-        return new ResponseUtil<>(-1, "Failed to add resource.", null);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("code", -1);
+        result.put("message", "Failed to add resource.");
+        return ResponseEntity.ok(result);
     }
 
     // GET /courses/{courseId}/resources - Get all resources for a course
     @GetMapping("/{courseId}/resources")
-    public ResponseUtil<List<CourseResource>> getResourcesByCourse(@PathVariable int courseId) {
+    public ResponseEntity<?> getResourcesByCourse(@PathVariable int courseId) {
         if (courseService.getCourseDetail(courseId) == null) {
-            return new ResponseUtil<>(-1, "Course not found.", null);
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "Course not found.");
+            return ResponseEntity.ok(result);
         }
         List<CourseResource> resources = resourceService.getResourcesByCourseId(courseId);
-        return new ResponseUtil<>(0, "Success", resources);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("code", 0);
+        response.put("message", "Success");
+        response.put("data", resources);
+        return ResponseEntity.ok(response);
     }
 
     // --- Course Herb Management APIs ---
@@ -325,11 +385,12 @@ public class CourseController {
         }
         boolean success = courseService.addHerbToCourse(courseId, herbId);
         if (success) {
-            Map<String, Object> result = new LinkedHashMap<>();
-            result.put("code", 0);
-            result.put("courseId", courseId);
-            result.put("herbId", herbId);
-            return ResponseEntity.ok(result);
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("code", 0);
+            response.put("message", "Herb added to course successfully.");
+            response.put("courseId", courseId);
+            response.put("herbId", herbId);
+            return ResponseEntity.ok(response);
         }
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("code", -1);
@@ -364,11 +425,12 @@ public class CourseController {
         }
         boolean success = courseService.removeHerbFromCourse(courseId, herbId);
         if (success) {
-            Map<String, Object> result = new LinkedHashMap<>();
-            result.put("code", 0);
-            result.put("courseId", courseId);
-            result.put("herbId", herbId);
-            return ResponseEntity.ok(result);
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("code", 0);
+            response.put("message", "Herb removed from course successfully.");
+            response.put("courseId", courseId);
+            response.put("herbId", herbId);
+            return ResponseEntity.ok(response);
         }
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("code", -1);
@@ -399,11 +461,12 @@ public class CourseController {
         }
         boolean success = courseService.updateCourseHerbs(courseId, courseHerbDTO.getHerbIds());
         if (success) {
-            Map<String, Object> result = new LinkedHashMap<>();
-            result.put("code", 0);
-            result.put("courseId", courseId);
-            result.put("herbIds", courseHerbDTO.getHerbIds());
-            return ResponseEntity.ok(result);
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("code", 0);
+            response.put("message", "Course herbs updated successfully.");
+            response.put("courseId", courseId);
+            response.put("herbIds", courseHerbDTO.getHerbIds());
+            return ResponseEntity.ok(response);
         }
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("code", -1);
@@ -413,18 +476,27 @@ public class CourseController {
 
     // GET /courses/{courseId}/herbs - Get all herb IDs for a course
     @GetMapping("/{courseId}/herbs")
-    public ResponseUtil<List<Integer>> getCourseHerbIds(@PathVariable int courseId) {
+    public ResponseEntity<?> getCourseHerbIds(@PathVariable int courseId) {
         List<Integer> herbIds = courseService.getCourseHerbIds(courseId);
         if (herbIds.isEmpty() && courseService.getCourseDetail(courseId) == null) {
-            return new ResponseUtil<>(-1, "Course not found.", null);
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "Course not found.");
+            return ResponseEntity.ok(result);
         }
-        return new ResponseUtil<>(0, "Course herb IDs retrieved successfully.", herbIds);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("code", 0);
+        response.put("message", "Course herb IDs retrieved successfully.");
+        response.put("data", herbIds);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/collections")
-    public ResponseEntity<?> getCollectedCoursesByUserId(@RequestHeader("userId") int userId,
+    public ResponseEntity<?> getCollectedCoursesByUserId(@RequestHeader("Authorization") String authHeader,
                                                         @RequestParam(defaultValue = "1") int pageNum,
                                                         @RequestParam(defaultValue = "10") int pageSize) {
+        String token = authHeader.substring(7);
+        int userId = userFeignClient.getUserIdByToken(token);
         // 校验用户是否存在
         Boolean userExist;
         try {
@@ -442,10 +514,16 @@ public class CourseController {
             return ResponseEntity.ok(result);
         }
         PageVO<Course> pageVO = courseService.getCollectedCoursesByUserId(userId, pageNum, pageSize);
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("code", 0);
-        result.put("data", pageVO);
-        result.put("userId", userId);
-        return ResponseEntity.ok(result);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("code", 0);
+        response.put("message", "Collected courses retrieved successfully.");
+        response.put("data", pageVO);
+        response.put("userId", userId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{courseId}/exist")
+    public boolean isCourseExist(@PathVariable int courseId) {
+        return courseService.getById(courseId) != null;
     }
 } 
