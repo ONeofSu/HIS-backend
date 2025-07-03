@@ -119,6 +119,15 @@ public class HerbLocationServiceImpl implements HerbLocationService {
     }
 
     @Override
+    public boolean updateHerbLocation(HerbLocation herbLocation) {
+        if(!isHerbLocationValid(herbLocation)){
+            return false;
+        }
+        herbLocationMapper.updateById(herbLocation);
+        return true;
+    }
+
+    @Override
     public int isHerbLocationInfoExists(HerbLocation herbLocation) {
         HerbLocation flag;
         QueryWrapper<HerbLocation> queryWrapper = new QueryWrapper<>();
