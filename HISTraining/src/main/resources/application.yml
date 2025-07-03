@@ -28,7 +28,7 @@ live:
     http-flv-url: http://192.168.195.100:8095/live
     hls-url: http://192.168.195.100:8095/live/hls
   record:
-    save-path: /data/record
+    save-path: /hisData/record
   push:
     key-check-enabled: false
     auth-expire: 86400  # 24小时，单位秒
