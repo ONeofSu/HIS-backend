@@ -8,4 +8,7 @@ public interface LiveRecordService {
     public LiveRecord startRecord(Long roomId);
     public LiveRecord stopRecord(Long recordId);
     public List<LiveRecord> getRecordsByRoomId(Long roomId,int page,int size);
+
+    public boolean isLiveRecording(Long recordId);
+    public boolean isLiveRecordingByRoomId(Long roomId);
 }

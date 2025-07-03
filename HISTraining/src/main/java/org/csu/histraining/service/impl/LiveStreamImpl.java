@@ -159,7 +159,8 @@ public class LiveStreamImpl implements LiveStreamService {
         Page<LiveRoom> pageParam = new Page<>(page,size);
         QueryWrapper<LiveRoom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("live_room_status",LiveRoom.LIVE).orderByDesc("live_room_view_count");
-        return liveRoomMapper.selectPage(pageParam,queryWrapper).getRecords();
+        List<LiveRoom> list = liveRoomMapper.selectPage(pageParam,queryWrapper).getRecords();
+        return list;
     }
 
     @Override
@@ -177,8 +178,7 @@ public class LiveStreamImpl implements LiveStreamService {
             if (countStr != null) {
                 long count = Long.parseLong(countStr);
 
-                LiveRoom room = new LiveRoom();
-                room.setId(roomId);
+                LiveRoom room = liveRoomMapper.selectById(roomId);
                 room.setViewCount(count);
                 liveRoomMapper.updateById(room);
             }
@@ -211,6 +211,13 @@ public class LiveStreamImpl implements LiveStreamService {
             System.out.println("验证推流秘钥失败");
             return false;
         }
+    }
+
+    @Override
+    public boolean isLiveStreamStartInLiveRoom(Long roomId) {
+        QueryWrapper<LiveStream> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("live_room_id", roomId).eq("live_stream_status",LiveRoom.LIVE);
+        return liveStreamMapper.selectCount(queryWrapper) > 0;
     }
 
     @Override

@@ -17,6 +17,7 @@ public interface LiveStreamService {
 
     public void addViewCount(Long roomId);
     public boolean isStreamKeyValid(String streamKey,String token,String expire);
+    public boolean isLiveStreamStartInLiveRoom(Long roomId);
 
     public void handleStreamPublish(String app,String stream);
     public void handleStreamClose(String app,String stream);

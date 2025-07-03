@@ -122,6 +122,27 @@ public class HerbInfoController {
         );
     }
 
+    @PutMapping("/herbs/info/{herbId}")
+    public ResponseEntity<?> updateHerb(@RequestBody HerbDTO herbDTO, @PathVariable int herbId) {
+        if(!herbService.isHerbIdExist(herbId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","herb does not exist")
+            );
+        }
+
+        Herb herb = herbService.transferDTOToHerb(herbDTO);
+        herb.setId(herbId);
+        if(!herbService.updateHerbForId(herb)){
+            return ResponseEntity.status(500).body("error to update");
+        }
+        HerbVO herbVO = herbService.transferHerbToVO(herb);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "herb",herbVO)
+        );
+    }
+
     @GetMapping("/category")
     public ResponseEntity<?> getAllCategory() {
         ResponseEntity<List<HerbCategory>> result = null;

@@ -2,6 +2,7 @@ package org.csu.histraining.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.csu.histraining.DTO.LiveRoomDTO;
+import org.csu.histraining.entity.LiveRecord;
 import org.csu.histraining.entity.LiveRoom;
 import org.csu.histraining.mapper.LiveRoomMapper;
 import org.csu.histraining.service.LiveRecordService;
@@ -94,6 +95,13 @@ public class LiveController {
             );
         }
 
+        if(liveStreamService.isLiveStreamStartInLiveRoom(roomId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-4,
+                            "message","the live stream is already started")
+            );
+        }
+
         liveRoom = liveStreamService.startLiveStream(roomId);
         return ResponseEntity.ok(
                 Map.of("code",0,
@@ -124,7 +132,14 @@ public class LiveController {
         if(userId!=liveRoom.getUserId()){
             return ResponseEntity.ok(
                     Map.of("code",-3,
-                            "message","you can't start live on other user's room")
+                            "message","you can't end live on other user's room")
+            );
+        }
+
+        if(!liveStreamService.isLiveStreamStartInLiveRoom(roomId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-4,
+                            "message","the live room is not living")
             );
         }
 
@@ -167,9 +182,86 @@ public class LiveController {
         }
 
         liveStreamService.addViewCount(roomId);
+        liveRoom = liveRoomMapper.selectById(roomId);
+        Long count = liveRoom.getViewCount();
+
         return ResponseEntity.ok(
                 Map.of("code",0,
-                        "roomId",roomId)
+                        "roomId",roomId,
+                        "viewCount",count)
+        );
+    }
+
+    @PostMapping("/record/room/{roomId}/start")
+    public ResponseEntity<?> liveRecordStart(@PathVariable Long roomId) {
+        LiveRoom liveRoom = liveRoomMapper.selectById(roomId);
+        if(liveRoom == null){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid roomId")
+            );
+        }
+        if(!liveStreamService.isLiveStreamStartInLiveRoom(roomId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-2,
+                            "message","the live stream is not living")
+            );
+        }
+
+        if(liveRecordService.isLiveRecordingByRoomId(roomId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-3,
+                            "message","the live record is working")
+            );
+        }
+
+        LiveRecord liveRecord = liveRecordService.startRecord(roomId);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "liveRecord",liveRecord)
+        );
+    }
+
+    @PostMapping("/record/{recordId}/stop")
+    public ResponseEntity<?> liveRecordStop(@PathVariable Long recordId) {
+        LiveRecord liveRecord = liveRecordService.stopRecord(recordId);
+        if(liveRecord == null){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid roomId")
+            );
+        }
+
+        if(!liveRecordService.isLiveRecording(recordId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-2,
+                            "message","it's not recording")
+            );
+        }
+
+        liveRecord = liveRecordService.stopRecord(recordId);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "liveRecord",liveRecord)
+        );
+    }
+
+    @GetMapping("/room/{roomId}/recordings")
+    public ResponseEntity<?> getLiveRecordings(@PathVariable Long roomId,
+                                               @RequestParam(defaultValue = "1") int page,
+                                               @RequestParam(defaultValue = "10") int size) {
+        LiveRoom liveRoom = liveRoomMapper.selectById(roomId);
+        if(liveRoom == null){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid roomId")
+            );
+        }
+
+        List<LiveRecord> recordList = liveRecordService.getRecordsByRoomId(roomId,page,size);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "recordings",recordList)
         );
     }
 

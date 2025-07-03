@@ -47,6 +47,15 @@ public class LiveRecordServiceImpl implements LiveRecordService {
     private void startRecordingProcess(LiveRoom liveRoom,LiveRecord liveRecord) {
         CompletableFuture.runAsync(() -> {
            try {
+               ProcessBuilder pbT = new ProcessBuilder("ffmpeg", "-version");
+               pbT.redirectErrorStream(true);
+               Process processT = pbT.start();
+               BufferedReader reader = new BufferedReader(new InputStreamReader(processT.getInputStream()));
+               String line;
+               while ((line = reader.readLine()) != null) {
+                   System.out.println(line);
+               }
+
                File saveDir = new File(recordSavePath);
                if(!saveDir.exists()){
                    saveDir.mkdirs();
@@ -82,7 +91,7 @@ public class LiveRecordServiceImpl implements LiveRecordService {
 
                recordingProcesses.remove(liveRecord.getId());
 
-               if(exitCode == 0){
+               if(exitCode == 1){
                     uploadRecording(liveRecord,new File(outputPath));
                }
            }catch (Exception e){
@@ -245,5 +254,21 @@ public class LiveRecordServiceImpl implements LiveRecordService {
                 .orderByDesc("live_record_start_time");
 
         return liveRecordMapper.selectPage(pageParam, queryWrapper).getRecords();
+    }
+
+    @Override
+    public boolean isLiveRecording(Long recordId) {
+        LiveRecord liveRecord = liveRecordMapper.selectById(recordId);
+        if(liveRecord == null || liveRecord.getStatus()!=LiveRecord.RECORDING) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isLiveRecordingByRoomId(Long roomId) {
+        QueryWrapper<LiveRecord> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("live_room_id", roomId).eq("live_record_status",LiveRecord.RECORDING);
+        return liveRecordMapper.selectCount(queryWrapper) > 0;
     }
 }
