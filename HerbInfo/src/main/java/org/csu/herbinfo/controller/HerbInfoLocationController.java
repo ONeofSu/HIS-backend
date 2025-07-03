@@ -142,6 +142,64 @@ public class HerbInfoLocationController {
         );
     }
 
+    @PutMapping("/herbs/location/{herbLocationId}")
+    public ResponseEntity<?> updateHerbLocation(@PathVariable int herbLocationId,
+                                                @RequestBody HerbLocationDTO herbLocationDTO) {
+        int herb_id = herbService.getHerbIdByName(herbLocationDTO.getName());
+        if(herb_id == -1){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","herb does not exist")
+            );
+        }
+
+        int district_id = districtStreetService.getDistrictIdByName(herbLocationDTO.getDistrict());
+        if(district_id == -1){
+            //return ResponseEntity.status(491).body("行政区不存在");
+            return ResponseEntity.ok(
+                    Map.of("code",-2,
+                            "message","district does not exist")
+            );
+        }
+
+        int street_id = districtStreetService.getStreetIdByName(herbLocationDTO.getStreet());
+        if(street_id == -1){
+            //return ResponseEntity.status(492).body("街道不存在");
+            return ResponseEntity.ok(
+                    Map.of("code",-3,
+                            "message","street does not exist")
+            );
+        }
+
+        if(!districtStreetService.isStreetInDistrict(district_id, street_id)){
+            return ResponseEntity.ok(
+                    Map.of("code",-4,
+                            "message","street does not in the district")
+            );
+        }
+
+        HerbLocation herbLocation = herbLocationService.getHerbLocationById(herbLocationId);
+        if(herbLocation==null){
+            return ResponseEntity.ok(
+                    Map.of("code",-5,
+                            "message","herb location does not exist")
+            );
+        }
+
+        herbLocation = herbLocationService.transferDTOToHerbLocation(herbLocationDTO);
+        herbLocation.setId(herbLocationId);
+
+        if(!herbLocationService.updateHerbLocation(herbLocation)){
+            return ResponseEntity.status(500).body("error to update");
+        }
+
+        HerbLocationVO herbLocationVO = herbLocationService.transferHerbLocationToVO(herbLocation);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "location",herbLocationVO)
+        );
+    }
+
     @DeleteMapping("/herbs/location/{locationId}")
     public ResponseEntity<?> deleteHerbLocation(@PathVariable int locationId) {
         if(!herbLocationService.isHerbLocationExist(locationId)){
