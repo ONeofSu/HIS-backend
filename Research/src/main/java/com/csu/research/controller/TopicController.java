@@ -17,7 +17,7 @@ public class TopicController {
     @Autowired
     TopicService topicService;
 
-    @GetMapping("/{topicId}")
+    @GetMapping("/{topicId}") // 根据课题id课题信息
     public ResponseEntity<?> findTopicByTopicId(
             @PathVariable Long topicId
     ) {
@@ -36,7 +36,7 @@ public class TopicController {
 
     }
 
-    @PostMapping("/update")
+    @PostMapping("/update") // 更新课题
     public ResponseEntity<?> updateTopic(@RequestBody Topic topic) throws Exception {
         if (topicService.updateTopic(topic)) {
             return ResponseEntity.ok(
@@ -50,7 +50,7 @@ public class TopicController {
         );
     }
 
-    @GetMapping("/search")
+    @GetMapping("/search") // 搜索课题
     public ResponseEntity<?> searchTopic(@RequestParam String query) {
         return ResponseEntity.ok(
           Map.of("code", 0,
@@ -58,7 +58,7 @@ public class TopicController {
         );
     }
 
-    @PostMapping("/add")
+    @PostMapping("/add") // 添加课题
     public ResponseEntity<?> addTopic(@RequestBody Topic topic) throws Exception {
         Boolean b = topicService.addTopic(topic);
         if (b) {
