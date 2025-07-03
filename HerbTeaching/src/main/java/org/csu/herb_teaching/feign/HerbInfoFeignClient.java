@@ -16,7 +16,7 @@ public interface HerbInfoFeignClient {
     /**
      * 根据药材ID获取药材信息
      */
-    @GetMapping("/herbs/info/{herbId}")
+    @GetMapping("/herbs/info/id/{herbId}")
     Map<String, Object> getHerbInfoById(@PathVariable("herbId") int herbId);
 
     /**

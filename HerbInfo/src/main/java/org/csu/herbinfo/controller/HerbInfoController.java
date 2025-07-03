@@ -43,6 +43,26 @@ public class HerbInfoController {
         );
     }
 
+    @GetMapping("herbs/info/id/{herbId}")
+    public ResponseEntity<?> getHerbInfoById(@PathVariable int herbId) {
+        if(!herbService.isHerbIdExist(herbId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","herb does not exist")
+            );
+        }
+        Herb herb = herbService.getHerbById(herbId);
+        if(herb == null){
+            return ResponseEntity.status(500).body("error to get");
+        }
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "herbId", herbId,
+                        "herbName", herb.getName() != null ? herb.getName() : "",
+                        "herbImageUrl", herb.getImage() != null ? herb.getImage() : "")
+        );
+    }
+
     @GetMapping("/herbs")
     public ResponseEntity<?> getAllHerbs() {
         ResponseEntity<List<Herb>> result = null;
@@ -96,6 +116,27 @@ public class HerbInfoController {
             return ResponseEntity.status(500).body("error to delete");
         }
 
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "herb",herbVO)
+        );
+    }
+
+    @PutMapping("/herbs/info/{herbId}")
+    public ResponseEntity<?> updateHerb(@RequestBody HerbDTO herbDTO, @PathVariable int herbId) {
+        if(!herbService.isHerbIdExist(herbId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","herb does not exist")
+            );
+        }
+
+        Herb herb = herbService.transferDTOToHerb(herbDTO);
+        herb.setId(herbId);
+        if(!herbService.updateHerbForId(herb)){
+            return ResponseEntity.status(500).body("error to update");
+        }
+        HerbVO herbVO = herbService.transferHerbToVO(herb);
         return ResponseEntity.ok(
                 Map.of("code",0,
                         "herb",herbVO)
@@ -257,6 +298,11 @@ public class HerbInfoController {
                 Map.of("code",0,
                         "links",linkList)
         );
+    }
+
+    @GetMapping("/herbs/{herbId}/exist")
+    public boolean isHerbExist(@PathVariable int herbId) {
+        return herbService.isHerbIdExist(herbId);
     }
 
 }

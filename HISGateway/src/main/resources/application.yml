@@ -12,6 +12,7 @@ spring:
             locator:
               enabled: true
           globalcors:
+            add-to-simple-url-handler-mapping: true
             cors-configurations:
               '[/**]':  #允许跨域访问的资源
                 allowedOrigins: "*" #跨域允许的来源
@@ -20,6 +21,7 @@ spring:
                   - POST
                   - PUT
                   - DELETE
+                  - OPTIONS
                 allowed-headers: "*"
 
           routes:
@@ -70,6 +72,26 @@ spring:
               filters:
                 - StripPrefix=1
 
+            #课程评分（所有登录用户可用）
+            - id: herb-teaching-service-rate
+              uri: lb://herb-teaching-service
+              predicates:
+                - Path=/herb-teaching-service/courses/*/ratings
+                - Method=POST
+              filters:
+                - StripPrefix=1
+                - name: JwtAuth
+
+            #课程收藏（所有登录用户可用）
+            - id: herb-teaching-service-collect
+              uri: lb://herb-teaching-service
+              predicates:
+                - Path=/herb-teaching-service/courses/*/collections
+                - Method=POST,DELETE
+              filters:
+                - StripPrefix=1
+                - name: JwtAuth
+
             #课程管理(仅教师、管理员)
             - id: herb-teaching-service-write
               uri: lb://herb-teaching-service
@@ -79,12 +101,31 @@ spring:
               filters:
                 - StripPrefix=1
                 - name: JwtTeacherAuth
+
             #课程查看
             - id: herb-teaching-service-read
               uri: lb://herb-teaching-service
               predicates:
                 - Path=/herb-teaching-service/**
                 - Method=GET
+              filters:
+                - StripPrefix=1
+                - name: JwtAuth
+
+            #培训资料
+            - id: herb-training-service
+              uri: lb://herb-training-service
+              predicates:
+                - Path=/herb-training-service/**
+              filters:
+                - StripPrefix=1
+                - name: JwtAuth
+
+            #评论
+            - id: comment-service
+              uri: lb://comment-service
+              predicates:
+                - Path=/comment-service/**
               filters:
                 - StripPrefix=1
                 - name: JwtAuth

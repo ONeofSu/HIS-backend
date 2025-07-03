@@ -298,7 +298,7 @@ public class HerbServiceImpl implements HerbService {
         herbVO.setId(herb.getId());
         herbVO.setName(herb.getName());
         herbVO.setOrigin(herb.getOrigin());
-        herbVO.setDes(herb.getDes1());
+        herbVO.setDes(herb.getDes1() != null ? herb.getDes1() : "");
         herbVO.setImage(herb.getImage());
 
         List<HerbLinkCategory> herbLinkCategoryList = getLinksOnHerb(herb.getId());
