@@ -13,6 +13,7 @@ import java.util.List;
 public interface MaterialService {
     public int addMaterial(Material material);
     public List<Material> getAllMaterial();
+    public List<Material> getAllMaterialDividePages(int page, int size);
     public Material getMaterialById(int id);
     public boolean isMaterialIdExist(int id);
     public boolean updateMaterial(Material material);

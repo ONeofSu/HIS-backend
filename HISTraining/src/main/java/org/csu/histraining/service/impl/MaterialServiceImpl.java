@@ -1,6 +1,7 @@
 package org.csu.histraining.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.csu.histraining.DTO.ContentDTO;
 import org.csu.histraining.DTO.MaterialDTO;
 import org.csu.histraining.DTO.UpdateMaterialDTO;
@@ -87,6 +88,14 @@ public class MaterialServiceImpl implements MaterialService {
         QueryWrapper<Material> queryWrapper = new QueryWrapper();
         queryWrapper.eq("material_isvalid",1);
         return materialMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<Material> getAllMaterialDividePages(int page, int size) {
+        Page<Material> pageParma = new Page<>(page, size);
+        QueryWrapper<Material> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("material_isvalid",1);
+        return materialMapper.selectPage(pageParma,queryWrapper).getRecords();
     }
 
     @Override

@@ -145,8 +145,10 @@ public class MaterialController {
     }
 
     @GetMapping("/material/all")
-    public ResponseEntity<?> getAllMaterial() {
-        List<Material> materials = materialService.getAllMaterial();
+    public ResponseEntity<?> getAllMaterial(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        List<Material> materials = materialService.getAllMaterialDividePages(page, size);
         List<SimpleMaterialVO> simpleMaterialVOS = materialService.transferMaterialToSimpleVOList(materials);
         return ResponseEntity.ok(
                 Map.of("code",0,
