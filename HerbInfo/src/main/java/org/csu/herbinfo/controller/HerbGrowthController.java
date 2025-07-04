@@ -1,17 +1,15 @@
 package org.csu.herbinfo.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.csu.herbinfo.DTO.HerbGrowthDTO;
 import org.csu.herbinfo.VO.HerbGrowthVO;
 import org.csu.herbinfo.entity.HerbGrowth;
+import org.csu.herbinfo.service.UserService;
 import org.csu.herbinfo.service.HerbGrowthService;
 import org.csu.herbinfo.service.HerbService;
-import org.csu.herbinfo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +17,7 @@ import java.util.Map;
 /*
 交互中药生长日志信息的Controller
  */
-
+@RequiredArgsConstructor
 @RestController
 public class HerbGrowthController {
     @Autowired
@@ -28,6 +26,8 @@ public class HerbGrowthController {
     HerbGrowthService herbGrowthService;
     @Autowired
     UserService userService;
+
+    private final UserService userFeignClient;
 
     //新增生长信息
     @PostMapping(value = "/growth")
@@ -94,6 +94,26 @@ public class HerbGrowthController {
 
     @GetMapping("/growth/user/{userId}")
     public ResponseEntity<?> getAllGrowthOnUser(@PathVariable int userId) {
+        if(!userService.isUserIdExist(userId)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","the user does not exist!")
+            );
+        }
+
+        List<HerbGrowth> herbGrowths = herbGrowthService.getAllHerbGrowthByUserId(userId);
+        List<HerbGrowthVO> herbGrowthVOS = herbGrowthService.transferGrowthListToVOList(herbGrowths);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "userId",userId,
+                        "herbGrowths",herbGrowthVOS)
+        );
+    }
+    //新增，通过token获取用户提交记录
+    @GetMapping("/growth/userToken")
+    public ResponseEntity<?> getAllGrowthOnUserToken(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        int userId = userFeignClient.getUserIdByToken(token);
         if(!userService.isUserIdExist(userId)) {
             return ResponseEntity.ok(
                     Map.of("code",-1,
