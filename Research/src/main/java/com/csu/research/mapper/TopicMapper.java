@@ -12,6 +12,7 @@ public interface TopicMapper extends BaseMapper<Topic> {
     @Select("""
        select * from topic join team on topic.team_id = team.team_id
        where topic.topic_name like CONCAT('%', #{query}, '%')
+       AND topic.topic_isvalid = 1
        """
     )
     List<TopicVo> searchTopic(String query);

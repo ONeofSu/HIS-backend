@@ -19,9 +19,9 @@ public class ContentVo {
     private Long contentTypeId;
     private String contentTypeName;
 
-    private Short contentIsValid;
+    private boolean contentIsValid;
 
     private List<ContentBlock> contentBlocks;
 
-    private Long userId;
+    private int userId;
 }

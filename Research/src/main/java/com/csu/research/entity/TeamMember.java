@@ -16,15 +16,15 @@ public class TeamMember {
     private Long teamId;
 
     @TableField("user_id")
-    private Long userId;
+    private Integer userId;
 
     @TableField("team_member_name")
     private String teamMemberName;
 
     @TableField("team_member_des")
-    private String team_member_des;
+    private String teamMemberDes;
 
     @TableField("team_member_iscaptain")
-    private Short teamMemberIsCaptain;
+    private boolean teamMemberIsCaptain;
 
 }

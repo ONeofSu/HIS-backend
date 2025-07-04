@@ -6,4 +6,5 @@ import lombok.Data;
 @Data
 public class TopicVo extends Topic {
     private String teamName;
+    private String statusName;
 }

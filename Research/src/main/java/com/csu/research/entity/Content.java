@@ -18,7 +18,7 @@ public class Content {
     private Long topicId;
 
     @TableField("user_id")
-    private Long userId;
+    private int userId;
 
     @TableField("content_type_id")
     private Long contentTypeId;
@@ -36,5 +36,5 @@ public class Content {
     private LocalDateTime contentTime;
 
     @TableField("content_isvalid")
-    private Short contentIsValid;
+    private boolean contentIsValid;
 }

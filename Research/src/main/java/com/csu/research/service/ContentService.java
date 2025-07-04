@@ -9,12 +9,32 @@ import com.csu.research.vo.ContentVo;
 import java.util.List;
 
 public interface ContentService {
+    //ContentCRUD
+    Content addContent(Content content);
+    boolean deleteContent(Long id);
+    boolean recursionDeleteContent(Long id);
+    boolean updateContent(Content content);
+    Content getContent(Long id);
+    List<Content> getAllContent(int size,int page);
+    boolean isContentExist(Long id);
 
-    ContentVo transferToContentVo(Content content,
-                                  List< ContentBlock> contentBlocks,
-                                  ContentType contentType,
-                                  Topic topic);
+    //ContentTypeCRUD
+    ContentType getContentType(Long id);
+    String getContentTypeNameById(Long id);
+    Long getContentTypeIdByName(String contentTypeName);
 
-    // 根据课题组id获取课题组的所有资料
-    List<ContentVo> findAllContentsOfOneTeam(Long teamId);
+    //ContentBlockBasicCRUD
+    ContentBlock addContentBlock(ContentBlock contentBlock);
+    ContentBlock getContentBlock(Long id);
+    boolean deleteContentBlock(Long id);
+
+    boolean updateContentBlock(ContentBlock contentBlock);
+    List<ContentBlock> getAllContentBlockOnContent(Long contentId);
+
+
+    //APPLY
+    ContentVo transferToContentVo(Content content,boolean isSimple);
+    List<ContentVo> transferToContentVo(List<Content> contentList,boolean isSimple);
+    List<ContentVo> findAllContentsOfOneTopic(Long topicId,boolean isSimple);     //根据课题id获取课题的所有资料
+    List<ContentVo> findAllSimpleContentsOfOneTeam(Long teamId);   //根据课题组id获取课题组所有资料简单信息
 }

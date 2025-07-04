@@ -22,4 +22,7 @@ public class Team {
 
     @TableField("team_des")
     private String teamDes;
+
+    @TableField("team_isvalid")
+    private boolean teamIsvalid;
 }

@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Select;
 
 public interface TeamMapper extends BaseMapper<Team> {
 
-    @Select("select * from team where team_name like concat('%', #{query}, '%')")
+    @Select("select * from team where team_name like concat('%', #{query}, '%')" +
+            "AND team_isvalid = 1")
     Page<Team> searchTeamByName(Page<Team> page, @Param("query") String query);
 }

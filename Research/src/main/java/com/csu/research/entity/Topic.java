@@ -32,4 +32,7 @@ public class Topic {
     @TableField("topic_status")
     private Integer topicStatus;
 
+    @TableField("topic_isvalid")
+    private boolean topicIsvalid;
+
 }

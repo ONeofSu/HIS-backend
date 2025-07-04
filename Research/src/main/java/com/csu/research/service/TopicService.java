@@ -1,5 +1,6 @@
 package com.csu.research.service;
 
+import com.csu.research.DTO.TopicDTO;
 import com.csu.research.entity.Topic;
 import com.csu.research.vo.TopicVo;
 
@@ -34,7 +35,7 @@ public interface TopicService {
      * @param topic Topic
      * @return Boolean
      */
-    Boolean addTopic(Topic topic);
+    Topic addTopic(Topic topic);
 
     /**
      * 删除课题
@@ -43,4 +44,90 @@ public interface TopicService {
      * @return Boolean
      */
     Boolean delTopic(Long topicId);
+
+    /**
+     * 获得Topic
+     * @author ONeofSu
+     * @param topicId Long
+     * @return Topic
+     */
+    Topic getTopicById(Long topicId);
+
+    /**
+     * 根据userId获得Topic
+     * @author ONeofSu
+     * @param userId int
+     * @param page int
+     * @param size int
+     * @return List<Topic>
+     */
+    List<Topic> getTopicsByUserId(int userId,int page,int size);
+
+    /**
+     * 获得所有Topic
+     * @author ONeofSu
+     * @param page int
+     * @param size int
+     * @return List<Topic>
+     */
+    List<Topic> getAllTopics(int page,int size);
+
+    /**
+     * 通过TeamId获得所有Topic
+     * @author ONeofSu
+     * @param page int
+     * @param size int
+     * @return List<Topic>
+     */
+    List<Topic> getAllTopicsByTeamId(Long teamId,int page,int size);
+    List<Topic> getAllTopicsByTeamId(Long teamId);
+
+    /**
+     * 根据teamId获得Topic
+     * @author ONeofSu
+     * @param userId int
+     * @param page int
+     * @param size int
+     * @return List<Topic>
+     */
+
+    /**
+     * 转换Topic为VO
+     * @author ONeofSu
+     * @param topic Topic
+     * @return TopicVo
+     */
+    TopicVo transferTopicToVO(Topic topic);
+
+    /**
+     * 转换TopicList为VOList
+     * @author ONeofSu
+     * @param topics List<Topic>
+     * @return List<TopicVo>
+     */
+    List<TopicVo> transferTopicToVO(List<Topic> topics);
+
+    /**
+     * 转换DTO为Topic
+     * @author ONeofSu
+     * @param topicDTO TopicDTO
+     * @return Topic
+     */
+    Topic transferDTOToTopic(TopicDTO topicDTO);
+
+    /**
+     * 检查id是否存在
+     * @author ONeofSu
+     * @param topicId Long
+     * @return boolean
+     */
+    boolean isTopicExist(Long topicId);
+
+    /**
+     * 检查topicName是否存在
+     * @author ONeofSu
+     * @param topicName String
+     * @return boolean
+     */
+    boolean isTopicExist(String topicName);
 }

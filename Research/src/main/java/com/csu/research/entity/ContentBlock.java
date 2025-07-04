@@ -29,5 +29,5 @@ public class ContentBlock {
     private String contentBlockUrl;
 
     @TableField("content_block_isvalid")
-    private Short contentBlockIsValid;
+    private boolean contentBlockIsValid;
 }
