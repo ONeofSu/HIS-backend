@@ -325,7 +325,7 @@ public class HerbServiceImpl implements HerbService {
         herbLinkCategoryVO.setCategoryId(herbLinkCategory.getCategoryId());
 
         herbLinkCategoryVO.setHerbName(getHerbById(herbLinkCategoryVO.getHerbId()).getName());
-        herbLinkCategoryVO.setCategoryName(getHerbById(herbLinkCategoryVO.getHerbId()).getName());
+        herbLinkCategoryVO.setCategoryName(getHerbCategoryById(herbLinkCategoryVO.getCategoryId()).getName());
         return herbLinkCategoryVO;
     }
 
