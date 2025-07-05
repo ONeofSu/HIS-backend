@@ -96,6 +96,15 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public Integer getUserRoleLevelFromToken(String token) {
+        if(!jwtUtil.validateToken(token)) {
+            return null;
+        }
+        // 用户分类ID就是角色等级
+        return jwtUtil.extractRoleLevel(token);
+    }
+
+    @Override
     public boolean isTokenValid(String token) {
         if(!jwtUtil.validateToken(token)) {
             return false;

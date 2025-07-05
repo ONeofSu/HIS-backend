@@ -13,6 +13,7 @@ public interface AuthService {
     public String getUsernameFromToken(String token);
     public int getUserIdFromToken(String token);    //-1为不存在用户
     public int getUserCategoryIdFromToken(String token);
+    public Integer getUserRoleLevelFromToken(String token);    //返回用户角色等级 (1:学生, 2:教师, 3:管理员)
 
     public boolean isTokenValid(String token);
     public boolean isAuthHeaderValid(String authHeader);

@@ -41,6 +41,11 @@ public class InnerUserController {
         return authService.getUserIdFromToken(token);
     }
 
+    @GetMapping("/user/info/token/{token}/roleLevel")
+    public Integer getUserRoleLevelByToken(@PathVariable String token) {
+        return authService.getUserRoleLevelFromToken(token);
+    }
+
     @GetMapping("/user/info/token/userId/{userId}/username")
     public String getUsernameById(@PathVariable int userId) {
         return userService.getUserById(userId).getUsername();
