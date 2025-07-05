@@ -35,7 +35,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String register(User user) {
-        return register(user,1);
+        return register(user,0);
     }
 
     @Override
@@ -118,8 +118,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public boolean isAdminTokenValid(String token) {
+        if(getUserCategoryIdFromToken(token) < 3) {
+            return false;
+        }
+        return isTokenValid(token);
+    }
+
+    @Override
     public boolean isRootTokenValid(String token) {
-        if(getUserCategoryIdFromToken(token) != 3) {
+        if(getUserCategoryIdFromToken(token) < 4) {
             return false;
         }
         return isTokenValid(token);

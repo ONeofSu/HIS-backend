@@ -129,6 +129,13 @@ public class UserController {
         }
         UserVO userVO = userService.transferUserToUserVO(user);
 
+        if(userService.isUserLinkCategoryExist(userId,4)){
+            return ResponseEntity.ok(
+                    Map.of("code",-3,
+                            "message","root admin can't be deleted")
+            );
+        }
+
         if(!userService.deleteUser(userId)){
             return ResponseEntity.internalServerError().body("error to delete user");
         }

@@ -6,8 +6,10 @@ import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFac
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+@Component
 public class JwtStudentAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<JwtStudentAuthGatewayFilterFactory.Config> {
     private final JwtUtil jwtUtil;
 

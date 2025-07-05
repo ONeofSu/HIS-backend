@@ -63,6 +63,14 @@ public class UserAuthController {
                             "message","invalid role")
             );
         }
+
+        if(userCategoryId == 3 || userCategoryId == 4) {
+            return ResponseEntity.ok(
+                    Map.of("code",-3,
+                            "message","admin can't be registered")
+            );
+        }
+
         String token = authService.register(user,userCategoryId);
         if(token == null) {
             return ResponseEntity.internalServerError().body("error to register");
