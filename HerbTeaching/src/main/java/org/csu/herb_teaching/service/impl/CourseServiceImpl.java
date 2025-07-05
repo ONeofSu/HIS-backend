@@ -273,6 +273,27 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         return pageVO;
     }
 
+    @Override
+    public boolean hasUserRatedCourse(int courseId, int userId) {
+        QueryWrapper<CourseRating> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("course_id", courseId).eq("user_id", userId);
+        return courseRatingMapper.selectCount(queryWrapper) > 0;
+    }
+
+    @Override
+    public CourseRating getUserRating(int courseId, int userId) {
+        QueryWrapper<CourseRating> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("course_id", courseId).eq("user_id", userId);
+        return courseRatingMapper.selectOne(queryWrapper);
+    }
+
+    @Override
+    public boolean hasUserCollectedCourse(int courseId, int userId) {
+        QueryWrapper<UserCourseCollection> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("course_id", courseId).eq("user_id", userId);
+        return userCourseCollectionMapper.selectCount(queryWrapper) > 0;
+    }
+
     // --- Course Herb Management ---
 
     @Override

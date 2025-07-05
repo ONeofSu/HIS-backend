@@ -72,6 +72,12 @@
             <artifactId>spring-cloud-starter-openfeign</artifactId>
             <version>4.3.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.csu</groupId>
+            <artifactId>HISUser</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
