@@ -2,6 +2,7 @@ package com.csu.research.controller;
 
 import com.csu.research.DTO.TopicDTO;
 import com.csu.research.entity.Topic;
+import com.csu.research.service.AuthService;
 import com.csu.research.service.TeamService;
 import com.csu.research.service.TopicService;
 import com.csu.research.service.UserService;
@@ -21,6 +22,10 @@ public class TopicController {
     TopicService topicService;
     @Autowired
     TeamService teamService;
+    @Autowired
+    AuthService authService;
+    @Autowired
+    UserService userService;
 
     @GetMapping("/{topicId}") // 根据课题id课题信息
     public ResponseEntity<?> findTopicByTopicId(
@@ -46,25 +51,43 @@ public class TopicController {
     }
 
     @PostMapping("/update/{topicId}") // 更新课题
-    public ResponseEntity<?> updateTopic(@PathVariable Long topicId,
+    public ResponseEntity<?> updateTopic(@RequestHeader("Authorization") String authHeader,
+                                         @PathVariable Long topicId,
                                          @RequestBody TopicDTO topicDTO) throws Exception {
+        String token = authHeader.substring(7);
+        int userId = userService.getUserId(token);
+        if(userId==-1){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
         if(!teamService.isExistTeam(topicDTO.getTeamId())) {
             return ResponseEntity.ok(
-                    Map.of("code", -1,
+                    Map.of("code", -2,
                             "message", "the team doesn't exist")
             );
         }
         if(!topicService.isTopicExist(topicId)){
             return ResponseEntity.ok(
-                    Map.of("code", -2,
+                    Map.of("code", -3,
                             "message", "the topic doesn't exist")
+            );
+        }
+
+        if(!authService.isQualifiedToHandleTopic(topicId, userId) &&
+                !userService.isAdmin(userId)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-4,
+                            "message", "you are not qualified update this topic")
             );
         }
 
         Topic topic = topicService.findTopicByTopicId(topicId);
         if(!topic.getTopicName().equals(topicDTO.getName()) && topicService.isTopicExist(topicDTO.getName())){
             return ResponseEntity.ok(
-                    Map.of("code", -3,
+                    Map.of("code", -5,
                             "message", "the topic name already exist")
             );
         }
@@ -77,7 +100,7 @@ public class TopicController {
             );
         }
         return ResponseEntity.ok(
-                Map.of("code", -4,
+                Map.of("code", -6,
                         "message", "update failed")
         );
     }
@@ -91,20 +114,39 @@ public class TopicController {
     }
 
     @PostMapping("/add") // 添加课题
-    public ResponseEntity<?> addTopic(@RequestBody TopicDTO topicDTO) throws Exception {
+    public ResponseEntity<?> addTopic(@RequestHeader("Authorization") String authHeader,
+                                      @RequestBody TopicDTO topicDTO) throws Exception {
+        String token = authHeader.substring(7);
+        int userId = userService.getUserId(token);
+        if(userId==-1){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
         if(!teamService.isExistTeam(topicDTO.getTeamId())) {
             return ResponseEntity.ok(
-                    Map.of("code", -1,
+                    Map.of("code", -2,
                             "message", "the team doesn't exist")
             );
         }
         if(topicService.isTopicExist(topicDTO.getName())){
             return ResponseEntity.ok(
-                    Map.of("code", -2,
+                    Map.of("code", -3,
                             "message", "the topic name already exist")
             );
         }
+
         Topic topic = topicService.transferDTOToTopic(topicDTO);
+        if(!authService.isQualifiedToHandleTopic(topic,userId)
+                && !userService.isAdmin(userId)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-4,
+                            "message", "you are not qualified add this topic by this team")
+            );
+        }
+
         topic = topicService.addTopic(topic);
         if (topic != null) {
             return ResponseEntity.ok(
@@ -113,7 +155,7 @@ public class TopicController {
             );
         }
         return ResponseEntity.ok(Map.of(
-                "code", -3,
+                "code", -5,
                 "message", "fail to add the topic"
         ));
 
@@ -121,13 +163,32 @@ public class TopicController {
 
     //删除课题
     @DeleteMapping("/del/{topicId}")
-    public ResponseEntity<?> delTopic(@PathVariable Long topicId) {
+    public ResponseEntity<?> delTopic(@RequestHeader("Authorization") String authHeader,
+                                      @PathVariable Long topicId) {
+        String token = authHeader.substring(7);
+        int userId = userService.getUserId(token);
+        if(userId==-1){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
         if(!topicService.isTopicExist(topicId)) {
             return ResponseEntity.ok(
-                    Map.of("code", -1,
+                    Map.of("code", -2,
                             "message", "invalid topicId")
             );
         }
+
+        if(!authService.isQualifiedToHandleTopic(topicId,userId) &&
+        !userService.isAdmin(userId)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-3,
+                            "message", "you are not qualified delete this topic")
+            );
+        }
+
         if (topicService.delTopic(topicId)) {
             return ResponseEntity.ok(
               Map.of("code", 0,
@@ -135,7 +196,7 @@ public class TopicController {
             );
         }
         return ResponseEntity.ok(
-              Map.of("code", -2,
+              Map.of("code", -4,
                       "message", "fail to delete the topic")
         );
     }

@@ -15,10 +15,10 @@ public class Document {
     private Long documentId;
 
     @TableField("topic_id")
-    private Long topic_id;
+    private Long topicId;
 
     @TableField("user_id")
-    private Long userId;
+    private int userId;
 
     @TableField("auth_id")
     private Long authId;
@@ -39,6 +39,6 @@ public class Document {
     private LocalDateTime documentTime;
 
     @TableField("document_isvalid")
-    private Short documentIsValid;
+    private Boolean documentIsValid;
 
 }

@@ -2,6 +2,7 @@ package com.csu.research.controller;
 
 import com.csu.research.DTO.ContentDTO;
 import com.csu.research.entity.Content;
+import com.csu.research.entity.ContentBlock;
 import com.csu.research.service.AuthService;
 import com.csu.research.service.ContentService;
 import com.csu.research.service.TopicService;
@@ -216,5 +217,114 @@ public class ContentController {
         }
 
         return ResponseEntity.ok(Map.of("code",0,"contents",result));
+    }
+
+    @PostMapping("/{contentId}/details")
+    public ResponseEntity<?> addContentDetails(@RequestHeader("Authorization") String authHeader,
+                                               @PathVariable("contentId") Long contentId,
+                                               @RequestBody List<ContentBlock> contentBlocks) {
+        String token = authHeader.substring(7);
+        int userId = userService.getUserId(token);
+        if (userId == -1){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
+        if(!contentService.isContentExist(contentId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-2,
+                            "message","content not exist")
+            );
+        }
+
+        if(!authService.isQualifiedToWriteContent(contentId,userId) && !userService.isAdmin(userId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-3,
+                            "message","you are not qualified to add content")
+            );
+        }
+
+        for(ContentBlock contentBlock : contentBlocks){
+            contentBlock.setContentId(contentId);
+            contentService.addContentBlock(contentBlock);
+        }
+        Content content = contentService.getContent(contentId);
+        ContentVo contentVo = contentService.transferToContentVo(content,false);
+        return ResponseEntity.ok(Map.of("code",0,"contents",contentVo));
+    }
+
+    @PutMapping("/{contentId}/details")
+    public ResponseEntity<?> updateContentDetails(@RequestHeader("Authorization") String authHeader,
+                                                  @PathVariable("contentId") Long contentId,
+                                                  @RequestBody List<ContentBlock> contentBlocks){
+        String token = authHeader.substring(7);
+        int userId = userService.getUserId(token);
+        if (userId == -1){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
+        if(!contentService.isContentExist(contentId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-2,
+                            "message","content not exist")
+            );
+        }
+
+        if(!authService.isQualifiedToWriteContent(contentId,userId) && !userService.isAdmin(userId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-3,
+                            "message","you are not qualified to update content")
+            );
+        }
+
+        //删除原有的内容
+        List<ContentBlock> ori = contentService.getAllContentBlockOnContent(contentId);
+        for(ContentBlock contentBlock : ori){
+            contentService.deleteContentBlock(contentBlock.getContentBlockId());
+        }
+        //添加现有内容
+        for(ContentBlock contentBlock : contentBlocks){
+            contentBlock.setContentId(contentId);
+            contentService.addContentBlock(contentBlock);
+        }
+        List<ContentBlock> result = contentService.getAllContentBlockOnContent(contentId);
+        return ResponseEntity.ok(Map.of("code",0,"contents",result));
+    }
+
+    @GetMapping("/{contentId}/details")
+    public ResponseEntity<?> getContentDetails(@RequestHeader("Authorization") String authHeader,
+                                               @PathVariable("contentId") Long contentId){
+        String token = authHeader.substring(7);
+        int userId = userService.getUserId(token);
+        if (userId == -1){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
+        if(!contentService.isContentExist(contentId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-2,
+                            "message","content not exist")
+            );
+        }
+
+        if(!authService.isQualifiedToReadContent(contentId,userId) && !userService.isAdmin(userId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-3,
+                            "message","you are not qualified to read content")
+            );
+        }
+
+        Content content = contentService.getContent(contentId);
+        ContentVo contentVo = contentService.transferToContentVo(content,false);
+
+        return ResponseEntity.ok(Map.of("code",0,"contents",contentVo));
     }
 }
