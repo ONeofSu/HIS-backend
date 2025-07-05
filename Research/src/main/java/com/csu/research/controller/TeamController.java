@@ -265,10 +265,8 @@ public class TeamController {
             );
         }
 
-        // TODO: 可以让管理员也具有权限
-
         //检测用户是否有权限设置队长
-        if(!authService.isQualifiedToSetCaptain(userId, memberId)) {
+        if(!authService.isQualifiedToSetCaptain(userId, memberId)  && !userService.isAdmin(userId)) {
             return ResponseEntity.ok(
                     Map.of("code", -3,
                             "message", "you're not qualified to set captain")

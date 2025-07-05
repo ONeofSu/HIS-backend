@@ -2,11 +2,13 @@ package com.csu.research.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.csu.research.DTO.ContentDTO;
 import com.csu.research.entity.Content;
 import com.csu.research.entity.ContentBlock;
 import com.csu.research.entity.ContentType;
 import com.csu.research.entity.Topic;
 import com.csu.research.mapper.*;
+import com.csu.research.service.AuthService;
 import com.csu.research.service.ContentService;
 import com.csu.research.service.TeamService;
 import com.csu.research.service.TopicService;
@@ -26,7 +28,8 @@ public class ContentServiceImpl implements ContentService {
     ContentBlockMapper contentBlockMapper;
     @Autowired
     ContentTypeMapper contentTypeMapper;
-
+    @Autowired
+    AuthService authService;
     @Autowired
     TopicService topicService;
 
@@ -43,6 +46,7 @@ public class ContentServiceImpl implements ContentService {
     public boolean deleteContent(Long id) {
         Content content = contentMapper.selectById(id);
         content.setContentIsValid(false);
+        contentMapper.updateById(content);
         return true;
     }
 
@@ -82,7 +86,11 @@ public class ContentServiceImpl implements ContentService {
 
     @Override
     public boolean isContentExist(Long id) {
-        return contentMapper.selectById(id) != null;
+        Content content = contentMapper.selectById(id);
+        if (content == null || content.isContentIsValid() == false) {
+            return false;
+        }
+        return true;
     }
 
     //--------------------------------------------ContentType--------------------------------------------------------
@@ -189,17 +197,46 @@ public class ContentServiceImpl implements ContentService {
     }
 
     @Override
+    public Content transferDTOToContent(ContentDTO contentDTO,int userId) {
+        Content content = new Content();
+        content.setTopicId(contentDTO.getTopicId());
+        content.setContentName(contentDTO.getContentName());
+        content.setContentDes(contentDTO.getContentDes());
+        content.setUserId(userId);
+
+        Long contentTypeId = getContentTypeIdByName(contentDTO.getContentType());
+        content.setContentTypeId(contentTypeId);
+
+        Long authId= authService.getAuthByName(contentDTO.getAuth()).getAuthId();
+        content.setAuthId(authId);
+
+        content.setContentIsValid(true);
+
+        return content;
+    }
+
+    @Override
     public List<ContentVo> findAllContentsOfOneTopic(Long teamId,boolean isSimple) {
         List<Content> contents = contentMapper.selectList(new QueryWrapper<Content>().eq("topic_id", teamId));
         return transferToContentVo(contents,true);
     }
 
     @Override
+    public List<ContentVo> findAllContentsOfOneTopicAndType(Long topicId, Long typeId, boolean isSimple) {
+        QueryWrapper<Content> wrapper = new QueryWrapper<>();
+        wrapper.eq("topic_id", topicId).eq("content_type_id", typeId);
+        List<Content> contents = contentMapper.selectList(wrapper);
+        return transferToContentVo(contents,isSimple);
+    }
+
+    @Override
     public List<ContentVo> findAllSimpleContentsOfOneTeam(Long teamId) {
         List<Topic> topics = topicService.getAllTopicsByTeamId(teamId);
+        System.out.println(topics);
         List<ContentVo> result = new ArrayList<>();
         for (Topic topic : topics) {
-            List<ContentVo> contentVos = findAllContentsOfOneTopic(topic.getTeamId(),true);
+            List<ContentVo> contentVos = findAllContentsOfOneTopic(topic.getTopicId(),true);
+            System.out.println(contentVos);
             result.addAll(contentVos);
         }
         return result;

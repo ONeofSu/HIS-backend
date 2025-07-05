@@ -1,5 +1,6 @@
 package com.csu.research.service;
 
+import com.csu.research.DTO.ContentDTO;
 import com.csu.research.entity.Content;
 import com.csu.research.entity.ContentBlock;
 import com.csu.research.entity.ContentType;
@@ -35,6 +36,8 @@ public interface ContentService {
     //APPLY
     ContentVo transferToContentVo(Content content,boolean isSimple);
     List<ContentVo> transferToContentVo(List<Content> contentList,boolean isSimple);
+    Content transferDTOToContent(ContentDTO contentDTO,int userId);
     List<ContentVo> findAllContentsOfOneTopic(Long topicId,boolean isSimple);     //根据课题id获取课题的所有资料
+    List<ContentVo> findAllContentsOfOneTopicAndType(Long topicId,Long typeId,boolean isSimple);
     List<ContentVo> findAllSimpleContentsOfOneTeam(Long teamId);   //根据课题组id获取课题组所有资料简单信息
 }

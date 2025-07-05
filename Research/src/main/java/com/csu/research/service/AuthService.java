@@ -9,6 +9,9 @@ public interface AuthService {
 
     boolean isQualifiedToSetCaptain(int userId,Long teamMemberId);
 
-    boolean isQualifiedToSeeContent(Content content,int userId);
+    boolean isQualifiedToAddContent(Content content,int userId);
+    boolean isQualifiedToReadContent(Content content,int userId);
+    boolean isQualifiedToReadContent(Long contentId,int userId);
     boolean isQualifiedToWriteContent(Content content,int userId);
+    boolean isQualifiedToWriteContent(Long contentId,int userId);
 }

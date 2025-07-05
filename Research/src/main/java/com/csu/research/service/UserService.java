@@ -12,4 +12,6 @@ public interface UserService {
     String getUsernameById(@PathVariable("userId") int userId);
     @GetMapping("/inner/user/exist/userId/{userId}")
     boolean isUserIdExist(@PathVariable("userId") int userId);
+    @GetMapping("/inner/user/is-admin/{userId}")
+    boolean isAdmin(@PathVariable("userId") int userId);
 }
