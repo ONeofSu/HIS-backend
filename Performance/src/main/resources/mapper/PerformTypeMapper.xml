@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.csu.performance.mapper.PerformTypeMapper">
+
+    <!-- 业绩种类结果映射 -->
+    <resultMap id="PerformTypeVOMap" type="org.csu.performance.VO.PerformTypeVO">
+        <id column="perform_type_id" property="performTypeId"/>
+        <result column="perform_type_name" property="performTypeName"/>
+        <result column="perform_type_desc" property="performTypeDesc"/>
+        <result column="is_active" property="isActive"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="created_time" property="createdTime"/>
+        <result column="updated_time" property="updatedTime"/>
+    </resultMap>
+
+    <!-- 查询所有启用的业绩种类 -->
+    <select id="selectActiveTypes" resultMap="PerformTypeVOMap">
+        SELECT 
+            perform_type_id,
+            perform_type_name,
+            perform_type_desc,
+            is_active,
+            sort_order,
+            created_time,
+            updated_time
+        FROM perform_type
+        WHERE is_active = 1
+        ORDER BY sort_order ASC, created_time ASC
+    </select>
+
+    <!-- 检查业绩种类名称是否存在 -->
+    <select id="checkTypeNameExists" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM perform_type
+        WHERE perform_type_name = #{performTypeName}
+        <if test="performTypeId != null">
+            AND perform_type_id != #{performTypeId}
+        </if>
+    </select>
+
+    <!-- 检查业绩种类是否正在使用 -->
+    <select id="checkTypeInUse" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM perform
+        WHERE perform_type_id = #{performTypeId}
+    </select>
+
+    <!-- 获取最大排序值 -->
+    <select id="getMaxSortOrder" resultType="java.lang.Integer">
+        SELECT MAX(sort_order)
+        FROM perform_type
+    </select>
+
+</mapper> 

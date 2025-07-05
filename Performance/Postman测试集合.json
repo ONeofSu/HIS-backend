@@ -1,0 +1,633 @@
+{
+	"info": {
+		"_postman_id": "performance-api-collection",
+		"name": "业绩管理API测试集合",
+		"description": "业绩管理模块的完整API测试集合，包含业绩管理、附件管理、种类管理等所有接口",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "业绩管理",
+			"item": [
+				{
+					"name": "新增业绩",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "userId",
+								"value": "2"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"performName\": \"中药鉴定学教学成果\",\n    \"performContent\": \"本人在2024年春季学期承担中药鉴定学课程教学任务，完成了理论教学48学时，实验教学32学时，学生满意度达到95%以上。\",\n    \"performTypeId\": 1,\n    \"performTime\": \"2024-12-15T10:00:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/performances",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"performances"
+							]
+						}
+					}
+				},
+				{
+					"name": "获取业绩列表",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/performances?keyword=教学&performTypeId=1&performStatus=1&page=1&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"performances"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "教学"
+								},
+								{
+									"key": "performTypeId",
+									"value": "1"
+								},
+								{
+									"key": "performStatus",
+									"value": "1"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "获取单个业绩详情",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/performances/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"performances",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "更新业绩信息",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "userId",
+								"value": "2"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"performName\": \"中药鉴定学教学成果（修订版）\",\n    \"performContent\": \"本人在2024年春季学期承担中药鉴定学课程教学任务，完成了理论教学48学时，实验教学32学时，学生满意度达到95%以上。同时完成了课程改革和教材编写工作。\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/performances/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"performances",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "提交业绩",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "userId",
+								"value": "2"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/performances/1/submit",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"performances",
+								"1",
+								"submit"
+							]
+						}
+					}
+				},
+				{
+					"name": "删除业绩",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "userId",
+								"value": "2"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/performances/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"performances",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "获取用户提交的业绩列表",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "userId",
+								"value": "2"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/performances/my?page=1&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"performances",
+								"my"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "业绩审核",
+			"item": [
+				{
+					"name": "获取待审核业绩列表",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/performances/pending?page=1&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"performances",
+								"pending"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "审核业绩-通过",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "userId",
+								"value": "1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"auditResult\": 2,\n    \"performComment\": \"业绩内容详实，证明材料充分，审核通过\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/performances/1/audit",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"performances",
+								"1",
+								"audit"
+							]
+						}
+					}
+				},
+				{
+					"name": "审核业绩-驳回",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "userId",
+								"value": "1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"auditResult\": 3,\n    \"performComment\": \"业绩内容不够详实，请补充相关证明材料\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/performances/1/audit",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"performances",
+								"1",
+								"audit"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "业绩附件",
+			"item": [
+				{
+					"name": "上传附件",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "userId",
+								"value": "2"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "performFileDes",
+									"value": "详细的教学成果总结报告",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/files/performances/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"performances",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "获取业绩的附件列表",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/files/performances/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"performances",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "获取单个附件详情",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/files/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "更新附件信息",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "userId",
+								"value": "2"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "performFileDes",
+									"value": "详细的教学成果总结报告（修订版）",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/files/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "删除附件",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "userId",
+								"value": "2"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/files/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"1"
+							]
+						}
+					}
+				},
+
+			]
+		},
+		{
+			"name": "业绩种类",
+			"item": [
+				{
+					"name": "获取业绩种类列表",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/perform-types",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"perform-types"
+							]
+						}
+					}
+				},
+				{
+					"name": "新增业绩种类",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"performTypeName\": \"学术交流\",\n    \"performTypeDesc\": \"学术交流相关的业绩成果\",\n    \"sortOrder\": 4\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/perform-types",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"perform-types"
+							]
+						}
+					}
+				},
+				{
+					"name": "更新业绩种类",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"performTypeName\": \"学术交流与合作\",\n    \"performTypeDesc\": \"学术交流与合作相关的业绩成果\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/perform-types/4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"perform-types",
+								"4"
+							]
+						}
+					}
+				},
+				{
+					"name": "删除业绩种类",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/perform-types/4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"perform-types",
+								"4"
+							]
+						}
+					}
+				},
+				{
+					"name": "强制删除业绩种类",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/perform-types/4/force",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"perform-types",
+								"4",
+								"force"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "统计信息",
+			"item": [
+				{
+					"name": "获取业绩统计信息",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/performances/statistics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"performances",
+								"statistics"
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8085",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "your-jwt-token-here",
+			"type": "string"
+		}
+	]
+} 
