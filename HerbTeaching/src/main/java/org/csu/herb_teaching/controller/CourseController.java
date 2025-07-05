@@ -526,4 +526,131 @@ public class CourseController {
     public boolean isCourseExist(@PathVariable int courseId) {
         return courseService.getById(courseId) != null;
     }
+
+    // GET /courses/{courseId}/ratings/check - Check if user has rated the course
+    @GetMapping("/{courseId}/ratings/check")
+    public ResponseEntity<?> checkUserRating(@PathVariable int courseId, @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        int userId = userFeignClient.getUserIdByToken(token);
+        
+        // 校验课程是否存在
+        if (courseService.getCourseDetail(courseId) == null) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "课程不存在");
+            return ResponseEntity.ok(result);
+        }
+        
+        // 校验用户是否存在
+        Boolean userExist;
+        try {
+            userExist = userFeignClient.isUserExist(userId);
+        } catch (Exception e) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        if (userExist == null || !userExist) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        
+        boolean hasRated = courseService.hasUserRatedCourse(courseId, userId);
+        
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("code", 0);
+        response.put("message", "User rating check completed successfully.");
+        response.put("courseId", courseId);
+        response.put("userId", userId);
+        response.put("hasRated", hasRated);
+        return ResponseEntity.ok(response);
+    }
+
+    // GET /courses/{courseId}/ratings/user - Get user's rating for the course
+    @GetMapping("/{courseId}/ratings/user")
+    public ResponseEntity<?> getUserRating(@PathVariable int courseId, @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        int userId = userFeignClient.getUserIdByToken(token);
+        
+        // 校验课程是否存在
+        if (courseService.getCourseDetail(courseId) == null) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "课程不存在");
+            return ResponseEntity.ok(result);
+        }
+        
+        // 校验用户是否存在
+        Boolean userExist;
+        try {
+            userExist = userFeignClient.isUserExist(userId);
+        } catch (Exception e) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        if (userExist == null || !userExist) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        
+        CourseRating userRating = courseService.getUserRating(courseId, userId);
+        
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("code", 0);
+        response.put("message", "User rating retrieved successfully.");
+        response.put("courseId", courseId);
+        response.put("userId", userId);
+        response.put("hasRated", userRating != null);
+        response.put("rating", userRating);
+        return ResponseEntity.ok(response);
+    }
+
+    // GET /courses/{courseId}/collections/user - Check if user has collected the course
+    @GetMapping("/{courseId}/collections/user")
+    public ResponseEntity<?> checkUserCollection(@PathVariable int courseId, @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        int userId = userFeignClient.getUserIdByToken(token);
+        
+        // 校验课程是否存在
+        if (courseService.getCourseDetail(courseId) == null) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "课程不存在");
+            return ResponseEntity.ok(result);
+        }
+        
+        // 校验用户是否存在
+        Boolean userExist;
+        try {
+            userExist = userFeignClient.isUserExist(userId);
+        } catch (Exception e) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        if (userExist == null || !userExist) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        
+        boolean hasCollected = courseService.hasUserCollectedCourse(courseId, userId);
+        
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("code", 0);
+        response.put("message", "User collection check completed successfully.");
+        response.put("courseId", courseId);
+        response.put("userId", userId);
+        response.put("hasCollected", hasCollected);
+        return ResponseEntity.ok(response);
+    }
 } 

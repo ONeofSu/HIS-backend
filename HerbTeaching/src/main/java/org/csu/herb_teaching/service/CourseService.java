@@ -33,6 +33,13 @@ public interface CourseService extends IService<Course> {
     // --- User-specific Query ---
     PageVO<Course> getCollectedCoursesByUserId(int userId, int pageNum, int pageSize);
 
+    // --- Course Rating Query ---
+    boolean hasUserRatedCourse(int courseId, int userId);
+    CourseRating getUserRating(int courseId, int userId);
+
+    // --- Course Collection Query ---
+    boolean hasUserCollectedCourse(int courseId, int userId);
+
     // --- Course Herb Management ---
     boolean addHerbToCourse(int courseId, int herbId);
     boolean removeHerbFromCourse(int courseId, int herbId);
