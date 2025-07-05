@@ -82,8 +82,8 @@ public class InnerUserController {
     // 判断是否为管理员，提供HerbTeaching调用
     @GetMapping("/user/is-admin/{userId}")
     public boolean isUserAdmin(@PathVariable int userId) {
-        // category_id=3为管理员
-        return userService.isUserLinkCategoryExist(userId, 3);
+        // category_id=3或4为管理员
+        return userService.isUserLinkCategoryExist(userId, 3) || userService.isUserLinkCategoryExist(userId, 4);
     }
 
     // 批量查询用户信息，返回Map<userId, UserVO>

@@ -186,7 +186,7 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public List<Topic> getAllTopicsByTeamId(Long teamId) {
         QueryWrapper<Topic> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("team_id", teamId).eq("topic_isvalid", true);
+        queryWrapper.eq("team_id", teamId).eq("topic_isvalid", 1);
         return topicMapper.selectList(queryWrapper);
     }
 

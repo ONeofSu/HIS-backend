@@ -17,6 +17,7 @@ public interface AuthService {
 
     public boolean isTokenValid(String token);
     public boolean isAuthHeaderValid(String authHeader);
+    public boolean isAdminTokenValid(String token);
     public boolean isRootTokenValid(String token);
 
     public User transferRegisterDTOToUser(RegisterDTO registerDTO);

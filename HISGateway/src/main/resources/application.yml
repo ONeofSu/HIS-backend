@@ -65,14 +65,14 @@ spring:
                 - StripPrefix=1
                 - name: JwtAuth
 
-            #研究内容
+            #研究内容(仅学生)
             - id: herb-research-service
               uri: lb://herb-research-service
               predicates:
                 - Path=/herb-research-service/**
               filters:
                 - StripPrefix=1
-                - name: JwtAuth
+                - name: JwtStudentAuth
 
             #课程评分（所有登录用户可用）
             - id: herb-teaching-service-rate

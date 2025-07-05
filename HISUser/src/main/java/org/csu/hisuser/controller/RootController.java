@@ -1,5 +1,6 @@
 package org.csu.hisuser.controller;
 
+import org.csu.hisuser.DTO.RegisterDTO;
 import org.csu.hisuser.DTO.UpdateUserDTO;
 import org.csu.hisuser.VO.UserVO;
 import org.csu.hisuser.entity.User;
@@ -23,7 +24,7 @@ public class RootController {
     @GetMapping("/user/info/all")
     public ResponseEntity<?> getAllUsers(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.substring(7);
-        if(!authService.isRootTokenValid(token)) {
+        if(!authService.isAdminTokenValid(token)) {
             return ResponseEntity.ok(
                     Map.of("code",-1,
                             "message","invalid token")
@@ -42,7 +43,7 @@ public class RootController {
     public ResponseEntity<?> getUserById(@RequestHeader("Authorization") String authHeader,
                                          @PathVariable int userId) {
         String token = authHeader.substring(7);
-        if(!authService.isRootTokenValid(token)) {
+        if(!authService.isAdminTokenValid(token)) {
             return ResponseEntity.ok(
                     Map.of("code",-1,
                             "message","invalid token")
@@ -68,7 +69,7 @@ public class RootController {
     public ResponseEntity<?> updateUser(@RequestHeader("Authorization") String authHeader,
                                         @RequestBody UpdateUserDTO updateUserDTO) {
         String token = authHeader.substring(7);
-        if(!authService.isRootTokenValid(token)) {
+        if(!authService.isAdminTokenValid(token)) {
             return ResponseEntity.ok(
                     Map.of("code",-1,
                             "message","invalid token")
@@ -97,7 +98,7 @@ public class RootController {
     public ResponseEntity<?> getUserByCategory(@RequestHeader("Authorization") String authHeader,
                                                @PathVariable String categoryName) {
         String token = authHeader.substring(7);
-        if(!authService.isRootTokenValid(token)) {
+        if(!authService.isAdminTokenValid(token)) {
             return ResponseEntity.ok(
                     Map.of("code",-1,
                             "message","invalid token")
@@ -117,6 +118,37 @@ public class RootController {
         return ResponseEntity.ok(
                 Map.of("code",0,
                         "users",userVOS)
+        );
+    }
+
+    @PostMapping("/admin")
+    public ResponseEntity<?> addAdmin(@RequestHeader("Authorization") String authHeader,
+                                      @RequestBody RegisterDTO registerDTO) {
+        String token = authHeader.substring(7);
+        if(!authService.isRootTokenValid(token)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","only root admin can do this")
+            );
+        }
+
+        if(userService.isUsernameExist(registerDTO.getUsername())) {
+            return ResponseEntity.ok(
+                    Map.of("code",-2,
+                            "message","user already exist")
+            );
+        }
+
+        registerDTO.setRole("管理员");
+        User user = authService.transferRegisterDTOToUser(registerDTO);
+        authService.register(user,3);
+
+        UserVO userVO = userService.transferUserToUserVO(user);
+        userVO.setRole("管理员");
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "user",userVO)
+
         );
     }
 }

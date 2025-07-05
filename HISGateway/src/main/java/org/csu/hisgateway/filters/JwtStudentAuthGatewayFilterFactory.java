@@ -10,16 +10,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Component
-public class JwtRootAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<JwtRootAuthGatewayFilterFactory.Config> {
+public class JwtStudentAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<JwtStudentAuthGatewayFilterFactory.Config> {
     private final JwtUtil jwtUtil;
 
-    JwtRootAuthGatewayFilterFactory(JwtUtil jwtUtil) {
-        super(JwtRootAuthGatewayFilterFactory.Config.class);
+    JwtStudentAuthGatewayFilterFactory(JwtUtil jwtUtil) {
+        super(JwtStudentAuthGatewayFilterFactory.Config.class);
         this.jwtUtil = jwtUtil;
     }
 
     @Override
-    public GatewayFilter apply(JwtRootAuthGatewayFilterFactory.Config config) {
+    public GatewayFilter apply(JwtStudentAuthGatewayFilterFactory.Config config) {
         return (exchange, chain) -> {
             //请求头获取Token
             String token = exchange.getRequest()
@@ -52,7 +52,7 @@ public class JwtRootAuthGatewayFilterFactory extends AbstractGatewayFilterFactor
                 return exchange.getResponse().setComplete();
             }
 
-            if(userRoleLevel<3){
+            if(userRoleLevel<1){
                 //System.out.println("userRoleLevel:"+userRoleLevel);
                 exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
                 return exchange.getResponse().setComplete();

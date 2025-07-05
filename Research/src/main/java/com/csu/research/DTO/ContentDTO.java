@@ -8,4 +8,5 @@ public class ContentDTO {
     private String contentType;
     private String auth;
     private String contentName;
+    private String contentDes;
 }
