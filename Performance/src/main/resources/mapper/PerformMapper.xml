@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.csu.performance.mapper.PerformMapper">
+
+    <!-- 业绩详情结果映射 -->
+    <resultMap id="PerformVOMap" type="org.csu.performance.VO.PerformVO">
+        <id column="perform_id" property="performId"/>
+        <result column="perform_name" property="performName"/>
+        <result column="perform_content" property="performContent"/>
+        <result column="perform_type_id" property="performTypeId"/>
+        <result column="perform_type_name" property="performTypeName"/>
+        <result column="perform_status" property="performStatus"/>
+        <result column="perform_status_name" property="performStatusName"/>
+        <result column="perform_time" property="performTime"/>
+        <result column="perform_comment" property="performComment"/>
+        <result column="submit_user_id" property="submitUserId"/>
+        <result column="submit_user_name" property="submitUserName"/>
+        <result column="submit_user_role" property="submitUserRole"/>
+        <result column="created_time" property="createdTime"/>
+        <result column="updated_time" property="updatedTime"/>
+        <result column="audit_time" property="auditTime"/>
+        <result column="audit_by" property="auditBy"/>
+        <result column="file_count" property="fileCount"/>
+    </resultMap>
+
+    <!-- 分页查询业绩列表 -->
+    <select id="selectPerformPage" resultMap="PerformVOMap">
+        SELECT 
+            p.perform_id,
+            p.perform_name,
+            p.perform_content,
+            p.perform_type_id,
+            pt.perform_type_name,
+            p.perform_status,
+            CASE p.perform_status 
+                WHEN 0 THEN '草稿'
+                WHEN 1 THEN '已提交'
+                WHEN 2 THEN '已通过'
+                WHEN 3 THEN '已驳回'
+                ELSE '未知状态'
+            END AS perform_status_name,
+            p.perform_time,
+            p.perform_comment,
+            p.submit_user_id,
+            p.created_time,
+            p.updated_time,
+            p.audit_time,
+            p.audit_by,
+            (SELECT COUNT(*) FROM perform_file pf WHERE pf.perform_id = p.perform_id AND pf.perform_file_isvalid = 1) as file_count
+        FROM perform p
+        LEFT JOIN perform_type pt ON p.perform_type_id = pt.perform_type_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (p.perform_name LIKE CONCAT('%', #{keyword}, '%') 
+                     OR p.perform_content LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="performTypeId != null">
+                AND p.perform_type_id = #{performTypeId}
+            </if>
+            <if test="performStatus != null">
+                AND p.perform_status = #{performStatus}
+            </if>
+        </where>
+        ORDER BY p.created_time DESC
+    </select>
+
+    <!-- 分页查询待审核业绩列表 -->
+    <select id="selectPendingPerformPage" resultMap="PerformVOMap">
+        SELECT 
+            p.perform_id,
+            p.perform_name,
+            p.perform_content,
+            p.perform_type_id,
+            pt.perform_type_name,
+            p.perform_status,
+            CASE p.perform_status 
+                WHEN 0 THEN '草稿'
+                WHEN 1 THEN '已提交'
+                WHEN 2 THEN '已通过'
+                WHEN 3 THEN '已驳回'
+                ELSE '未知状态'
+            END AS perform_status_name,
+            p.perform_time,
+            p.perform_comment,
+            p.submit_user_id,
+            p.created_time,
+            p.updated_time,
+            p.audit_time,
+            p.audit_by,
+            (SELECT COUNT(*) FROM perform_file pf WHERE pf.perform_id = p.perform_id AND pf.perform_file_isvalid = 1) as file_count
+        FROM perform p
+        LEFT JOIN perform_type pt ON p.perform_type_id = pt.perform_type_id
+        WHERE pt.is_active = 1 AND p.perform_status = 1
+        ORDER BY p.perform_time ASC
+    </select>
+
+    <!-- 分页查询用户提交的业绩列表 -->
+    <select id="selectMyPerformPage" resultMap="PerformVOMap">
+        SELECT 
+            p.perform_id,
+            p.perform_name,
+            p.perform_content,
+            p.perform_type_id,
+            pt.perform_type_name,
+            p.perform_status,
+            CASE p.perform_status 
+                WHEN 0 THEN '草稿'
+                WHEN 1 THEN '已提交'
+                WHEN 2 THEN '已通过'
+                WHEN 3 THEN '已驳回'
+                ELSE '未知状态'
+            END AS perform_status_name,
+            p.perform_time,
+            p.perform_comment,
+            p.submit_user_id,
+            p.created_time,
+            p.updated_time,
+            p.audit_time,
+            p.audit_by,
+            (SELECT COUNT(*) FROM perform_file pf WHERE pf.perform_id = p.perform_id AND pf.perform_file_isvalid = 1) as file_count
+        FROM perform p
+        LEFT JOIN perform_type pt ON p.perform_type_id = pt.perform_type_id
+        WHERE pt.is_active = 1 AND p.submit_user_id = #{submitUserId}
+        ORDER BY p.created_time DESC
+    </select>
+
+    <!-- 根据ID查询业绩详情 -->
+    <select id="selectPerformDetailById" resultMap="PerformVOMap">
+        SELECT 
+            p.perform_id,
+            p.perform_name,
+            p.perform_content,
+            p.perform_type_id,
+            pt.perform_type_name,
+            p.perform_status,
+            CASE p.perform_status 
+                WHEN 0 THEN '草稿'
+                WHEN 1 THEN '已提交'
+                WHEN 2 THEN '已通过'
+                WHEN 3 THEN '已驳回'
+                ELSE '未知状态'
+            END AS perform_status_name,
+            p.perform_time,
+            p.perform_comment,
+            p.submit_user_id,
+            p.created_time,
+            p.updated_time,
+            p.audit_time,
+            p.audit_by,
+            (SELECT COUNT(*) FROM perform_file pf WHERE pf.perform_id = p.perform_id AND pf.perform_file_isvalid = 1) as file_count
+        FROM perform p
+        LEFT JOIN perform_type pt ON p.perform_type_id = pt.perform_type_id
+        WHERE p.perform_id = #{performId} AND pt.is_active = 1
+    </select>
+
+    <!-- 检查业绩名称是否存在 -->
+    <select id="checkPerformNameExists" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM perform
+        WHERE perform_name = #{performName}
+        <if test="performId != null">
+            AND perform_id != #{performId}
+        </if>
+    </select>
+
+    <!-- 统计总业绩数量 -->
+    <select id="countTotalPerforms" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM perform
+    </select>
+
+    <!-- 根据状态统计业绩数量 -->
+    <select id="countPerformsByStatus" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM perform
+        WHERE perform_status = #{performStatus}
+    </select>
+
+    <!-- 获取类型分布统计 -->
+    <select id="getTypeDistribution" resultType="java.util.Map">
+        SELECT 
+            pt.perform_type_name,
+            COUNT(p.perform_id) as count
+        FROM perform_type pt
+        LEFT JOIN perform p ON pt.perform_type_id = p.perform_type_id
+        WHERE pt.is_active = 1
+        GROUP BY pt.perform_type_id, pt.perform_type_name
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取月度趋势统计 -->
+    <select id="getMonthlyTrend" resultType="java.util.Map">
+        SELECT 
+            DATE_FORMAT(created_time, '%Y-%m') as month,
+            COUNT(*) as count,
+            SUM(CASE WHEN perform_status = 2 THEN 1 ELSE 0 END) as approved_count
+        FROM perform 
+        WHERE created_time >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+        GROUP BY DATE_FORMAT(created_time, '%Y-%m')
+        ORDER BY month
+    </select>
+
+    <!-- 根据业绩类型ID删除相关业绩 -->
+    <delete id="deleteByPerformTypeId">
+        DELETE FROM perform WHERE perform_type_id = #{performTypeId}
+    </delete>
+
+</mapper> 

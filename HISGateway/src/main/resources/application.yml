@@ -141,6 +141,36 @@ spring:
                 - StripPrefix=1
                 - name: JwtAuth
 
+            #业绩审核相关操作（仅管理员权限）
+            - id: performance-service-audit
+              uri: lb://performance-service
+              predicates:
+                - Path=/performance-service/performances/*/audit
+                - Method=POST
+              filters:
+                - StripPrefix=1
+                - name: JwtRootAuth
+
+            #业绩待审核列表（仅管理员权限）
+            - id: performance-service-pending
+              uri: lb://performance-service
+              predicates:
+                - Path=/performance-service/performances/pending
+                - Method=GET
+              filters:
+                - StripPrefix=1
+                - name: JwtRootAuth
+
+            #业绩管理其他操作（教师和管理员权限）
+            - id: performance-service-write
+              uri: lb://performance-service
+              predicates:
+                - Path=/performance-service/**
+                - Method=GET,POST,PUT,DELETE
+              filters:
+                - StripPrefix=1
+                - name: JwtTeacherAuth
+
 
 
 eureka:

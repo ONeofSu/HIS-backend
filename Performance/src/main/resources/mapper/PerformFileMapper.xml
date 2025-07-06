@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.csu.performance.mapper.PerformFileMapper">
+
+    <!-- 业绩附件结果映射 -->
+    <resultMap id="PerformFileVOMap" type="org.csu.performance.VO.PerformFileVO">
+        <id column="perform_file_id" property="performFileId"/>
+        <result column="perform_id" property="performId"/>
+        <result column="perform_file_name" property="performFileName"/>
+        <result column="perform_file_des" property="performFileDes"/>
+        <result column="perform_file_type" property="performFileType"/>
+        <result column="perform_file_url" property="performFileUrl"/>
+        <result column="file_size" property="fileSize"/>
+        <result column="perform_file_isvalid" property="performFileIsvalid"/>
+        <result column="upload_time" property="uploadTime"/>
+        <result column="upload_by" property="uploadBy"/>
+        <result column="perform_name" property="performName"/>
+    </resultMap>
+
+    <!-- 根据业绩ID查询附件列表 -->
+    <select id="selectFilesByPerformId" resultMap="PerformFileVOMap">
+        SELECT 
+            pf.perform_file_id,
+            pf.perform_id,
+            pf.perform_file_name,
+            pf.perform_file_des,
+            pf.perform_file_type,
+            pf.perform_file_url,
+            pf.file_size,
+            pf.perform_file_isvalid,
+            pf.upload_time,
+            pf.upload_by,
+            p.perform_name
+        FROM perform_file pf
+        LEFT JOIN perform p ON pf.perform_id = p.perform_id
+        WHERE pf.perform_id = #{performId} AND pf.perform_file_isvalid = 1
+        ORDER BY pf.upload_time DESC
+    </select>
+
+    <!-- 根据ID查询附件详情（包含业绩名称） -->
+    <select id="selectFileDetailById" resultMap="PerformFileVOMap">
+        SELECT 
+            pf.perform_file_id,
+            pf.perform_id,
+            pf.perform_file_name,
+            pf.perform_file_des,
+            pf.perform_file_type,
+            pf.perform_file_url,
+            pf.file_size,
+            pf.perform_file_isvalid,
+            pf.upload_time,
+            pf.upload_by,
+            p.perform_name
+        FROM perform_file pf
+        LEFT JOIN perform p ON pf.perform_id = p.perform_id
+        WHERE pf.perform_file_id = #{performFileId} AND pf.perform_file_isvalid = 1
+    </select>
+
+    <!-- 统计业绩的附件数量 -->
+    <select id="countFilesByPerformId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM perform_file
+        WHERE perform_id = #{performId} AND perform_file_isvalid = 1
+    </select>
+
+</mapper> 
