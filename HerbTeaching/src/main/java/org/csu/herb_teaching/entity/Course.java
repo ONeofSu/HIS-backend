@@ -51,6 +51,7 @@ public class Course {
             case 0: return "本科生";
             case 1: return "研究生";
             case 2: return "博士生";
+            case 3: return "其他专业人士";
             default: return "未知";
         }
     }
