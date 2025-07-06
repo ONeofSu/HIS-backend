@@ -36,7 +36,16 @@ spring:
             - id: his-user-service-auth
               uri: lb://his-user-service
               predicates:
-                - Path=/auth/*
+                - Path=/auth/**
+
+            #教师用户服务
+            - id: his-user-service-teacher
+              uri: lb://his-user-service
+              predicates:
+                - Path=/his-user-service/teacher/**
+              filters:
+                - StripPrefix=1
+                - name: JwtTeacherAuth
 
             #管理员用户管理
             - id: his-user-service-root

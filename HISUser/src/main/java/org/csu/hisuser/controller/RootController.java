@@ -1,10 +1,13 @@
 package org.csu.hisuser.controller;
 
+import org.csu.hisuser.DTO.AddInviteDTO;
 import org.csu.hisuser.DTO.RegisterDTO;
 import org.csu.hisuser.DTO.UpdateUserDTO;
 import org.csu.hisuser.VO.UserVO;
+import org.csu.hisuser.entity.InvitationCode;
 import org.csu.hisuser.entity.User;
 import org.csu.hisuser.service.AuthService;
+import org.csu.hisuser.service.InviteService;
 import org.csu.hisuser.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +23,8 @@ public class RootController {
     UserService userService;
     @Autowired
     AuthService authService;
+    @Autowired
+    InviteService inviteService;
 
     @GetMapping("/user/info/all")
     public ResponseEntity<?> getAllUsers(@RequestHeader("Authorization") String authHeader) {
@@ -149,6 +154,116 @@ public class RootController {
                 Map.of("code",0,
                         "user",userVO)
 
+        );
+    }
+
+    @PostMapping("/teacher/invite")
+    public ResponseEntity<?> generateTeacherCode(@RequestHeader("Authorization") String authHeader,
+                                                 @RequestBody AddInviteDTO addInviteDTO) {
+        String token = authHeader.substring(7);
+        if(!authService.isAdminTokenValid(token)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+        int creatorUserId = authService.getUserIdFromToken(token);
+
+        InvitationCode invitationCode = inviteService.generateTeacherInviteCode(creatorUserId
+                ,addInviteDTO.getSchoolName(),addInviteDTO.getUserName());
+
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "invitationCode",invitationCode)
+        );
+    }
+
+    @DeleteMapping("/teacher/invite/{invitationCodeId}")
+    public ResponseEntity<?> deleteTeacherCode(@RequestHeader("Authorization") String authHeader,
+                                               @PathVariable Long invitationCodeId) {
+        String token = authHeader.substring(7);
+        if(!authService.isAdminTokenValid(token)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+         if(!inviteService.isInviteCodeExist(invitationCodeId)) {
+             return ResponseEntity.ok(
+                     Map.of("code",-2,
+                             "message","the code does not exist")
+             );
+         }
+
+         InvitationCode invitationCode = inviteService.getInviteCode(invitationCodeId);
+         if(invitationCode.getCodeIsUsed()){
+             return ResponseEntity.ok(
+                     Map.of("code",-3,
+                             "message","the code is used and you can't delete it")
+             );
+         }
+
+         inviteService.deleteInviteCode(invitationCodeId);
+         return ResponseEntity.ok(
+                 Map.of("code",0,
+                         "codeId",invitationCodeId)
+         );
+    }
+
+    @GetMapping("/codes")
+    public ResponseEntity<?> getCodes(@RequestHeader("Authorization") String authHeader,
+                                      @RequestParam(defaultValue = "1")int page,
+                                      @RequestParam(defaultValue = "10")int size) {
+        String token = authHeader.substring(7);
+        if(!authService.isAdminTokenValid(token)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
+        List<InvitationCode> codes = inviteService.getAllInviteCodes(page, size);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "invitationCodes",codes)
+        );
+    }
+
+    @GetMapping("/codes/notUsed")
+    public ResponseEntity<?> getCodesNotUsed(@RequestHeader("Authorization") String authHeader,
+                                             @RequestParam(defaultValue = "1")int page,
+                                             @RequestParam(defaultValue = "10")int size) {
+        String token = authHeader.substring(7);
+        if(!authService.isAdminTokenValid(token)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
+        List<InvitationCode> codes = inviteService.getAllInviteCodesThatNotUsed(page, size);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "invitationCodes",codes)
+        );
+    }
+
+    @GetMapping("/codes/used")
+    public ResponseEntity<?> getCodesUsed(@RequestHeader("Authorization") String authHeader,
+                                          @RequestParam(defaultValue = "1")int page,
+                                          @RequestParam(defaultValue = "10")int size) {
+        String token = authHeader.substring(7);
+        if(!authService.isAdminTokenValid(token)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
+        List<InvitationCode> codes = inviteService.getAllInviteCodesThatUsed(page, size);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "invitationCodes",codes)
         );
     }
 }

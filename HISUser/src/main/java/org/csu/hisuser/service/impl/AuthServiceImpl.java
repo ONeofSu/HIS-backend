@@ -118,6 +118,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public boolean isTeacherTokenValid(String authHeader) {
+        if(getUserCategoryIdFromToken(authHeader) < 2) {
+            return false;
+        }
+        return isTokenValid(authHeader);
+    }
+
+    @Override
     public boolean isAdminTokenValid(String token) {
         if(getUserCategoryIdFromToken(token) < 3) {
             return false;
