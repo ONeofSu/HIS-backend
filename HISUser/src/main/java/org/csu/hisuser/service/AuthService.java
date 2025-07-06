@@ -1,5 +1,6 @@
 package org.csu.hisuser.service;
 
+import org.csu.hisuser.DTO.PasswordResetRequest;
 import org.csu.hisuser.DTO.RegisterDTO;
 import org.csu.hisuser.entity.User;
 
@@ -22,4 +23,11 @@ public interface AuthService {
     public boolean isRootTokenValid(String token);
 
     public User transferRegisterDTOToUser(RegisterDTO registerDTO);
+
+    //0表示成功 -1用户不存在 -2邮箱不正确
+    int sendResetPasswordRequest(String username,String email);
+    boolean validateResetToken(String token);
+    //0成功 -1token不存在 -2用户不存在
+    int resetPassword(String token, String newPassword);
+    void handlePasswordResetRequest(PasswordResetRequest message);
 }

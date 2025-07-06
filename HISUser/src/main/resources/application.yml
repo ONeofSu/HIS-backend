@@ -6,6 +6,9 @@ eureka:
 server:
   port: 8081
 
+app:
+  base-url: http://localhost:8081
+
 spring:
   application:
     name: his-user-service
@@ -13,3 +16,25 @@ spring:
     url: jdbc:mysql://localhost:3306/his_userinfo
     username: root
     password: 123456
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    connection-timeout: 5000
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+  mail:
+    host: smtp.qq.com
+    username: 572567923@qq.com
+    password: rhpyeudzzdnhbcda
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true

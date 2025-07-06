@@ -1,6 +1,7 @@
 package org.csu.hisuser.controller;
 
 import org.csu.hisuser.DTO.LoginDTO;
+import org.csu.hisuser.DTO.PasswordResetDTO;
 import org.csu.hisuser.DTO.RegisterDTO;
 import org.csu.hisuser.DTO.SchoolRegisterDTO;
 import org.csu.hisuser.VO.UserVO;
@@ -146,6 +147,62 @@ public class UserAuthController {
                 Map.of("code",0,
                         "token",token,
                         "user",userVO)
+        );
+    }
+
+    @PostMapping("/forget/send")
+    public ResponseEntity<?> forget(@RequestBody PasswordResetDTO passwordResetDTO) {
+        if(!userService.isUsernameExist(passwordResetDTO.getUsername())) {
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","user does not exist")
+            );
+        }
+
+        int flag = authService.sendResetPasswordRequest(passwordResetDTO.getUsername(), passwordResetDTO.getEmail());
+        if(flag == -2) {
+            return ResponseEntity.ok(
+                    Map.of("code",-2,
+                            "message","incorrect email")
+            );
+        }
+
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "username", passwordResetDTO.getUsername(),
+                        "email", passwordResetDTO.getEmail())
+        );
+    }
+
+    @GetMapping("/forget/valid")
+    public ResponseEntity<?> forgetTokenCheck(@RequestParam("token") String token) {
+        boolean isValid = authService.validateResetToken(token);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "result",isValid)
+        );
+    }
+
+    @PostMapping("/forget/reset/{newPassword}")
+    public ResponseEntity<?> resetPasswordForForget(@RequestParam String token,
+                                                    @PathVariable String newPassword) {
+        int flag = authService.resetPassword(token, newPassword);
+        if(flag == -1){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+        if(flag == -2) {
+            return ResponseEntity.ok(
+                    Map.of("code",-2,
+                            "message","invalid user")
+            );
+        }
+
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "new password",newPassword)
         );
     }
 }
