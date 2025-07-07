@@ -20,4 +20,5 @@ public class HerbGrowthVO {
     private int userId;
     private Timestamp recordTime;
     private String imgUrl;
+    private String auditStatus;
 }

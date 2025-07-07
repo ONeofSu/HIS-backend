@@ -124,7 +124,6 @@ public class HerbServiceImpl implements HerbService {
         if (herb == null || !herb.isIsvalid()) {
             return false;
         }
-        System.out.println(herb.isIsvalid());
         return true;
     }
 

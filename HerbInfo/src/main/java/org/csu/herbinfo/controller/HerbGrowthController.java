@@ -66,7 +66,7 @@ public class HerbGrowthController {
 
     @GetMapping("/growth/all")
     public ResponseEntity<?> getAllGrowth() {
-        List<HerbGrowth> herbGrowths = herbGrowthService.getAllHerbGrowths();
+        List<HerbGrowth> herbGrowths = herbGrowthService.getAllHerbGrowthsPassAudit();
         List<HerbGrowthVO> herbGrowthVOS = herbGrowthService.transferGrowthListToVOList(herbGrowths);
         return ResponseEntity.ok(
                 Map.of("code",0,
@@ -83,7 +83,7 @@ public class HerbGrowthController {
             );
         }
 
-        List<HerbGrowth> herbGrowths = herbGrowthService.getHerbGrowthsByBatchCode(batchCode);
+        List<HerbGrowth> herbGrowths = herbGrowthService.getHerbGrowthsByBatchCodeThatPassAudit(batchCode);
         List<HerbGrowthVO> herbGrowthVOS = herbGrowthService.transferGrowthListToVOList(herbGrowths);
         return ResponseEntity.ok(
                 Map.of("code",0,
@@ -101,7 +101,7 @@ public class HerbGrowthController {
             );
         }
 
-        List<HerbGrowth> herbGrowths = herbGrowthService.getAllHerbGrowthByUserId(userId);
+        List<HerbGrowth> herbGrowths = herbGrowthService.getAllHerbGrowthByUserIdThatPassAudit(userId);
         List<HerbGrowthVO> herbGrowthVOS = herbGrowthService.transferGrowthListToVOList(herbGrowths);
         return ResponseEntity.ok(
                 Map.of("code",0,
@@ -150,7 +150,7 @@ public class HerbGrowthController {
             );
         }
 
-        if(herbGrowth.getUserId() != userId){
+        if(herbGrowth.getUserId() != userId && !userService.isAdmin(userId)){
             return ResponseEntity.ok(
                     Map.of("code",-3,
                             "message","you can't delete growth record made by others")
@@ -162,6 +162,51 @@ public class HerbGrowthController {
         if(!herbGrowthService.deleteHerbGrowthById(growthId)){
             return ResponseEntity.internalServerError().body("error to delete");
         }
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "herbGrowth",herbGrowthVO)
+        );
+    }
+
+    @PutMapping("/growth/{growthId}")
+    public ResponseEntity<?> updateGrowth(@RequestHeader("Authorization") String authHeader,
+                                          @PathVariable int growthId,
+                                          @RequestBody HerbGrowthDTO herbGrowthDTO) {
+        String token = authHeader.substring(7);
+        int userId = userService.getUserId(token);
+        if(userId == -1){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid user")
+            );
+        }
+
+        HerbGrowth ori = herbGrowthService.getHerbGrowthById(growthId);
+        if(ori == null){
+            return ResponseEntity.ok(
+                    Map.of("code",-2,
+                            "message","invalid growthId")
+            );
+        }
+
+        if(ori.getUserId() != userId && !userService.isAdmin(userId)){
+            return ResponseEntity.ok(
+                    Map.of("code",-3,
+                            "message","you can't update growth record made by others")
+            );
+        }
+
+        HerbGrowth herbGrowth = herbGrowthService.transferHerbGrowthDTOToHerbGrowth(herbGrowthDTO, ori.getUserId());
+        if(!herbService.isHerbIdExist(herbGrowth.getHerbId())){
+            return ResponseEntity.ok(
+                    Map.of("code",-4,
+                            "message","Herb does not exist!")
+            );
+        }
+
+        herbGrowth.setId(growthId);
+        herbGrowthService.updateHerbGrowth(herbGrowth);
+        HerbGrowthVO herbGrowthVO = herbGrowthService.transferHerbGrowthToVO(herbGrowth);
         return ResponseEntity.ok(
                 Map.of("code",0,
                         "herbGrowth",herbGrowthVO)

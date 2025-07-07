@@ -54,7 +54,7 @@ public class UserAuthController {
 
     @PostMapping("/register/verify/email/{email}")
     public ResponseEntity<?> verifyEmail(@PathVariable("email") String email) {
-        if(!authService.isEmailUsed(email)) {
+        if(authService.isEmailUsed(email)) {
             return ResponseEntity.ok(
                     Map.of("code",-1,
                             "message","email has been used")

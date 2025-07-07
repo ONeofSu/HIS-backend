@@ -26,6 +26,11 @@ public class InnerUserController {
         return authService.isTokenValid(token);
     }
 
+    @GetMapping("/token/admin/valid/{token}")
+    public boolean isAdminTokenValid(@PathVariable String token) {
+        return authService.isAdminTokenValid(token);
+    }
+
     @GetMapping("/token/root/valid/{token}")
     public boolean isTokenRootValid(@PathVariable String token) {
         return authService.isRootTokenValid(token);

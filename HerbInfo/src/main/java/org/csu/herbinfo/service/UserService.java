@@ -12,4 +12,8 @@ public interface UserService {
     public boolean isUserIdExist(@PathVariable("userId") int userId);
     @GetMapping("/inner/user/info/token/{token}/userId")
     int getUserIdByToken(@PathVariable("token") String token);
+    @GetMapping("/inner/user/is-admin/{userId}")
+    boolean isAdmin(@PathVariable("userId") int userId);
+    @GetMapping("/inner/token/admin/valid/{token}")
+    boolean isAdminToken(@PathVariable("token") String token);
 }

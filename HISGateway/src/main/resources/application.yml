@@ -65,6 +65,15 @@ spring:
                 - StripPrefix=1
                 - name: JwtAuth
 
+            #中药信息 成长记录管理
+            - id: herb-info-service-growth-manage
+              uri: lb://herb-info-service
+              predicates:
+                - Path=/herb-info-service/root/**
+              filters:
+                - StripPrefix=1
+                - name: JwtRootAuth
+
             #中药信息(地理位置 成长记录)
             - id: herb-info-service
               uri: lb://herb-info-service

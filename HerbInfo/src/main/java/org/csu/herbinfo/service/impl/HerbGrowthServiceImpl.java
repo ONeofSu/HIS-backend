@@ -1,9 +1,12 @@
 package org.csu.herbinfo.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.csu.herbinfo.DTO.GrowthAuditDTO;
 import org.csu.herbinfo.DTO.HerbGrowthDTO;
 import org.csu.herbinfo.VO.HerbGrowthVO;
+import org.csu.herbinfo.entity.GrowthAudit;
 import org.csu.herbinfo.entity.HerbGrowth;
+import org.csu.herbinfo.mapper.GrowthAuditMapper;
 import org.csu.herbinfo.mapper.HerbGrowthMapper;
 import org.csu.herbinfo.service.HerbGrowthService;
 import org.csu.herbinfo.service.HerbService;
@@ -27,6 +30,8 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
     HerbGrowthMapper herbGrowthMapper;
     @Autowired
     HerbService herbService;
+    @Autowired
+    GrowthAuditMapper growthAuditMapper;
 
     //是否符合not NULL 要求
     private boolean isInputHerbGrowthValid(HerbGrowth herbGrowth) {
@@ -57,6 +62,7 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
             return false;
         }
         //System.out.println(hg.getRecordTime());
+        hg.setGrowthAuditStatus(0);
         herbGrowthMapper.insert(hg);
         return true;
     }
@@ -111,6 +117,37 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
     }
 
     @Override
+    public boolean updateHerbGrowth(HerbGrowth hg) {
+        if(!isInputHerbGrowthValid(hg)) {
+            return false;
+        }
+        hg.setGrowthAuditStatus(0);
+        herbGrowthMapper.updateById(hg);
+        return true;
+    }
+
+    @Override
+    public List<HerbGrowth> getAllHerbGrowthsPassAudit() {
+        QueryWrapper<HerbGrowth> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("growth_audit_status",1);
+        return herbGrowthMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<HerbGrowth> getAllHerbGrowthsNotPassAudit() {
+        QueryWrapper<HerbGrowth> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("growth_audit_status",2);
+        return herbGrowthMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<HerbGrowth> getAllHerbGrowthsNeedToAudit() {
+        QueryWrapper<HerbGrowth> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("growth_audit_status",0);
+        return herbGrowthMapper.selectList(queryWrapper);
+    }
+
+    @Override
     public HerbGrowth getHerbGrowthByHerbGrowthExceptId(HerbGrowth hg) {
         long roundedTime = (hg.getRecordTime().getTime() + 500) / 1000 * 1000;
         Timestamp truncatedTime = new Timestamp(roundedTime);
@@ -135,10 +172,10 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
     }
 
     @Override
-    public List<HerbGrowth> getHerbGrowthsByBatchCode(String batchCode) {
+    public List<HerbGrowth> getHerbGrowthsByBatchCodeThatPassAudit(String batchCode) {
         ArrayList<HerbGrowth> list = new ArrayList<>();
         QueryWrapper<HerbGrowth> queryWrapper = new QueryWrapper<HerbGrowth>();
-        queryWrapper.eq("batch_code", batchCode);
+        queryWrapper.eq("batch_code", batchCode).eq("growth_audit_status",1);
         list.addAll(herbGrowthMapper.selectList(queryWrapper));
         return list;
     }
@@ -147,6 +184,15 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
     public List<HerbGrowth> getAllHerbGrowths() {
         ArrayList<HerbGrowth> list = new ArrayList<>();
         list.addAll(herbGrowthMapper.selectList(null));
+        return list;
+    }
+
+    @Override
+    public List<HerbGrowth> getAllHerbGrowthByUserIdThatPassAudit(int userId) {
+        List<HerbGrowth> list = new ArrayList<>();
+        QueryWrapper<HerbGrowth> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", userId).eq("growth_audit_status",1);
+        list.addAll(herbGrowthMapper.selectList(queryWrapper));
         return list;
     }
 
@@ -178,6 +224,7 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
         herbGrowth.setUserId(userId);
         herbGrowth.setRecordTime(Timestamp.valueOf(LocalDateTime.now()));
         herbGrowth.setImgUrl(hgDTO.getImgUrl());
+        herbGrowth.setGrowthAuditStatus(0);
 
         if(hgDTO.getDes()!=null){
             herbGrowth.setDes(hgDTO.getDes());
@@ -198,6 +245,26 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
         hgVO.setRecordTime(hg.getRecordTime());
         hgVO.setUserId(hg.getUserId());
         hgVO.setImgUrl(hg.getImgUrl());
+
+        switch (hg.getGrowthAuditStatus()){
+            case 0:{
+                hgVO.setAuditStatus("审核中");
+                break;
+            }
+            case 1:{
+                hgVO.setAuditStatus("已通过");
+                break;
+            }
+            case 2:{
+                hgVO.setAuditStatus("未通过");
+                break;
+            }
+            default:{
+                hgVO.setAuditStatus("ERROR");
+                break;
+            }
+        }
+
         if(hg.getDes()!=null){
             hgVO.setDes(hg.getDes());
         }
@@ -215,5 +282,87 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
             list.add(hgVO);
         }
         return list;
+    }
+
+    @Override
+    public GrowthAudit handleAudit(GrowthAudit growthAudit) {
+        HerbGrowth herbGrowth = getHerbGrowthById(growthAudit.getGrowthId());
+        if(herbGrowth==null || herbGrowth.getGrowthAuditStatus()!=0){
+            return null;
+        }
+
+        if(growthAudit.getAuditResult() == 1){
+            herbGrowth.setGrowthAuditStatus(1);
+            herbGrowthMapper.updateById(herbGrowth);
+        }else if(growthAudit.getAuditResult() == 2){
+            herbGrowth.setGrowthAuditStatus(2);
+            herbGrowthMapper.updateById(herbGrowth);
+        }else{
+            return null;
+        }
+
+        growthAudit.setAuditTime(LocalDateTime.now());
+        growthAuditMapper.insert(growthAudit);
+        return growthAudit;
+    }
+
+    @Override
+    public GrowthAudit updateAudit(GrowthAudit growthAudit) {
+        HerbGrowth herbGrowth = getHerbGrowthById(growthAudit.getGrowthId());
+        if(herbGrowth==null){
+            return null;
+        }
+
+        if(growthAudit.getAuditResult() == 1){
+            herbGrowth.setGrowthAuditStatus(1);
+            herbGrowthMapper.updateById(herbGrowth);
+        }else if(growthAudit.getAuditResult() == 2){
+            herbGrowth.setGrowthAuditStatus(2);
+            herbGrowthMapper.updateById(herbGrowth);
+        }else{
+            return null;
+        }
+
+        growthAuditMapper.updateById(growthAudit);
+        return growthAudit;
+    }
+
+    @Override
+    public GrowthAudit getAuditById(Long id) {
+        return growthAuditMapper.selectById(id);
+    }
+
+    @Override
+    public boolean isAuditExist(Long id) {
+        return growthAuditMapper.selectById(id) != null;
+    }
+
+    @Override
+    public List<GrowthAudit> getAllAudit() {
+        return growthAuditMapper.selectList(null);
+    }
+
+    @Override
+    public GrowthAudit transferDTOToAudit(GrowthAuditDTO dto,int userId) {
+        GrowthAudit growthAudit = new GrowthAudit();
+        growthAudit.setGrowthId(dto.getGrowthId());
+        growthAudit.setAuditDes(dto.getAuditDes());
+        switch (dto.getAuditResult()){
+            case "通过":{
+                growthAudit.setAuditResult(1);
+                break;
+            }
+            case "拒绝":{
+                growthAudit.setAuditResult(2);
+                break;
+            }
+            default:{
+                growthAudit.setAuditResult(0);
+            }
+        }
+
+        growthAudit.setAuditorUserId(userId);
+        growthAudit.setAuditTime(LocalDateTime.now());
+        return growthAudit;
     }
 }

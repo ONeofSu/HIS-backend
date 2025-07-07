@@ -30,4 +30,5 @@ public class HerbGrowth {
     private Timestamp recordTime;
     @TableField(value = "growth_img")
     private String imgUrl;
+    private int growthAuditStatus;
 }
