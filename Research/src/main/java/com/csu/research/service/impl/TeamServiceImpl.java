@@ -11,6 +11,7 @@ import com.csu.research.service.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -134,5 +135,20 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
     @Override
     public TeamMember getTeamMemberById(Long teamMemberId) {
         return teamMemberMapper.selectById(teamMemberId);
+    }
+
+    @Override
+    public List<Team> getTeamMemberByUserId(int userId) {
+        QueryWrapper<TeamMember> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", userId);
+        List<TeamMember> members = teamMemberMapper.selectList(queryWrapper);
+        List<Team> teams = new ArrayList<>();
+        for (TeamMember member : members) {
+            Team team = teamMapper.selectById(member.getTeamId());
+            if(team!=null && team.isTeamIsvalid() && !teams.contains(team)) {
+                teams.add(team);
+            }
+        }
+        return teams;
     }
 }

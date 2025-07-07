@@ -52,4 +52,7 @@ public interface TeamService {
 
     //获得TeamMember
     TeamMember getTeamMemberById(Long teamMemberId);
+
+    //获得用户的所有队伍
+    List<Team> getTeamMemberByUserId(int userId);
 }

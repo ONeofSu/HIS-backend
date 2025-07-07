@@ -399,4 +399,22 @@ public class TeamController {
                         "teamMember", teamMember)
         );
     }
+
+    @GetMapping("/user")
+    public ResponseEntity<?> getMyTeams(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        int userId = userService.getUserId(token);
+        if(userId == -1) {
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message", "invalid token")
+            );
+        }
+
+        List<Team> teams = teamService.getTeamMemberByUserId(userId);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "teams", teams)
+        );
+    }
 }
