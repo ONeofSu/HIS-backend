@@ -273,7 +273,7 @@ public class AuthServiceImpl implements AuthService {
         try {
             // 构建邮件内容
             String resetLink = environment.getProperty("app.base-url") +
-                    "/auth/forget?token=" + message.getToken();
+                    "/forget-password/valid?token=" + message.getToken();
 
             String emailContent = buildEmailContent(message.getUsername(), resetLink);
 
