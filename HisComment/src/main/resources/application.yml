@@ -18,3 +18,15 @@ spring:
       enabled: true
       max-file-size: 10MB
       max-request-size: 10MB
+
+# 敏感词过滤配置
+sensitive:
+  word:
+    enabled: true
+    use-database: true        # 是否使用数据库存储敏感词
+    replacement: "***"
+    log-sensitive-words: true
+    severe-strategy: REJECT  # 严重敏感词处理策略：REJECT-拒绝发布，FILTER-过滤后发布
+    mild-strategy: FILTER    # 轻度敏感词处理策略：REJECT-拒绝发布，FILTER-过滤后发布
+    enable-check-api: true
+    max-sensitive-words: 10

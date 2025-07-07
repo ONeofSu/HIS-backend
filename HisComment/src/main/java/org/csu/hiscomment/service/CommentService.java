@@ -13,4 +13,20 @@ public interface CommentService {
     boolean deleteComment(int commentId, int userId, boolean isAdmin);
     CommentVO getCommentDetail(int commentId, Integer userId);
     Comment getCommentById(int commentId);
+    
+    // 敏感词过滤相关方法
+    /**
+     * 批量过滤已存在的评论
+     */
+    int filterExistingComments();
+    
+    /**
+     * 过滤指定评论
+     */
+    boolean filterComment(int commentId);
+    
+    /**
+     * 获取需要过滤的评论数量
+     */
+    int getCommentsNeedFilterCount();
 } 
