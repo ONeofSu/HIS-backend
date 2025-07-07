@@ -22,6 +22,8 @@ public class CommentController {
     private org.csu.hiscomment.feign.CourseFeignClient courseFeignClient;
     @Autowired
     private org.csu.hiscomment.feign.HerbFeignClient herbFeignClient;
+    @Autowired
+    private org.csu.hiscomment.utils.SensitiveWordFilter sensitiveWordFilter;
 
     // 发布评论/回复
     @PostMapping("/comments")
@@ -71,9 +73,16 @@ public class CommentController {
         if (vo != null) {
             result.put("code", 0);
             result.put("data", vo);
+            // 如果评论被过滤，添加提示信息
+            if (vo.isFiltered()) {
+                result.put("message", "评论包含敏感内容，已自动过滤");
+                result.put("filterLevel", vo.getFilterLevel());
+                result.put("sensitiveWords", vo.getSensitiveWords());
+                result.put("sensitiveTypes", vo.getSensitiveTypes());
+            }
         } else {
             result.put("code", -1);
-            result.put("message", "评论发布失败");
+            result.put("message", "评论发布失败，可能包含严重敏感内容");
         }
         return ResponseEntity.ok(result);
     }
@@ -227,6 +236,46 @@ public class CommentController {
             result.put("code", -1);
             result.put("message", "评论不存在");
         }
+        return ResponseEntity.ok(result);
+    }
+
+    // 检测文本敏感词
+    @PostMapping("/comments/check-sensitive")
+    public ResponseEntity<?> checkSensitiveWords(@RequestBody Map<String, String> request, @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        int userId = userFeignClient.getUserIdByToken(token);
+        Map<String, Object> result = new HashMap<>();
+        
+        if (!userFeignClient.isUserExist(userId)) {
+            result.put("code", -1);
+            result.put("message", "用户不存在");
+            return ResponseEntity.ok(result);
+        }
+        
+        String content = request.get("content");
+        if (content == null || content.trim().isEmpty()) {
+            result.put("code", -1);
+            result.put("message", "内容不能为空");
+            return ResponseEntity.ok(result);
+        }
+        
+        // 使用敏感词过滤器检测
+        org.csu.hiscomment.utils.SensitiveWordFilter.SensitiveCheckResult checkResult = 
+            sensitiveWordFilter.checkSensitiveWords(content);
+        
+        result.put("code", 0);
+        result.put("hasSensitive", checkResult.hasSensitive());
+        result.put("sensitiveWords", checkResult.sensitiveWords());
+        result.put("sensitiveTypes", checkResult.sensitiveTypes());
+        result.put("sensitiveWordsString", checkResult.getSensitiveWordsString());
+        result.put("sensitiveTypesString", checkResult.getSensitiveTypesString());
+        
+        // 如果包含敏感词，提供过滤后的内容
+        if (checkResult.hasSensitive()) {
+            String filteredContent = sensitiveWordFilter.filterSensitiveWords(content);
+            result.put("filteredContent", filteredContent);
+        }
+        
         return ResponseEntity.ok(result);
     }
 } 

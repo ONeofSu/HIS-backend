@@ -141,6 +141,15 @@ spring:
                 - StripPrefix=1
                 - name: JwtAuth
 
+            #敏感词管理（仅管理员权限）
+            - id: sensitive-word-service-admin
+              uri: lb://comment-service
+              predicates:
+                - Path=/comment-service/admin/sensitive-words/**
+              filters:
+                - StripPrefix=1
+                - name: JwtRootAuth
+
             #评论
             - id: comment-service
               uri: lb://comment-service
