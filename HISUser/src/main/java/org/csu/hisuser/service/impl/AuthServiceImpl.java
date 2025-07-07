@@ -14,11 +14,13 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -134,7 +136,9 @@ public class AuthServiceImpl implements AuthService {
         if(!jwtUtil.validateToken(token)) {
             return false;
         }
-
+        if(isInBlackList(token)) {
+            return false;
+        }
         String username = getUsernameFromToken(token);
         if(username == null) {
             return false;
@@ -173,6 +177,18 @@ public class AuthServiceImpl implements AuthService {
             return false;
         }
         return isTokenValid(token);
+    }
+
+    @Override
+    public void exitLogin(String token) {
+        String key = "exit:" + token;
+        redisTemplate.opsForValue().set(key,"log_out",3,TimeUnit.DAYS);
+    }
+
+    @Override
+    public boolean isInBlackList(String token) {
+        String key = "exit:" + token;
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
 
     @Override
@@ -284,5 +300,46 @@ public class AuthServiceImpl implements AuthService {
                 "<p>如果您没有请求重置密码，请忽略此邮件。</p>" +
                 "<p>此链接将在30分钟后失效。</p>" +
                 "</body></html>";
+    }
+
+    @Override
+    public boolean isEmailUsed(String email) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("email", email);
+        return userMapper.selectCount(queryWrapper) > 0;
+    }
+
+    @Override
+    public void generateVerificationCode(String email) {
+        String key = "email:verification:" + email;
+        String code = String.valueOf(new Random().nextInt(899999) + 100000);
+        redisTemplate.opsForValue().set(key, code, 30, TimeUnit.MINUTES);
+    }
+
+    @Override
+    public void sendVerificationEmail(String email) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
+            helper.setFrom(environment.getProperty("spring.mail.username"));
+            helper.setTo(email);
+            helper.setSubject("HIS系统邮箱认证");
+            String verificationCode = redisTemplate.opsForValue().get("email:verification:" + email);
+            helper.setText("您的注册验证码是: " + verificationCode + "，有效期为30分钟");
+            mailSender.send(mimeMessage);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send verification email", e);
+        }
+
+    }
+
+    @Override
+    public boolean validateVerificationCode(String email,String verificationCode) {
+        String code = redisTemplate.opsForValue().get("email:verification:" + email);
+        if(verificationCode.equals(code)){
+            redisTemplate.delete("email:verification:" + email);
+            return true;
+        }
+        return false;
     }
 }

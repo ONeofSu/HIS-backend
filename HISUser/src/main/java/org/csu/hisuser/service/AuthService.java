@@ -22,6 +22,9 @@ public interface AuthService {
     public boolean isAdminTokenValid(String token);
     public boolean isRootTokenValid(String token);
 
+    void exitLogin(String token);
+    boolean isInBlackList(String token);
+
     public User transferRegisterDTOToUser(RegisterDTO registerDTO);
 
     //0表示成功 -1用户不存在 -2邮箱不正确
@@ -30,4 +33,9 @@ public interface AuthService {
     //0成功 -1token不存在 -2用户不存在
     int resetPassword(String token, String newPassword);
     void handlePasswordResetRequest(PasswordResetRequest message);
+
+    boolean isEmailUsed(String email);
+    void generateVerificationCode(String email);
+    void sendVerificationEmail(String email);
+    boolean validateVerificationCode(String email,String verificationCode);
 }

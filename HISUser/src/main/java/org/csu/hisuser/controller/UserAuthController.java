@@ -52,6 +52,23 @@ public class UserAuthController {
         );
     }
 
+    @PostMapping("/register/verify/email/{email}")
+    public ResponseEntity<?> verifyEmail(@PathVariable("email") String email) {
+        if(!authService.isEmailUsed(email)) {
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","email has been used")
+            );
+        }
+
+        authService.generateVerificationCode(email);
+        authService.sendVerificationEmail(email);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "email",email)
+        );
+    }
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterDTO registerDTO) {
         if(userService.isUsernameExist(registerDTO.getUsername())) {
@@ -68,6 +85,14 @@ public class UserAuthController {
             return ResponseEntity.ok(
                     Map.of("code",-2,
                             "message","invalid role")
+            );
+        }
+
+        if(registerDTO.getEmailVerifyCode() == null ||
+                !authService.validateVerificationCode(registerDTO.getEmail(),registerDTO.getEmailVerifyCode())){
+            return ResponseEntity.ok(
+                    Map.of("code",-3,
+                            "message","invalid email code")
             );
         }
 
@@ -95,6 +120,14 @@ public class UserAuthController {
             );
         }
 
+        if(schoolRegisterDTO.getEmailVerifyCode() == null ||
+                !authService.validateVerificationCode(schoolRegisterDTO.getEmail(),schoolRegisterDTO.getEmailVerifyCode())){
+            return ResponseEntity.ok(
+                    Map.of("code",-2,
+                            "message","invalid email code")
+            );
+        }
+
 
         int userCategoryId = userService.getUserCategoryIdByCategoryName(schoolRegisterDTO.getRole());
         //0表示成功 -1邀请码不正确 -2注册类型和邀请码类型不符 -3学校名不正确 -4姓名不正确 -5邀请码已被使用 -6邀请码过期
@@ -102,37 +135,37 @@ public class UserAuthController {
                 ,schoolRegisterDTO.getSchoolName(), schoolRegisterDTO.getUserName());
         if(flag == -1) {
             return ResponseEntity.ok(
-                    Map.of("code",-2,
+                    Map.of("code",-3,
                             "message","invalid invitation code")
             );
         }
         if(flag == -2) {
             return ResponseEntity.ok(
-                    Map.of("code",-3,
+                    Map.of("code",-4,
                             "message","incorrect category id")
             );
         }
         if(flag == -3) {
             return ResponseEntity.ok(
-                    Map.of("code",-4,
+                    Map.of("code",-5,
                             "message","incorrect school name")
             );
         }
         if(flag == -4) {
             return ResponseEntity.ok(
-                    Map.of("code",-5,
+                    Map.of("code",-6,
                             "message","incorrect user name")
             );
         }
         if(flag == -5) {
             return ResponseEntity.ok(
-                    Map.of("code",-6,
+                    Map.of("code",-7,
                             "message","code has been used")
             );
         }
         if(flag == -6) {
             return ResponseEntity.ok(
-                    Map.of("code",-7,
+                    Map.of("code",-8,
                             "message","code is expired")
             );
         }

@@ -11,4 +11,5 @@ public class RegisterDTO {
     private String email;
     private String role;
     private String avatarUrl;
+    private String emailVerifyCode;
 }

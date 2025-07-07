@@ -144,4 +144,20 @@ public class UserController {
                         "user",userVO)
         );
     }
+
+    @PostMapping("/account/exit")
+    public ResponseEntity<?> logOut(@RequestHeader("Authorization") String authHeader){
+        String token = authHeader.substring(7);
+        if(!authService.isTokenValid(token)){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
+        authService.exitLogin(token);
+        return ResponseEntity.ok(
+                Map.of("code",0)
+        );
+    }
 }

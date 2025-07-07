@@ -1,6 +1,8 @@
 package org.csu.hisgateway.filters;
 
+import org.csu.hisgateway.service.TokenService;
 import org.csu.hisgateway.utils.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +14,8 @@ import org.springframework.util.StringUtils;
 @Component
 public class JwtRootAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<JwtRootAuthGatewayFilterFactory.Config> {
     private final JwtUtil jwtUtil;
+    @Autowired
+    TokenService tokenService;
 
     JwtRootAuthGatewayFilterFactory(JwtUtil jwtUtil) {
         super(JwtRootAuthGatewayFilterFactory.Config.class);
@@ -37,6 +41,12 @@ public class JwtRootAuthGatewayFilterFactory extends AbstractGatewayFilterFactor
 
             //验证有效
             if (!jwtUtil.validateToken(token)) {
+                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                return exchange.getResponse().setComplete();
+            }
+
+            //是否已经退出
+            if(tokenService.isInBlackList(token)){
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
