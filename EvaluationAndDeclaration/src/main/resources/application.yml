@@ -1,0 +1,15 @@
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8080/eureka/
+
+server:
+  port: 8085
+
+spring:
+  application:
+    name: herb-info-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/his_herbinfo
+    username: root
+    password: 123456
