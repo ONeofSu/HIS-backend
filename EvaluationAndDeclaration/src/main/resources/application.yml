@@ -8,8 +8,8 @@ server:
 
 spring:
   application:
-    name: herb-info-service
+    name: EvaluationAndDeclaration
   datasource:
-    url: jdbc:mysql://localhost:3306/his_herbinfo
+    url: jdbc:mysql://localhost:3306/herb_rating
     username: root
     password: 123456
