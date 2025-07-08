@@ -1,0 +1,6 @@
+{"time":"2025-07-07T20:57:06.2996248+08:00","level":"INFO","msg":"main: starting server","port-filename":"C:\\Users\\lenovo\\AppData\\Local\\Temp\\tmpjuqlfqs8\\port-2632.txt","pid":2632,"log-level":0,"disable-analytics":false,"shutdown-on-parent-exit":false,"enable-dcgm-profiling":false}
+{"time":"2025-07-07T20:57:06.3102506+08:00","level":"INFO","msg":"server: will exit if parent process dies","ppid":2632}
+{"time":"2025-07-07T20:57:06.3102506+08:00","level":"INFO","msg":"server: accepting connections","addr":{"Name":"C:\\Users\\lenovo\\AppData\\Local\\Temp\\wandb-2632-27576-650635040\\socket","Net":"unix"}}
+{"time":"2025-07-07T20:57:06.3102506+08:00","level":"INFO","msg":"server: accepting connections","addr":{"IP":"127.0.0.1","Port":56344,"Zone":""}}
+{"time":"2025-07-07T20:57:06.4243031+08:00","level":"INFO","msg":"connection: ManageConnectionData: new connection created","id":"1(127.0.0.1:56345)"}
+{"time":"2025-07-07T20:57:06.5048977+08:00","level":"INFO","msg":"handleInformInit: received","streamId":"a925zbz5","id":"1(127.0.0.1:56345)"}
