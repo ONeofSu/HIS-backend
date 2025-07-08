@@ -11,7 +11,7 @@
  Target Server Version : 80033 (8.0.33)
  File Encoding         : 65001
 
- Date: 28/06/2025 16:52:44
+ Date: 08/07/2025 18:46:19
 */
 
 SET NAMES utf8mb4;
@@ -71,6 +71,31 @@ INSERT INTO `district` VALUES (500115, '长寿区');
 INSERT INTO `district` VALUES (500114, '黔江区');
 
 -- ----------------------------
+-- Table structure for growth_audit
+-- ----------------------------
+DROP TABLE IF EXISTS `growth_audit`;
+CREATE TABLE `growth_audit`  (
+  `audit_id` bigint NOT NULL AUTO_INCREMENT COMMENT '审核主键ID(自增)',
+  `growth_id` bigint NOT NULL COMMENT '审核对象(关联herb_growth表)',
+  `user_id` bigint NOT NULL COMMENT '审核人(关联his_userinfo.user表)',
+  `audit_result` int NOT NULL COMMENT '审核结果(1-通过 2-不通过)',
+  `audit_des` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '审核评语',
+  `audit_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '审核时间',
+  PRIMARY KEY (`audit_id`) USING BTREE,
+  INDEX `idx_growth_id`(`growth_id` ASC) USING BTREE,
+  INDEX `idx_user_id`(`user_id` ASC) USING BTREE,
+  INDEX `idx_audit_time`(`audit_time` ASC) USING BTREE,
+  CONSTRAINT `fk_growth_audit_growth` FOREIGN KEY (`growth_id`) REFERENCES `herb_growth` (`growth_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_growth_audit_user` FOREIGN KEY (`user_id`) REFERENCES `his_userinfo`.`user` (`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '2.8成长记录审核表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of growth_audit
+-- ----------------------------
+INSERT INTO `growth_audit` VALUES (1, 7, 2, 1, '违反规定', '2025-07-07 13:52:00');
+INSERT INTO `growth_audit` VALUES (2, 8, 2, 1, '违反规定', '2025-07-07 13:45:53');
+
+-- ----------------------------
 -- Table structure for herb
 -- ----------------------------
 DROP TABLE IF EXISTS `herb`;
@@ -83,13 +108,19 @@ CREATE TABLE `herb`  (
   `herb_des2` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
   `herb_isvalid` tinyint(1) NOT NULL,
   PRIMARY KEY (`herb_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of herb
 -- ----------------------------
 INSERT INTO `herb` VALUES (1, '222', 'china', NULL, NULL, NULL, 1);
 INSERT INTO `herb` VALUES (2, '111', NULL, NULL, NULL, NULL, 1);
+INSERT INTO `herb` VALUES (3, '白芍', '广西', 'xxxx', '白色的,治病', NULL, 1);
+INSERT INTO `herb` VALUES (4, '当归', '广西', 'xxxx', '不知道什么颜色的,治病', NULL, 1);
+INSERT INTO `herb` VALUES (11, '人参', NULL, NULL, '不知道什么颜色的,治病', NULL, 1);
+INSERT INTO `herb` VALUES (12, '陈皮', NULL, NULL, '不知道什么颜色的,治病', NULL, 1);
+INSERT INTO `herb` VALUES (13, '黄连', NULL, NULL, NULL, NULL, 1);
+INSERT INTO `herb` VALUES (14, '金银花', NULL, NULL, NULL, NULL, 1);
 
 -- ----------------------------
 -- Table structure for herb_category
@@ -99,12 +130,13 @@ CREATE TABLE `herb_category`  (
   `category_id` bigint NOT NULL AUTO_INCREMENT,
   `category_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   PRIMARY KEY (`category_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of herb_category
 -- ----------------------------
 INSERT INTO `herb_category` VALUES (1, '治人');
+INSERT INTO `herb_category` VALUES (3, '祛湿');
 
 -- ----------------------------
 -- Table structure for herb_growth
@@ -122,21 +154,22 @@ CREATE TABLE `herb_growth`  (
   `user_id` bigint NOT NULL,
   `growth_time` datetime NOT NULL,
   `growth_img` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `growth_audit_status` int NOT NULL,
   PRIMARY KEY (`growth_id`) USING BTREE,
   INDEX `herb_id`(`herb_id` ASC) USING BTREE,
   INDEX `user_id`(`user_id` ASC) USING BTREE,
   CONSTRAINT `herb_growth_ibfk_1` FOREIGN KEY (`herb_id`) REFERENCES `herb` (`herb_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `herb_growth_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `his_userinfo`.`user` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 47 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of herb_growth
 -- ----------------------------
-INSERT INTO `herb_growth` VALUES (1, 1, '1111', 0.0, 0.0, NULL, 0.000000, 0.000000, 1, '2025-06-27 19:06:06', '/ur');
-INSERT INTO `herb_growth` VALUES (2, 1, 'a1', 5.7, 34.1, '', 23.400000, 12.320000, 1, '2025-06-27 20:11:26', '/../Images/a12025-06-27_20-11-26.jpg');
-INSERT INTO `herb_growth` VALUES (3, 1, 'a1', 5.7, 34.1, '', 23.400000, 12.320000, 1, '2025-06-27 20:13:51', '/../Images/a12025-06-27_20-13-50.jpg');
-INSERT INTO `herb_growth` VALUES (4, 1, 'a1', 5.7, 34.1, '', 23.400000, 12.320000, 1, '2025-06-27 20:17:22', '/../Images/a12025-06-27_20-17-22.jpg');
-INSERT INTO `herb_growth` VALUES (5, 1, 'a1', 5.7, 34.1, '', 23.400000, 12.320000, 1, '2025-06-27 20:30:06', '/../Images/a12025-06-27_20-30-05.jpg');
+INSERT INTO `herb_growth` VALUES (6, 3, 'a212', 23.1, 31.2, '长得高', 21.243135, 12.542312, 4, '2025-06-30 17:58:31', 'xxxx.jpg', 1);
+INSERT INTO `herb_growth` VALUES (7, 3, 'a212', 23.1, 31.2, '长得不高1', 21.243135, 12.542312, 4, '2025-07-07 11:47:29', 'xxxx.jpg', 1);
+INSERT INTO `herb_growth` VALUES (8, 3, 'a212', 23.1, 31.2, '长得高', 21.243135, 12.542312, 4, '2025-06-30 18:05:23', 'xxxx.jpg', 1);
+INSERT INTO `herb_growth` VALUES (15, 3, '321', 32.0, 2.0, '1', 32.000000, 12.000000, 7, '2025-06-30 18:43:12', '123', 0);
+INSERT INTO `herb_growth` VALUES (46, 3, 'a2129', 23.1, 31.2, '长得高', 21.243135, 12.542312, 4, '2025-07-07 11:01:43', 'xxxx.jpg', 0);
 
 -- ----------------------------
 -- Table structure for herb_link_category
@@ -151,7 +184,7 @@ CREATE TABLE `herb_link_category`  (
   INDEX `category_id`(`category_id` ASC) USING BTREE,
   CONSTRAINT `herb_link_category_ibfk_1` FOREIGN KEY (`herb_id`) REFERENCES `herb` (`herb_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `herb_link_category_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `herb_category` (`category_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of herb_link_category
@@ -177,13 +210,71 @@ CREATE TABLE `herb_location`  (
   CONSTRAINT `herb_location_ibfk_1` FOREIGN KEY (`herb_id`) REFERENCES `herb` (`herb_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `herb_location_ibfk_2` FOREIGN KEY (`district_id`) REFERENCES `district` (`district_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `herb_location_ibfk_3` FOREIGN KEY (`street_id`) REFERENCES `street` (`street_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 61 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of herb_location
 -- ----------------------------
-INSERT INTO `herb_location` VALUES (1, 1, 2, 500101, 500101001, 24.000000, 12.000000);
-INSERT INTO `herb_location` VALUES (2, 2, 1, 500101, 500101001, 21.000000, 32.000000);
+INSERT INTO `herb_location` VALUES (1, 3, 20, 500103, 500103001, 23.032911, 32.432531);
+INSERT INTO `herb_location` VALUES (2, 4, 80, 500103, 500103002, 106.570421, 29.553672);
+INSERT INTO `herb_location` VALUES (3, 11, 120, 500103, 500103003, 106.575892, 29.558921);
+INSERT INTO `herb_location` VALUES (4, 3, 90, 500103, 500103004, 106.563211, 29.551234);
+INSERT INTO `herb_location` VALUES (5, 4, 110, 500103, 500103005, 106.556782, 29.560123);
+INSERT INTO `herb_location` VALUES (6, 11, 75, 500105, 500105001, 106.531234, 29.572345);
+INSERT INTO `herb_location` VALUES (7, 3, 130, 500105, 500105002, 106.538765, 29.578456);
+INSERT INTO `herb_location` VALUES (8, 4, 95, 500105, 500105003, 106.523456, 29.583567);
+INSERT INTO `herb_location` VALUES (9, 11, 60, 500105, 500105004, 106.534567, 29.587678);
+INSERT INTO `herb_location` VALUES (10, 3, 85, 500105, 500105005, 106.545678, 29.592789);
+INSERT INTO `herb_location` VALUES (11, 4, 110, 500108, 500108001, 106.567890, 29.523456);
+INSERT INTO `herb_location` VALUES (12, 11, 70, 500108, 500108002, 106.578901, 29.534567);
+INSERT INTO `herb_location` VALUES (13, 3, 100, 500108, 500108003, 106.589012, 29.545678);
+INSERT INTO `herb_location` VALUES (14, 4, 65, 500108, 500108004, 106.597834, 29.556789);
+INSERT INTO `herb_location` VALUES (15, 11, 90, 500108, 500108005, 106.603456, 29.567890);
+INSERT INTO `herb_location` VALUES (16, 3, 140, 500106, 500106001, 106.456789, 29.543210);
+INSERT INTO `herb_location` VALUES (17, 4, 55, 500106, 500106002, 106.467890, 29.554321);
+INSERT INTO `herb_location` VALUES (18, 11, 115, 500106, 500106003, 106.478901, 29.565432);
+INSERT INTO `herb_location` VALUES (19, 3, 85, 500106, 500106004, 106.489012, 29.576543);
+INSERT INTO `herb_location` VALUES (20, 4, 120, 500106, 500106005, 106.498765, 29.587654);
+INSERT INTO `herb_location` VALUES (21, 11, 75, 500107, 500107001, 106.512345, 29.498765);
+INSERT INTO `herb_location` VALUES (22, 3, 105, 500107, 500107002, 106.523456, 29.509876);
+INSERT INTO `herb_location` VALUES (23, 4, 60, 500107, 500107003, 106.534567, 29.520987);
+INSERT INTO `herb_location` VALUES (24, 11, 95, 500107, 500107004, 106.545678, 29.532098);
+INSERT INTO `herb_location` VALUES (25, 3, 80, 500107, 500107005, 106.556789, 29.543209);
+INSERT INTO `herb_location` VALUES (26, 4, 110, 500104, 500104001, 106.482345, 29.487654);
+INSERT INTO `herb_location` VALUES (27, 11, 65, 500104, 500104002, 106.493456, 29.498765);
+INSERT INTO `herb_location` VALUES (28, 3, 95, 500104, 500104003, 106.504567, 29.509876);
+INSERT INTO `herb_location` VALUES (29, 4, 70, 500104, 500104004, 106.515678, 29.520987);
+INSERT INTO `herb_location` VALUES (30, 11, 85, 500104, 500104005, 106.526789, 29.532098);
+INSERT INTO `herb_location` VALUES (31, 12, 150, 500101, 500101001, 108.408691, 30.807987);
+INSERT INTO `herb_location` VALUES (32, 13, 80, 500101, 500101002, 108.417532, 30.812345);
+INSERT INTO `herb_location` VALUES (33, 14, 200, 500101, 500101003, 108.425671, 30.805432);
+INSERT INTO `herb_location` VALUES (34, 12, 60, 500101, 500101004, 108.402345, 30.798765);
+INSERT INTO `herb_location` VALUES (35, 13, 30, 500102, 500102001, 107.390284, 29.703512);
+INSERT INTO `herb_location` VALUES (36, 14, 45, 500102, 500102002, 107.402156, 29.712343);
+INSERT INTO `herb_location` VALUES (37, 13, 120, 500103, 500103001, 106.562342, 29.556678);
+INSERT INTO `herb_location` VALUES (38, 13, 90, 500103, 500103002, 106.572341, 29.563412);
+INSERT INTO `herb_location` VALUES (39, 13, 180, 500103, 500103003, 106.568923, 29.558765);
+INSERT INTO `herb_location` VALUES (40, 12, 25, 500104, 500104001, 106.482345, 29.487654);
+INSERT INTO `herb_location` VALUES (41, 14, 70, 500105, 500105001, 106.534567, 29.578901);
+INSERT INTO `herb_location` VALUES (42, 12, 40, 500105, 500105002, 106.543218, 29.583456);
+INSERT INTO `herb_location` VALUES (43, 13, 55, 500105, 500105003, 106.538765, 29.576543);
+INSERT INTO `herb_location` VALUES (44, 14, 160, 500106, 500106001, 106.457812, 29.541234);
+INSERT INTO `herb_location` VALUES (45, 14, 95, 500106, 500106002, 106.463456, 29.537891);
+INSERT INTO `herb_location` VALUES (46, 14, 110, 500106, 500106003, 106.468923, 29.543218);
+INSERT INTO `herb_location` VALUES (47, 12, 35, 500107, 500107001, 106.512345, 29.502341);
+INSERT INTO `herb_location` VALUES (48, 13, 20, 500107, 500107002, 106.523456, 29.513452);
+INSERT INTO `herb_location` VALUES (49, 12, 180, 500108, 500108001, 106.563456, 29.523456);
+INSERT INTO `herb_location` VALUES (50, 12, 75, 500108, 500108002, 106.572341, 29.531234);
+INSERT INTO `herb_location` VALUES (51, 12, 130, 500108, 500108003, 106.568765, 29.528901);
+INSERT INTO `herb_location` VALUES (52, 14, 15, 500109, 500109001, 106.402341, 29.825678);
+INSERT INTO `herb_location` VALUES (53, 13, 10, 500109, 500109002, 106.412345, 29.834567);
+INSERT INTO `herb_location` VALUES (54, 12, 85, 500112, 500112001, 106.634567, 29.718901);
+INSERT INTO `herb_location` VALUES (55, 13, 65, 500112, 500112002, 106.642341, 29.723456);
+INSERT INTO `herb_location` VALUES (56, 14, 50, 500112, 500112003, 106.638765, 29.715432);
+INSERT INTO `herb_location` VALUES (57, 12, 95, 500112, 500112004, 106.647812, 29.728901);
+INSERT INTO `herb_location` VALUES (58, 14, 30, 500113, 500113001, 106.523456, 29.402341);
+INSERT INTO `herb_location` VALUES (59, 13, 200, 500115, 500115001, 107.082345, 29.834567);
+INSERT INTO `herb_location` VALUES (60, 12, 10, 500116, 500116001, 106.253456, 29.293452);
 
 -- ----------------------------
 -- Table structure for street
