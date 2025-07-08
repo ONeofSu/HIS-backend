@@ -327,4 +327,31 @@ public class ContentController {
 
         return ResponseEntity.ok(Map.of("code",0,"contents",contentVo));
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchContent(@RequestHeader("Authorization") String authHeader,
+                                           @RequestParam String query){
+        String token = authHeader.substring(7);
+        int userId = userService.getUserId(token);
+        if (userId == -1){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","invalid token")
+            );
+        }
+
+        List<Content> contents = contentService.searchContent(query);
+        List<ContentVo> contentVos = contentService.transferToContentVo(contents,true);
+        List<ContentVo> result = new ArrayList<>();
+        for(ContentVo contentVo : contentVos){
+            if(authService.isQualifiedToReadContent(contentVo.getContentId(),userId)
+                    || userService.isAdmin(userId)){
+                result.add(contentVo);  //有权限就增加
+            }
+        }
+
+        return ResponseEntity.ok(
+                Map.of("code",0,"contents",result)
+        );
+    }
 }

@@ -153,6 +153,11 @@ public class ContentServiceImpl implements ContentService {
     }
 
     @Override
+    public List<Content> searchContent(String query) {
+        return contentMapper.selectByQuery(query);
+    }
+
+    @Override
     public List<ContentBlock> getAllContentBlockOnContent(Long contentId) {
         QueryWrapper<ContentBlock> wrapper = new QueryWrapper<>();
         wrapper.eq("content_id", contentId).eq("content_block_isvalid", true)
