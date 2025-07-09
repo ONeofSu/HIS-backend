@@ -8,10 +8,14 @@ import org.csu.herbinfo.mapper.DistrictMapper;
 import org.csu.herbinfo.mapper.StreetMapper;
 import org.csu.herbinfo.service.DistrictStreetService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class DistrictStreetServiceImpl implements DistrictStreetService {
@@ -19,6 +23,14 @@ public class DistrictStreetServiceImpl implements DistrictStreetService {
     DistrictMapper districtMapper;
     @Autowired
     StreetMapper streetMapper;
+    private final RedisTemplate<String,Object> redisTemplate;
+
+    private final static String ALL_DISTRICT = "allDistrict";
+    private final static String ALL_STREET_IN_DISTRICT = "allStreet:district";
+
+    DistrictStreetServiceImpl(RedisTemplate<String,Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     @Override
     public int getDistrictIdByName(String districtName) {
@@ -50,17 +62,34 @@ public class DistrictStreetServiceImpl implements DistrictStreetService {
 
     @Override
     public List<District> getAllDistricts() {
-        ArrayList<District> result = new ArrayList<>();
+        ArrayList<District> result = (ArrayList<District>) redisTemplate.opsForValue().get(ALL_DISTRICT);
+        if(result != null && !result.isEmpty()){
+            return result;
+        }
+
         result.addAll(districtMapper.selectList(null));
+        redisTemplate.opsForValue().set(ALL_DISTRICT, result,1, TimeUnit.DAYS);
+
         return result;
     }
 
     @Override
     public List<Street> getAllStreetsInDistrictByDistrictId(int districtId) {
-        ArrayList<Street> result = new ArrayList<>();
+        String key = ALL_STREET_IN_DISTRICT + districtId;
+        ArrayList<Street> result = (ArrayList<Street>) redisTemplate.opsForValue().get(key);
+        if(result != null && !result.isEmpty()){
+            return result;
+        }
+
         QueryWrapper<Street> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("district_id", districtId);
         result.addAll(streetMapper.selectList(queryWrapper));
+        if(result==null || result.isEmpty()){
+            int timeout = 30 + new Random().nextInt(10);
+            redisTemplate.opsForValue().set(key, Collections.emptyList(),timeout, TimeUnit.SECONDS);
+        }else {
+            redisTemplate.opsForValue().set(key, result,1, TimeUnit.DAYS);
+        }
         return result;
     }
 

@@ -1,6 +1,7 @@
 package org.csu.hisuser.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import jakarta.ws.rs.GET;
 import org.csu.hisuser.DTO.UpdateUserDTO;
 import org.csu.hisuser.VO.UserVO;
 import org.csu.hisuser.entity.User;
@@ -11,10 +12,11 @@ import org.csu.hisuser.mapper.UserLinkCategoryMapper;
 import org.csu.hisuser.mapper.UserMapper;
 import org.csu.hisuser.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -24,6 +26,19 @@ public class UserServiceImpl implements UserService {
     UserCategoryMapper userCategoryMapper;
     @Autowired
     UserLinkCategoryMapper userLinkCategoryMapper;
+    private final RedisTemplate<String, Object> redisObjectTemplate;
+
+    private final static String GET_ALL_USER_KEY = "user:all";
+    private final static String GET_USER_CATEGORY_KEY = "user:category";
+    private final static String GET_ALL_USER_IN_CATEGORY = "allUsers:category";
+
+    private final static String NULL_STRING = "null";
+
+    UserServiceImpl(RedisTemplate<String, Object> redisObjectTemplate) {
+        this.redisObjectTemplate = redisObjectTemplate;
+    }
+
+
 
     //---------------------------------------------------User-----------------------------------------------------
 //    @Override
@@ -82,6 +97,9 @@ public class UserServiceImpl implements UserService {
             newUser.setAvatarUrl(null);
         }
 
+        //清理缓存
+        redisObjectTemplate.delete(GET_ALL_USER_KEY);
+
         userMapper.updateById(user);
         return true;
     }
@@ -91,6 +109,9 @@ public class UserServiceImpl implements UserService {
         if(!isUserExist(id)) {
             return false;
         }
+        //清理缓存
+        redisObjectTemplate.delete(GET_ALL_USER_KEY);
+
         deleteLinkOnUser(id);
         userMapper.deleteById(id);
         return true;
@@ -109,7 +130,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getAllUsers() {
-        return userMapper.selectList(null);
+        List<User> users = (List<User>) redisObjectTemplate.opsForValue().get(GET_ALL_USER_KEY);
+        if(users != null && !users.isEmpty()) {
+            return users;
+        }
+
+        users = userMapper.selectList(null);
+        redisObjectTemplate.opsForValue().set(GET_ALL_USER_KEY, users,60,TimeUnit.MINUTES);
+        return users;
     }
 
     @Override
@@ -205,8 +233,14 @@ public class UserServiceImpl implements UserService {
         if(!isUserExist(userId)) {
             return false;
         }
+
+        String key = GET_USER_CATEGORY_KEY + userId;
+        redisObjectTemplate.delete(key);
+
         QueryWrapper<UserLinkCategory> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userId);
+        UserCategory userCategory = getUserCategoryById(userId);
+        redisObjectTemplate.delete(GET_ALL_USER_IN_CATEGORY + userCategory.getId());
         userLinkCategoryMapper.delete(queryWrapper);
         return true;
     }
@@ -216,13 +250,26 @@ public class UserServiceImpl implements UserService {
         if(!isUserCategoryExistById(categoryId)) {
             return null;
         }
+        String key = GET_ALL_USER_IN_CATEGORY + categoryId;
+        List<User> users = (List<User>) redisObjectTemplate.opsForValue().get(key);
+        if(users != null && !users.isEmpty()) {
+            return users;
+        }
+
         QueryWrapper<UserLinkCategory> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("category_id", categoryId);
         List<UserLinkCategory> userLinkCategories = userLinkCategoryMapper.selectList(queryWrapper);
-        List<User> users = new ArrayList<>();
+        users = new ArrayList<>();
         for(UserLinkCategory userLinkCategory : userLinkCategories) {
             User user = getUserById(userLinkCategory.getUserId());
             users.add(user);
+        }
+
+        if(users==null || users.isEmpty()){
+            int randomTtl = 30 + new Random().nextInt(10);
+            redisObjectTemplate.opsForValue().set(key, Collections.emptyList(),randomTtl,TimeUnit.SECONDS);
+        }else {
+            redisObjectTemplate.opsForValue().set(key, users, 60, TimeUnit.MINUTES);
         }
         return users;
     }
@@ -232,13 +279,33 @@ public class UserServiceImpl implements UserService {
         if(!isUserExist(userId)) {
             return null;
         }
+
+        UserCategory userCategory;
+
+        String redisKey = GET_USER_CATEGORY_KEY + userId;
+        Object redisObject = redisObjectTemplate.opsForValue().get(redisKey);
+        if(redisObject != null) {
+            if(redisObject.equals(NULL_STRING)){
+                return null;
+            }
+            userCategory = (UserCategory) redisObject;
+            return userCategory;
+        }
+
         QueryWrapper<UserLinkCategory> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userId);
         UserLinkCategory userLinkCategory = userLinkCategoryMapper.selectOne(queryWrapper);
         if(userLinkCategory == null) {
             return null;
         }
-        return getUserCategoryById(userLinkCategory.getCategoryId());
+        userCategory = getUserCategoryById(userLinkCategory.getCategoryId());
+        if(userCategory==null){
+            int randomTtl = 30 + new Random().nextInt(10);
+            redisObjectTemplate.opsForValue().set(redisKey, NULL_STRING,randomTtl,TimeUnit.SECONDS);    //防止缓存雪崩
+        }else {
+            redisObjectTemplate.opsForValue().set(redisKey, userCategory,1,TimeUnit.DAYS);
+        }
+        return userCategory;
     }
 
     //---------------------------------------------------ELSE--------------------------------------------------

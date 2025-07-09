@@ -6,6 +6,7 @@ import org.csu.herbinfo.VO.HerbVO;
 import org.csu.herbinfo.entity.Herb;
 import org.csu.herbinfo.entity.HerbCategory;
 import org.csu.herbinfo.entity.HerbLinkCategory;
+import org.csu.herbinfo.service.AIGenerationService;
 import org.csu.herbinfo.service.HerbService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,8 @@ import java.util.Map;
 public class HerbInfoController {
     @Autowired
     HerbService herbService;
+    @Autowired
+    AIGenerationService aiGenerationService;
 
     @GetMapping("herbs/info/{name}")
     public ResponseEntity<?> getHerbInfo(@PathVariable String name) {
@@ -305,4 +308,14 @@ public class HerbInfoController {
         return herbService.isHerbIdExist(herbId);
     }
 
+
+    @PostMapping("/ai/generate")
+    public ResponseEntity<?> ai(@RequestParam String query){
+        String total_query = "作为中药专家,帮我推荐一下:" + query;
+        String response = aiGenerationService.generateText(total_query);
+        return ResponseEntity.ok(
+                Map.of("code",0,
+                        "response",response)
+        );
+    }
 }

@@ -17,6 +17,7 @@ public interface ContentService {
     boolean updateContent(Content content);
     Content getContent(Long id);
     List<Content> getAllContent(int size,int page);
+    List<Content> searchContent(String query);
     boolean isContentExist(Long id);
 
     //ContentTypeCRUD
