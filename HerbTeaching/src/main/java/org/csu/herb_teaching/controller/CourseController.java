@@ -495,7 +495,18 @@ public class CourseController {
     @GetMapping("/herbs/{herbId}")
     public ResponseEntity<?> getCourseIdsByHerbId(@PathVariable int herbId) {
         // 验证中草药是否存在（通过Feign调用HerbInfo服务）
-        Map<String, Object> herbInfo = herbInfoFeignClient.getHerbInfoById(herbId);
+        Map<String, Object> herbInfo;
+        try {
+            herbInfo = herbInfoFeignClient.getHerbInfoById(herbId);
+        } catch (Exception e) {
+            // 如果herb-info-service不可用，返回友好错误信息
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "中草药模块尚未启动");
+            result.put("herbId", herbId);
+            return ResponseEntity.ok(result);
+        }
+        
         if (herbInfo == null || herbInfo.get("herbId") == null) {
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("code", -1);
