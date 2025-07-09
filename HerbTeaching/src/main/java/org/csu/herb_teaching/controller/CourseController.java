@@ -491,6 +491,30 @@ public class CourseController {
         return ResponseEntity.ok(response);
     }
 
+    // GET /courses/herbs/{herbId} - Get all course IDs for a herb
+    @GetMapping("/herbs/{herbId}")
+    public ResponseEntity<?> getCourseIdsByHerbId(@PathVariable int herbId) {
+        // 验证中草药是否存在（通过Feign调用HerbInfo服务）
+        Map<String, Object> herbInfo = herbInfoFeignClient.getHerbInfoById(herbId);
+        if (herbInfo == null || herbInfo.get("herbId") == null) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("code", -1);
+            result.put("message", "中草药不存在，herbId=" + herbId);
+            return ResponseEntity.ok(result);
+        }
+        
+        List<Integer> courseIds = courseService.getCourseIdsByHerbId(herbId);
+        
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("code", 0);
+        response.put("message", courseIds.isEmpty() ? "该中草药暂无关联课程" : "Course IDs for herb retrieved successfully.");
+        response.put("herbId", herbId);
+        response.put("herbName", herbInfo.get("herbName"));
+        response.put("data", courseIds);
+        response.put("count", courseIds.size());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/collections")
     public ResponseEntity<?> getCollectedCoursesByUserId(@RequestHeader("Authorization") String authHeader,
                                                         @RequestParam(defaultValue = "1") int pageNum,

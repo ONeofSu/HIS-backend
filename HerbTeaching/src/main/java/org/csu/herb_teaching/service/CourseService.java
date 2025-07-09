@@ -49,4 +49,7 @@ public interface CourseService extends IService<Course> {
     // 判断某课程和某中草药是否已关联
     boolean isHerbLinkedToCourse(int courseId, int herbId);
 
+    // 根据herb_id查找对应的所有course_id
+    List<Integer> getCourseIdsByHerbId(int herbId);
+
 }
