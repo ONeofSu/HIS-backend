@@ -34,13 +34,13 @@ spring:
 
             #登录认证
             - id: his-user-service-auth
-              uri: lb://8.137.146.15:8081
+              uri: http://8.137.146.15:8081
               predicates:
                 - Path=/auth/**
 
             #教师用户服务
             - id: his-user-service-teacher
-              uri: lb://his-user-service
+              uri: http://8.137.146.15:8081
               predicates:
                 - Path=/his-user-service/teacher/**
               filters:
@@ -49,7 +49,7 @@ spring:
 
             #管理员用户管理
             - id: his-user-service-root
-              uri: lb://his-user-service
+              uri: http://8.137.146.15:8081
               predicates:
                 - Path=/his-user-service/root/**
               filters:
@@ -58,7 +58,7 @@ spring:
 
             #用户服务
             - id: his-user-service
-              uri: lb://his-user-service
+              uri: http://8.137.146.15:8081
               predicates:
                 - Path=/his-user-service/**
               filters:
@@ -67,7 +67,7 @@ spring:
 
             #中药信息 成长记录管理
             - id: herb-info-service-growth-manage
-              uri: lb://herb-info-service
+              uri: http://8.137.146.15:8083
               predicates:
                 - Path=/herb-info-service/root/**
               filters:
@@ -76,7 +76,7 @@ spring:
 
             #中药信息(地理位置 成长记录)
             - id: herb-info-service
-              uri: lb://herb-info-service
+              uri: http://8.137.146.15:8083
               predicates:
                 - Path=/herb-info-service/**
               filters:
@@ -85,7 +85,7 @@ spring:
 
             #研究内容(仅学生)
             - id: herb-research-service
-              uri: lb://herb-research-service
+              uri: http://8.148.30.255:8086
               predicates:
                 - Path=/herb-research-service/**
               filters:
@@ -94,7 +94,7 @@ spring:
 
             #课程评分（所有登录用户可用）
             - id: herb-teaching-service-rate
-              uri: lb://herb-teaching-service
+              uri: http://8.137.146.15:8084
               predicates:
                 - Path=/herb-teaching-service/courses/*/ratings
                 - Method=POST
@@ -104,7 +104,7 @@ spring:
 
             #课程收藏（所有登录用户可用）
             - id: herb-teaching-service-collect
-              uri: lb://herb-teaching-service
+              uri: http://8.137.146.15:8084
               predicates:
                 - Path=/herb-teaching-service/courses/*/collections
                 - Method=POST,DELETE
@@ -114,7 +114,7 @@ spring:
 
             #课程管理(仅教师、管理员)
             - id: herb-teaching-service-write
-              uri: lb://herb-teaching-service
+              uri: http://8.137.146.15:8084
               predicates:
                 - Path=/herb-teaching-service/**
                 - Method=POST,PUT,DELETE
@@ -124,7 +124,7 @@ spring:
 
             #课程查看
             - id: herb-teaching-service-read
-              uri: lb://herb-teaching-service
+              uri: http://8.137.146.15:8084
               predicates:
                 - Path=/herb-teaching-service/**
                 - Method=GET
@@ -134,7 +134,7 @@ spring:
 
             #培训资料
             - id: herb-training-service
-              uri: lb://herb-training-service
+              uri: http://localhost:8087
               predicates:
                 - Path=/herb-training-service/**
               filters:
@@ -143,7 +143,7 @@ spring:
 
             #敏感词管理（仅管理员权限）
             - id: sensitive-word-service-admin
-              uri: lb://comment-service
+              uri: http://47.122.113.158:8088
               predicates:
                 - Path=/comment-service/admin/sensitive-words/**
               filters:
@@ -152,7 +152,7 @@ spring:
 
             #评论
             - id: comment-service
-              uri: lb://comment-service
+              uri: http://47.122.113.158:8088
               predicates:
                 - Path=/comment-service/**
               filters:
@@ -161,7 +161,7 @@ spring:
 
             #业绩审核相关操作（仅管理员权限）
             - id: performance-service-audit
-              uri: lb://performance-service
+              uri: http://8.148.30.255:8089
               predicates:
                 - Path=/performance-service/performances/*/audit
                 - Method=POST
@@ -171,7 +171,7 @@ spring:
 
             #业绩待审核列表（仅管理员权限）
             - id: performance-service-pending
-              uri: lb://performance-service
+              uri: http://8.148.30.255:8089
               predicates:
                 - Path=/performance-service/performances/pending
                 - Method=GET
@@ -181,7 +181,7 @@ spring:
 
             #业绩管理其他操作（教师和管理员权限）
             - id: performance-service-write
-              uri: lb://performance-service
+              uri: http://8.148.30.255:8089
               predicates:
                 - Path=/performance-service/**
                 - Method=GET,POST,PUT,DELETE
