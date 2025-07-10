@@ -34,7 +34,7 @@ spring:
 
             #登录认证
             - id: his-user-service-auth
-              uri: lb://his-user-service
+              uri: lb://8.137.146.15:8081
               predicates:
                 - Path=/auth/**
 
