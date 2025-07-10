@@ -12,4 +12,4 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/herb_rating
     username: root
-    password: Liu12345
+    password: 123456
