@@ -11,11 +11,8 @@
  Target Server Version : 80011 (8.0.11)
  File Encoding         : 65001
 
- Date: 07/07/2025 13:59:47
+ Date: 08/07/2025 18:21:46
 */
-
-CREATE DATABASE IF NOT EXISTS his_comment DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
-USE his_comment;
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -44,40 +41,43 @@ CREATE TABLE `comment`  (
   PRIMARY KEY (`comment_id`) USING BTREE,
   INDEX `idx_comment_target_user`(`target_type` ASC, `target_id` ASC, `user_id` ASC) USING BTREE,
   INDEX `idx_comment_time_deleted`(`create_time` ASC, `is_deleted` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 31 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '评论表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 34 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '评论表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of comment
 -- ----------------------------
 INSERT INTO `comment` VALUES (1, 'course', 7, 2, '这门课讲得很细致，受益匪浅！', 0, 1, 0, '2025-07-02 13:23:08', '2025-07-02 15:32:44', 1, NULL, NULL, NULL, 0, 0);
-INSERT INTO `comment` VALUES (2, 'course', 4, 2, '这门课讲得很细致，受益匪浅！', 0, 2, 0, '2025-07-02 13:33:49', '2025-07-02 13:33:49', 0, NULL, NULL, NULL, 0, 0);
-INSERT INTO `comment` VALUES (3, 'course', 6, 2, '这门课讲得很细致，受益匪浅！', 0, 3, 1, '2025-07-02 13:36:23', '2025-07-02 15:32:42', 0, NULL, NULL, NULL, 0, 0);
-INSERT INTO `comment` VALUES (4, 'course', 4, 2, '这门课讲得很细致，受益匪浅！', 0, 4, 0, '2025-07-02 13:41:53', '2025-07-02 13:41:53', 0, NULL, NULL, NULL, 0, 0);
-INSERT INTO `comment` VALUES (5, 'course', 4, 2, '这门课讲得很细致，受益匪浅！', 0, 5, 0, '2025-07-02 13:43:25', '2025-07-02 13:43:25', 0, NULL, NULL, NULL, 0, 0);
-INSERT INTO `comment` VALUES (6, 'course', 4, 1, '这门课讲得很细致，受益匪浅！', 0, 6, 0, '2025-07-02 13:46:39', '2025-07-02 15:32:11', 0, NULL, NULL, NULL, 0, 0);
+INSERT INTO `comment` VALUES (2, 'course', 4, 2, '这门课讲得很细致，受益匪浅！', 0, 2, 0, '2025-07-02 13:33:49', '2025-07-07 15:34:13', 0, NULL, NULL, NULL, 1, 0);
+INSERT INTO `comment` VALUES (3, 'course', 6, 2, '这门课讲得很细致，受益匪浅！', 0, 3, 1, '2025-07-02 13:36:23', '2025-07-07 15:34:13', 0, NULL, NULL, NULL, 1, 0);
+INSERT INTO `comment` VALUES (4, 'course', 4, 2, '这门课讲得很细致，受益匪浅！', 0, 4, 0, '2025-07-02 13:41:53', '2025-07-07 15:34:14', 0, NULL, NULL, NULL, 1, 0);
+INSERT INTO `comment` VALUES (5, 'course', 4, 2, '这门课讲得很细致，受益匪浅！', 0, 5, 0, '2025-07-02 13:43:25', '2025-07-07 15:34:14', 0, NULL, NULL, NULL, 1, 0);
+INSERT INTO `comment` VALUES (6, 'course', 4, 1, '这门课讲得很细致，受益匪浅！', 0, 6, 0, '2025-07-02 13:46:39', '2025-07-07 15:34:14', 0, NULL, NULL, NULL, 1, 0);
 INSERT INTO `comment` VALUES (7, 'course', 5, 2, '这门课讲得很细致，受益匪浅！', 0, 7, 0, '2025-07-02 13:49:34', '2025-07-02 15:32:40', 1, NULL, NULL, NULL, 0, 0);
-INSERT INTO `comment` VALUES (8, 'course', 4, 2, '这门课讲得很细致，受益匪浅！', 0, 8, 0, '2025-07-02 13:51:42', '2025-07-02 13:51:42', 0, NULL, NULL, NULL, 0, 0);
-INSERT INTO `comment` VALUES (9, 'course', 4, 2, '这门课讲得很细致，受益匪浅！', 0, 9, 0, '2025-07-02 13:52:24', '2025-07-02 13:53:22', 0, NULL, NULL, NULL, 0, 0);
-INSERT INTO `comment` VALUES (10, 'course', 2, 2, '这门课讲得很细致，受益匪浅！', 0, 10, 0, '2025-07-02 13:55:50', '2025-07-02 15:32:37', 0, NULL, NULL, NULL, 0, 0);
+INSERT INTO `comment` VALUES (8, 'course', 4, 2, '这门课讲得很细致，受益匪浅！', 0, 8, 0, '2025-07-02 13:51:42', '2025-07-07 15:34:14', 0, NULL, NULL, NULL, 1, 0);
+INSERT INTO `comment` VALUES (9, 'course', 4, 2, '这门课讲得很细致，受益匪浅！', 0, 9, 0, '2025-07-02 13:52:24', '2025-07-07 15:34:14', 0, NULL, NULL, NULL, 1, 0);
+INSERT INTO `comment` VALUES (10, 'course', 2, 2, '这门课讲得很***，受益匪浅！', 0, 10, 0, '2025-07-02 13:55:50', '2025-07-07 15:14:38', 0, '这门课讲得很***，受益匪浅！', '傻逼', '辱骂', 1, 1);
 INSERT INTO `comment` VALUES (11, 'course', 4, 3, '这门课讲得很细致，受益匪浅！', 0, 11, 0, '2025-07-02 13:56:49', '2025-07-02 13:56:49', 1, NULL, NULL, NULL, 0, 0);
-INSERT INTO `comment` VALUES (12, 'course', 2, 1, '这门课讲得很细致，受益匪浅！', 0, 12, 0, '2025-07-02 13:57:02', '2025-07-02 14:57:37', 0, NULL, NULL, NULL, 0, 0);
-INSERT INTO `comment` VALUES (13, 'course', 2, 2, '这门课讲得很细致，受益匪浅！', 0, 13, 0, '2025-07-02 14:56:43', '2025-07-02 14:56:43', 0, NULL, NULL, NULL, 0, 0);
-INSERT INTO `comment` VALUES (14, 'course', 5, 1, '这门课讲得很细致，受益匪浅！', 0, 14, 0, '2025-07-02 15:11:15', '2025-07-02 15:11:15', 0, NULL, NULL, NULL, 0, 0);
+INSERT INTO `comment` VALUES (12, 'course', 2, 1, '这门课讲得很细致，受益匪浅！', 0, 12, 0, '2025-07-02 13:57:02', '2025-07-07 15:34:14', 0, NULL, NULL, NULL, 1, 0);
+INSERT INTO `comment` VALUES (13, 'course', 2, 2, '这门课讲得很反动，受益匪浅！', 0, 13, 0, '2025-07-02 14:56:43', '2025-07-07 15:14:14', 1, NULL, NULL, NULL, 0, 0);
+INSERT INTO `comment` VALUES (14, 'course', 5, 1, '这门课讲得很***，受益匪浅！', 0, 14, 0, '2025-07-02 15:11:15', '2025-07-07 15:36:11', 0, '这门课讲得很***，受益匪浅！', '傻逼', '辱骂', 1, 1);
 INSERT INTO `comment` VALUES (15, 'herb', 1, 1, '这门课讲得很细致，受益匪浅！', 0, 15, 0, '2025-07-02 15:23:49', '2025-07-02 15:23:49', 1, NULL, NULL, NULL, 0, 0);
-INSERT INTO `comment` VALUES (16, 'herb', 2, 1, '这门课讲得很细致，受益匪浅！', 0, 16, 0, '2025-07-02 15:25:31', '2025-07-02 15:25:31', 1, NULL, NULL, NULL, 0, 0);
+INSERT INTO `comment` VALUES (16, 'herb', 2, 1, '这门课讲得很智障，受益匪浅！', 0, 16, 0, '2025-07-02 15:25:31', '2025-07-07 15:15:32', 1, NULL, NULL, NULL, 0, 0);
 INSERT INTO `comment` VALUES (17, 'herb', 2, 3, '这门课讲得很细致，受益匪浅！', 0, 17, 0, '2025-07-02 15:34:33', '2025-07-02 15:34:33', 1, NULL, NULL, NULL, 0, 0);
 INSERT INTO `comment` VALUES (18, 'herb', 2, 2, '这门课讲得很细致，受益匪浅！', 0, 18, 0, '2025-07-02 15:34:37', '2025-07-02 15:34:37', 1, NULL, NULL, NULL, 0, 0);
 INSERT INTO `comment` VALUES (19, 'herb', 1, 2, '这门课讲得很细致，受益匪浅！', 15, 15, 0, '2025-07-02 16:18:07', '2025-07-02 16:18:07', 1, NULL, NULL, NULL, 0, 0);
 INSERT INTO `comment` VALUES (20, 'herb', 1, 2, '这门课讲得很细致，受益匪浅！', 19, 15, 0, '2025-07-02 16:19:46', '2025-07-02 16:19:46', 1, NULL, NULL, NULL, 0, 0);
 INSERT INTO `comment` VALUES (22, 'herb', 1, 2, '这门课讲得很细致，受益匪浅！', 20, 15, 0, '2025-07-02 16:34:16', '2025-07-02 16:34:16', 1, NULL, NULL, NULL, 0, 0);
-INSERT INTO `comment` VALUES (23, 'course', 4, 2, '这门课讲得很细致，受益匪浅！', 8, 8, 0, '2025-07-02 16:37:01', '2025-07-02 16:37:01', 0, NULL, NULL, NULL, 0, 0);
-INSERT INTO `comment` VALUES (24, 'course', 4, 1, '这门课讲得很细致，受益匪浅！', 8, 8, 0, '2025-07-02 16:57:05', '2025-07-02 16:57:05', 0, NULL, NULL, NULL, 0, 0);
+INSERT INTO `comment` VALUES (23, 'course', 4, 2, '这门课讲得很细致，受益匪浅！', 8, 8, 0, '2025-07-02 16:37:01', '2025-07-07 15:34:14', 0, NULL, NULL, NULL, 1, 0);
+INSERT INTO `comment` VALUES (24, 'course', 4, 1, '这门课讲得很细致，受益匪浅！', 8, 8, 0, '2025-07-02 16:57:05', '2025-07-07 15:34:14', 0, NULL, NULL, NULL, 1, 0);
 INSERT INTO `comment` VALUES (25, 'course', 2, 10, '这门课程内容很***和***，老师讲解得很清楚！', 0, 25, 0, '2025-07-07 13:37:43', '2025-07-07 13:37:43', 0, '这门课程内容很废物和智障，老师讲解得很清楚！', '废物,智障', '辱骂,辱骂', 1, 1);
 INSERT INTO `comment` VALUES (26, 'course', 2, 10, '这门课程内容很***和***和***，老师讲解得很清楚！', 0, 26, 0, '2025-07-07 13:38:39', '2025-07-07 13:38:39', 0, '这门课程内容很废物和智障和垃圾，老师讲解得很清楚！', '废物,智障,垃圾', '辱骂,辱骂,辱骂', 1, 1);
 INSERT INTO `comment` VALUES (27, 'herb', 1, 10, '人参的功效确实很***，但要注意用量。', 0, 27, 0, '2025-07-07 13:39:43', '2025-07-07 13:42:04', 1, '人参的功效确实很垃圾，但要注意用量。', '垃圾', '辱骂', 1, 1);
-INSERT INTO `comment` VALUES (28, 'course', 2, 10, '确实不错，学到了很多实用的知识。', 25, 25, 0, '2025-07-07 13:40:14', '2025-07-07 13:40:14', 0, NULL, '', '', 0, 0);
+INSERT INTO `comment` VALUES (28, 'course', 2, 10, '确实不错，学到了很多实用的知识。', 25, 25, 0, '2025-07-07 13:40:14', '2025-07-07 15:34:14', 0, NULL, '', '', 1, 0);
 INSERT INTO `comment` VALUES (29, 'course', 2, 10, '确实***，学到了很多实用的知识。', 25, 25, 0, '2025-07-07 13:40:18', '2025-07-07 13:40:18', 0, '确实垃圾，学到了很多实用的知识。', '垃圾', '辱骂', 1, 1);
 INSERT INTO `comment` VALUES (30, 'course', 2, 10, '这门课程内容很***，老师讲解得很清楚！', 0, 30, 0, '2025-07-07 13:46:43', '2025-07-07 13:46:43', 0, '这门课程内容很测试敏感词，老师讲解得很清楚！', '测试敏感词', '违法内容', 1, 1);
+INSERT INTO `comment` VALUES (31, 'course', 2, 10, '这门课程内容很***，老师讲解得很清楚！', 0, 31, 0, '2025-07-07 15:42:52', '2025-07-07 15:42:52', 0, '这门课程内容很灌水，老师讲解得很清楚！', '灌水', '垃圾信息', 1, 1);
+INSERT INTO `comment` VALUES (32, 'course', 2, 4, '这门课程内容很***，老师讲解得很清楚！', 0, 32, 0, '2025-07-07 17:18:29', '2025-07-07 17:18:29', 0, '这门课程内容很灌水，老师讲解得很清楚！', '灌水', '垃圾信息', 1, 1);
+INSERT INTO `comment` VALUES (33, 'course', 2, 4, '这门课程内容很***，老师讲解得很清楚！', 0, 33, 0, '2025-07-07 17:48:25', '2025-07-07 17:48:25', 0, '这门课程内容很灌水，老师讲解得很清楚！', '灌水', '垃圾信息', 1, 1);
 
 -- ----------------------------
 -- Table structure for comment_like
@@ -117,12 +117,12 @@ CREATE TABLE `sensitive_words`  (
   INDEX `idx_create_time`(`create_time` ASC) USING BTREE,
   INDEX `idx_sensitive_type_status`(`sensitive_word_type` ASC, `sensitive_status` ASC) USING BTREE,
   INDEX `idx_sensitive_level_status`(`sensitive_level` ASC, `sensitive_status` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 122 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '敏感词表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 134 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '敏感词表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sensitive_words
 -- ----------------------------
-INSERT INTO `sensitive_words` VALUES (1, '反对郭庆', '政治敏感', 3, 1, '2024-01-15 10:00:00', 1);
+INSERT INTO `sensitive_words` VALUES (1, '反对国家', '政治敏感', 3, 1, '2024-01-15 10:00:00', 1);
 INSERT INTO `sensitive_words` VALUES (2, '颠覆政权', '政治敏感', 3, 1, '2024-01-15 10:00:00', 1);
 INSERT INTO `sensitive_words` VALUES (3, '分裂国家', '政治敏感', 3, 1, '2024-01-15 10:00:00', 1);
 INSERT INTO `sensitive_words` VALUES (4, '台独', '政治敏感', 3, 1, '2024-01-15 10:00:00', 1);
@@ -241,8 +241,19 @@ INSERT INTO `sensitive_words` VALUES (116, '垃圾广告', '垃圾信息', 1, 1,
 INSERT INTO `sensitive_words` VALUES (117, '恶意推广', '垃圾信息', 1, 1, '2024-01-15 10:00:00', 1);
 INSERT INTO `sensitive_words` VALUES (118, '刷屏', '垃圾信息', 1, 1, '2024-01-15 10:00:00', 1);
 INSERT INTO `sensitive_words` VALUES (119, '灌水', '垃圾信息', 1, 1, '2024-01-15 10:00:00', 1);
-INSERT INTO `sensitive_words` VALUES (120, '垃圾信息', '垃圾信息', 1, 1, '2024-01-15 10:00:00', 1);
-INSERT INTO `sensitive_words` VALUES (121, '更新更新的敏感词', '其他', 2, 1, '2025-07-07 13:46:19', 10);
+INSERT INTO `sensitive_words` VALUES (121, '无效xiao的敏感词', '垃圾信息', 1, 1, '2025-07-07 13:46:19', 10);
+INSERT INTO `sensitive_words` VALUES (122, '无效xiao的敏感词', '垃圾信息', 1, 0, '2025-07-07 15:41:14', 10);
+INSERT INTO `sensitive_words` VALUES (123, '测试敏感词', '其他', 1, 1, '2025-07-07 15:49:00', 2);
+INSERT INTO `sensitive_words` VALUES (124, '测试敏感词', '其他', 1, 1, '2025-07-07 15:51:25', 2);
+INSERT INTO `sensitive_words` VALUES (125, '测试敏感词', '其他', 1, 1, '2025-07-07 15:51:35', 2);
+INSERT INTO `sensitive_words` VALUES (126, '测试敏感词', '其他', 1, 1, '2025-07-07 15:51:58', 2);
+INSERT INTO `sensitive_words` VALUES (127, '测试敏感词', '其他', 1, 1, '2025-07-07 15:54:04', 2);
+INSERT INTO `sensitive_words` VALUES (128, '测试敏感词', '其他', 1, 1, '2025-07-07 15:54:25', 2);
+INSERT INTO `sensitive_words` VALUES (129, '测试敏感词', '其他', 1, 1, '2025-07-07 16:15:49', 2);
+INSERT INTO `sensitive_words` VALUES (130, '测试敏感词', '其他', 1, 1, '2025-07-07 16:31:57', 2);
+INSERT INTO `sensitive_words` VALUES (131, '测试敏感词', '其他', 1, 1, '2025-07-07 17:16:22', 6);
+INSERT INTO `sensitive_words` VALUES (132, '测试敏感词', '其他', 1, 1, '2025-07-07 17:50:33', 6);
+INSERT INTO `sensitive_words` VALUES (133, '测试敏感词', '其他', 1, 1, '2025-07-07 18:06:02', 6);
 
 -- ----------------------------
 -- Triggers structure for table comment_like

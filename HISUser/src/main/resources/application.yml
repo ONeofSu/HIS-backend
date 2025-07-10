@@ -15,7 +15,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/his_userinfo
     username: root
-    password: 123456
+    password: Liu12345
   rabbitmq:
     host: localhost
     port: 5672

@@ -67,6 +67,7 @@ public class DistrictStreetServiceImpl implements DistrictStreetService {
             return result;
         }
 
+        result = new ArrayList<>();
         result.addAll(districtMapper.selectList(null));
         redisTemplate.opsForValue().set(ALL_DISTRICT, result,1, TimeUnit.DAYS);
 
@@ -83,6 +84,7 @@ public class DistrictStreetServiceImpl implements DistrictStreetService {
 
         QueryWrapper<Street> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("district_id", districtId);
+        result = new ArrayList<>();
         result.addAll(streetMapper.selectList(queryWrapper));
         if(result==null || result.isEmpty()){
             int timeout = 30 + new Random().nextInt(10);
