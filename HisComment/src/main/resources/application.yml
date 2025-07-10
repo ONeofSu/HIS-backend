@@ -12,7 +12,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/his_comment
     username: root
-    password: gq
+    password: Liu12345
   servlet:
     multipart:
       enabled: true
