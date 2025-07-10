@@ -399,4 +399,16 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         queryWrapper.eq("course_id", courseId).eq("herb_id", herbId);
         return courseHerbLinkMapper.selectCount(queryWrapper) > 0;
     }
+
+    @Override
+    public List<Integer> getCourseIdsByHerbId(int herbId) {
+        // 查询指定herb_id关联的所有课程ID
+        QueryWrapper<CourseHerbLink> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("herb_id", herbId).select("course_id");
+        List<CourseHerbLink> links = courseHerbLinkMapper.selectList(queryWrapper);
+        
+        return links.stream()
+                .map(CourseHerbLink::getCourseId)
+                .collect(Collectors.toList());
+    }
 }
