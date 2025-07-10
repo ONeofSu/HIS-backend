@@ -6,8 +6,6 @@ import org.csu.herbinfo.DTO.GenerationRequest;
 import org.csu.herbinfo.DTO.GenerationResponse;
 import org.csu.herbinfo.config.AIServiceConfig;
 import org.csu.herbinfo.service.AIGenerationService;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
