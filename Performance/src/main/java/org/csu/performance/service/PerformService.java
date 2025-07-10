@@ -23,6 +23,12 @@ public interface PerformService {
                                                     Integer performStatus, Integer page, Integer size);
 
     /**
+     * 分页查询业绩列表（排除草稿状态）
+     */
+    ResultVO<PageResultVO<PerformVO>> getPerformListExcludeDraft(String keyword, Long performTypeId, 
+                                                                Integer performStatus, Integer page, Integer size);
+
+    /**
      * 根据ID查询业绩详情
      */
     ResultVO<PerformVO> getPerformById(Long performId);

@@ -25,6 +25,14 @@ public interface PerformMapper extends BaseMapper<org.csu.performance.entity.Per
                                       @Param("performStatus") Integer performStatus);
 
     /**
+     * 分页查询业绩列表（排除草稿状态）
+     */
+    IPage<PerformVO> selectPerformPageExcludeDraft(Page<PerformVO> page, 
+                                                  @Param("keyword") String keyword,
+                                                  @Param("performTypeId") Long performTypeId,
+                                                  @Param("performStatus") Integer performStatus);
+
+    /**
      * 分页查询待审核业绩列表
      */
     IPage<PerformVO> selectPendingPerformPage(Page<PerformVO> page);
@@ -50,6 +58,11 @@ public interface PerformMapper extends BaseMapper<org.csu.performance.entity.Per
     Integer countTotalPerforms();
 
     /**
+     * 统计总业绩数量（排除草稿状态）
+     */
+    Integer countTotalPerformsExcludeDraft();
+
+    /**
      * 根据状态统计业绩数量
      */
     Integer countPerformsByStatus(@Param("performStatus") Integer performStatus);
@@ -60,9 +73,19 @@ public interface PerformMapper extends BaseMapper<org.csu.performance.entity.Per
     List<Map<String, Object>> getTypeDistribution();
 
     /**
+     * 获取类型分布统计（排除草稿状态）
+     */
+    List<Map<String, Object>> getTypeDistributionExcludeDraft();
+
+    /**
      * 获取月度趋势统计
      */
     List<Map<String, Object>> getMonthlyTrend();
+
+    /**
+     * 获取月度趋势统计（排除草稿状态）
+     */
+    List<Map<String, Object>> getMonthlyTrendExcludeDraft();
 
     /**
      * 根据业绩类型ID删除相关业绩

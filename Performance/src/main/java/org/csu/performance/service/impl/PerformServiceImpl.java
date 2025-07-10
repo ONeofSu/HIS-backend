@@ -94,6 +94,24 @@ public class PerformServiceImpl implements PerformService {
     }
 
     @Override
+    public ResultVO<PageResultVO<PerformVO>> getPerformListExcludeDraft(String keyword, Long performTypeId, 
+                                                                       Integer performStatus, Integer page, Integer size) {
+        Page<PerformVO> pageParam = new Page<>(page, size);
+        IPage<PerformVO> pageResult = performMapper.selectPerformPageExcludeDraft(pageParam, keyword, performTypeId, performStatus);
+        
+        // 填充用户信息
+        fillUserInfo(pageResult.getRecords());
+        
+        PageResultVO<PerformVO> result = new PageResultVO<>(
+            pageResult.getTotal(), 
+            pageResult.getPages(), 
+            pageResult.getRecords()
+        );
+        
+        return ResultVO.success("业绩列表获取成功", result);
+    }
+
+    @Override
     public ResultVO<PerformVO> getPerformById(Long performId) {
         // 检查业绩是否存在
         if (!checkPerformExists(performId)) {

@@ -53,7 +53,21 @@ public class PerformController {
             @RequestParam(required = false) Long performTypeId,
             @RequestParam(required = false) Integer performStatus,
             @RequestParam(defaultValue = "1") @Min(1) Integer page,
-            @RequestParam(defaultValue = "10") @Min(1) Integer size) {
+            @RequestParam(defaultValue = "10") @Min(1) Integer size,
+            HttpServletRequest request) {
+        
+        // 获取用户角色
+        Integer userRoleLevel = getUserRoleLevel(request);
+        
+        // 如果是管理员（角色等级为3或4），不允许查看草稿状态的数据
+        if (userRoleLevel != null && (userRoleLevel == 3 || userRoleLevel == 4)) {
+            // 如果传入的状态是草稿(0)，则忽略
+            if (performStatus != null && performStatus == 0) {
+                performStatus = null;
+            }
+            return performService.getPerformListExcludeDraft(keyword, performTypeId, performStatus, page, size);
+        }
+
         return performService.getPerformList(keyword, performTypeId, performStatus, page, size);
     }
 
@@ -176,6 +190,28 @@ public class PerformController {
     }
 
     /**
+     * 从JWT token中获取用户角色等级
+     */
+    private Integer getUserRoleLevel(HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        if (token == null || token.trim().isEmpty()) {
+            return null;
+        }
+        
+        try {
+            // 移除Bearer前缀
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
+            
+            // 通过Feign客户端获取用户角色等级
+            return userFeignClient.getUserRoleLevelByToken(token);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
      * 检查是否为管理员
      */
     private boolean isAdmin(HttpServletRequest request) {
@@ -192,7 +228,7 @@ public class PerformController {
             
             // 通过Feign客户端获取用户角色等级
             Integer userRoleLevel = userFeignClient.getUserRoleLevelByToken(token);
-            return userRoleLevel != null && userRoleLevel == 3; // 3表示管理员
+            return userRoleLevel != null && (userRoleLevel == 3 || userRoleLevel == 4); // 3表示管理员，4表示超级管理员
         } catch (Exception e) {
             return false;
         }

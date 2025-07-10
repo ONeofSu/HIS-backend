@@ -64,6 +64,48 @@
         ORDER BY p.created_time DESC
     </select>
 
+    <!-- 分页查询业绩列表（排除草稿状态） -->
+    <select id="selectPerformPageExcludeDraft" resultMap="PerformVOMap">
+        SELECT 
+            p.perform_id,
+            p.perform_name,
+            p.perform_content,
+            p.perform_type_id,
+            pt.perform_type_name,
+            p.perform_status,
+            CASE p.perform_status 
+                WHEN 0 THEN '草稿'
+                WHEN 1 THEN '已提交'
+                WHEN 2 THEN '已通过'
+                WHEN 3 THEN '已驳回'
+                ELSE '未知状态'
+            END AS perform_status_name,
+            p.perform_time,
+            p.perform_comment,
+            p.submit_user_id,
+            p.created_time,
+            p.updated_time,
+            p.audit_time,
+            p.audit_by,
+            (SELECT COUNT(*) FROM perform_file pf WHERE pf.perform_id = p.perform_id AND pf.perform_file_isvalid = 1) as file_count
+        FROM perform p
+        LEFT JOIN perform_type pt ON p.perform_type_id = pt.perform_type_id
+        <where>
+            AND p.perform_status != 0
+            <if test="keyword != null and keyword != ''">
+                AND (p.perform_name LIKE CONCAT('%', #{keyword}, '%') 
+                     OR p.perform_content LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="performTypeId != null">
+                AND p.perform_type_id = #{performTypeId}
+            </if>
+            <if test="performStatus != null">
+                AND p.perform_status = #{performStatus}
+            </if>
+        </where>
+        ORDER BY p.created_time DESC
+    </select>
+
     <!-- 分页查询待审核业绩列表 -->
     <select id="selectPendingPerformPage" resultMap="PerformVOMap">
         SELECT 
@@ -169,6 +211,13 @@
         FROM perform
     </select>
 
+    <!-- 统计总业绩数量（排除草稿状态） -->
+    <select id="countTotalPerformsExcludeDraft" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM perform
+        WHERE perform_status != 0
+    </select>
+
     <!-- 根据状态统计业绩数量 -->
     <select id="countPerformsByStatus" resultType="java.lang.Integer">
         SELECT COUNT(*)
@@ -188,6 +237,18 @@
         ORDER BY count DESC
     </select>
 
+    <!-- 获取类型分布统计（排除草稿状态） -->
+    <select id="getTypeDistributionExcludeDraft" resultType="java.util.Map">
+        SELECT 
+            pt.perform_type_name,
+            COUNT(p.perform_id) as count
+        FROM perform_type pt
+        LEFT JOIN perform p ON pt.perform_type_id = p.perform_type_id AND p.perform_status != 0
+        WHERE pt.is_active = 1
+        GROUP BY pt.perform_type_id, pt.perform_type_name
+        ORDER BY count DESC
+    </select>
+
     <!-- 获取月度趋势统计 -->
     <select id="getMonthlyTrend" resultType="java.util.Map">
         SELECT 
@@ -196,6 +257,19 @@
             SUM(CASE WHEN perform_status = 2 THEN 1 ELSE 0 END) as approved_count
         FROM perform 
         WHERE created_time >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+        GROUP BY DATE_FORMAT(created_time, '%Y-%m')
+        ORDER BY month
+    </select>
+
+    <!-- 获取月度趋势统计（排除草稿状态） -->
+    <select id="getMonthlyTrendExcludeDraft" resultType="java.util.Map">
+        SELECT 
+            DATE_FORMAT(created_time, '%Y-%m') as month,
+            COUNT(*) as count,
+            SUM(CASE WHEN perform_status = 2 THEN 1 ELSE 0 END) as approved_count
+        FROM perform 
+        WHERE created_time >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+            AND perform_status != 0
         GROUP BY DATE_FORMAT(created_time, '%Y-%m')
         ORDER BY month
     </select>
