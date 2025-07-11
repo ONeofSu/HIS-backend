@@ -100,3 +100,10 @@ Java后端`HerbInfo`中，找到`AIGenerateService`修改为相应地址
 [业绩管理模块接口](API/6业绩管理接口设计.md)
 
 [评论区接口](API/7评论区(敏感词)模块接口设计%20.md)
+
+## 7.贡献指南
+1. Fork 本仓库
+2. 创建特性分支 (git checkout -b feature/your-feature)
+3. 提交代码 (git commit -m 'Add some feature')
+4. 推送分支 (git push origin feature/your-feature)
+5. 创建Pull Request
