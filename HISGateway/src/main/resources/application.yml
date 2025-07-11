@@ -94,7 +94,7 @@ spring:
 
             #课程评分（所有登录用户可用）
             - id: herb-teaching-service-rate
-              uri: http://8.137.146.15:8084
+              uri: http://47.122.113.158:8084
               predicates:
                 - Path=/herb-teaching-service/courses/*/ratings
                 - Method=POST
@@ -104,7 +104,7 @@ spring:
 
             #课程收藏（所有登录用户可用）
             - id: herb-teaching-service-collect
-              uri: http://8.137.146.15:8084
+              uri: http://47.122.113.158:8084
               predicates:
                 - Path=/herb-teaching-service/courses/*/collections
                 - Method=POST,DELETE
@@ -114,7 +114,7 @@ spring:
 
             #课程管理(仅教师、管理员)
             - id: herb-teaching-service-write
-              uri: http://8.137.146.15:8084
+              uri: http://47.122.113.158:8084
               predicates:
                 - Path=/herb-teaching-service/**
                 - Method=POST,PUT,DELETE
@@ -124,7 +124,7 @@ spring:
 
             #课程查看
             - id: herb-teaching-service-read
-              uri: http://8.137.146.15:8084
+              uri: http://47.122.113.158:8084
               predicates:
                 - Path=/herb-teaching-service/**
                 - Method=GET

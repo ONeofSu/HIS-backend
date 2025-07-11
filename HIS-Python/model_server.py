@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from peft import PeftModel
@@ -153,6 +154,7 @@ def health_check():
 if __name__ == '__main__':
     # 启动时初始化模型
     if initialize_models():
+        CORS(app)
         app.run(host='0.0.0.0', port=8000, threaded=True)
     else:
         logger.error("服务启动失败：模型初始化未完成")
