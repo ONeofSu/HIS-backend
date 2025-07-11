@@ -11,11 +11,9 @@
  Target Server Version : 80011 (8.0.11)
  File Encoding         : 65001
 
- Date: 10/07/2025 18:43:31
+ Date: 11/07/2025 09:03:29
 */
-DROP DATABASE IF EXISTS his_herb_teaching;
-CREATE DATABASE IF NOT EXISTS his_herb_teaching DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
-USE his_herb_teaching;
+
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
