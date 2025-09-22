@@ -34,13 +34,13 @@ spring:
 
             #登录认证
             - id: his-user-service-auth
-              uri: http://8.137.146.15:8081
+              uri: lb://his-user-service
               predicates:
                 - Path=/auth/**
 
             #教师用户服务
             - id: his-user-service-teacher
-              uri: http://8.137.146.15:8081
+              uri: lb://his-user-service
               predicates:
                 - Path=/his-user-service/teacher/**
               filters:
@@ -49,7 +49,7 @@ spring:
 
             #管理员用户管理
             - id: his-user-service-root
-              uri: http://8.137.146.15:8081
+              uri: lb://his-user-service
               predicates:
                 - Path=/his-user-service/root/**
               filters:
@@ -58,7 +58,7 @@ spring:
 
             #用户服务
             - id: his-user-service
-              uri: http://8.137.146.15:8081
+              uri: lb://his-user-service
               predicates:
                 - Path=/his-user-service/**
               filters:
@@ -67,7 +67,7 @@ spring:
 
             #中药信息 成长记录管理
             - id: herb-info-service-growth-manage
-              uri: http://8.137.146.15:8083
+              uri: lb://herb-info-service
               predicates:
                 - Path=/herb-info-service/root/**
               filters:
@@ -76,7 +76,7 @@ spring:
 
             #中药信息(地理位置 成长记录)
             - id: herb-info-service
-              uri: http://8.137.146.15:8083
+              uri: lb://herb-info-service
               predicates:
                 - Path=/herb-info-service/**
               filters:
