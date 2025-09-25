@@ -34,5 +34,5 @@ spring:
 
 mybatis-plus:
  type-handlers-package: org.csu.herbinfo.handler  # 指向类型处理器所在包
- configuration:
-  default-scripting-language-driver: org.apache.ibatis.scripting.defaults.RawLanguageDriver
+# configuration:
+#  default-scripting-language-driver: org.apache.ibatis.scripting.defaults.RawLanguageDriver
