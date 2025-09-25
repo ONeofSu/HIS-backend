@@ -9,6 +9,9 @@ import org.csu.herbinfo.mapper.GisHerbLocationPGSqlMapper;
 import org.csu.herbinfo.service.DistrictStreetService;
 import org.csu.herbinfo.service.GisHerbLocationService;
 import org.csu.herbinfo.service.HerbService;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -168,17 +171,50 @@ public class GisHerbLocationServiceImpl implements GisHerbLocationService {
     }
 
     @Override
-    public HerbLocation transferDTOToHerbLocation(HerbLocationDTO herbLocationDTO) {
-        return null;
+    public GisHerbLocation transferDTOToGisHerbLocation(HerbLocationDTO herbLocationDTO) {
+        GisHerbLocation herbLocation = new GisHerbLocation();
+
+        int herbId = herbService.getHerbIdByName(herbLocationDTO.getName());
+        herbLocation.setHerbId(herbId);
+
+        herbLocation.setCount(herbLocationDTO.getCount());
+
+        int district_id = districtStreetService.getDistrictIdByName(herbLocationDTO.getDistrict());
+        herbLocation.setDistrictId(district_id);
+
+        int street_id = districtStreetService.getStreetIdByName(herbLocationDTO.getStreet());
+        herbLocation.setStreetId(street_id);
+
+        GeometryFactory geometryFactory = new GeometryFactory();
+        Point point = geometryFactory.createPoint(new Coordinate(herbLocationDTO.getLongitude(),herbLocationDTO.getLatitude()));
+        herbLocation.setGeom(point);
+
+        return herbLocation;
     }
 
     @Override
-    public HerbLocationVO transferHerbLocationToVO(HerbLocation herbLocation) {
-        return null;
+    public HerbLocationVO transferHerbLocationToVO(GisHerbLocation herbLocation) {
+        HerbLocationVO herbLocationVO = new HerbLocationVO();
+        herbLocationVO.setId(Math.toIntExact(herbLocation.getId()));
+        herbLocationVO.setHerbId(herbLocation.getHerbId());
+        herbLocationVO.setCount(herbLocation.getCount());
+        herbLocationVO.setDistrictId(herbLocation.getDistrictId());
+        herbLocationVO.setStreetId(herbLocation.getStreetId());
+        herbLocationVO.setLatitude(herbLocation.getGeom().getCoordinate().getY());
+        herbLocationVO.setLongitude(herbLocation.getGeom().getCoordinate().getX());
+
+        herbLocationVO.setHerbName(herbService.getHerbById(herbLocation.getHerbId()).getName());
+        herbLocationVO.setDistrictName(districtStreetService.getDistrictById(herbLocation.getDistrictId()).getName());
+        herbLocationVO.setStreetName(districtStreetService.getStreetById(herbLocation.getStreetId()).getName());
+        return herbLocationVO;
     }
 
     @Override
-    public List<HerbLocationVO> transferHerbLocationListToVOList(List<HerbLocation> herbLocationList) {
-        return List.of();
+    public List<HerbLocationVO> transferHerbLocationListToVOList(List<GisHerbLocation> herbLocationList) {
+        List<HerbLocationVO> herbLocationVOList = new ArrayList<>();
+        for(GisHerbLocation herbLocation : herbLocationList){
+            herbLocationVOList.add(transferHerbLocationToVO(herbLocation));
+        }
+        return herbLocationVOList;
     }
 }

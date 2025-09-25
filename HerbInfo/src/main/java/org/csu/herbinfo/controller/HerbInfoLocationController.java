@@ -4,11 +4,9 @@ import org.csu.herbinfo.DTO.DistrictAndStreetDTO;
 import org.csu.herbinfo.DTO.HerbLocationDTO;
 import org.csu.herbinfo.VO.HerbLocationVO;
 import org.csu.herbinfo.VO.StreetVO;
-import org.csu.herbinfo.entity.District;
-import org.csu.herbinfo.entity.Herb;
-import org.csu.herbinfo.entity.HerbLocation;
-import org.csu.herbinfo.entity.Street;
+import org.csu.herbinfo.entity.*;
 import org.csu.herbinfo.service.DistrictStreetService;
+import org.csu.herbinfo.service.GisHerbLocationService;
 import org.csu.herbinfo.service.HerbLocationService;
 import org.csu.herbinfo.service.HerbService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,14 +25,14 @@ public class HerbInfoLocationController {
     @Autowired
     HerbService herbService;
     @Autowired
-    HerbLocationService herbLocationService;
+    GisHerbLocationService gisHerbLocationService;
     @Autowired
     DistrictStreetService districtStreetService;
 
     @GetMapping("/herbs/location")
     public ResponseEntity<?> getAllHerbLocation() {
-        List<HerbLocation> locations = herbLocationService.getAllHerbLocations();
-        List<HerbLocationVO> locationVOs = herbLocationService.transferHerbLocationListToVOList(locations);
+        List<GisHerbLocation> locations = gisHerbLocationService.getAllHerbLocations();
+        List<HerbLocationVO> locationVOs = gisHerbLocationService.transferHerbLocationListToVOList(locations);
         return ResponseEntity.ok(
                 Map.of("code",0,
                         "locations",locationVOs)
@@ -50,8 +48,8 @@ public class HerbInfoLocationController {
                             "message","herb does not exist")
             );
         }
-        List<HerbLocation> locations = herbLocationService.getHerbLocationsByHerbId(id);
-        List<HerbLocationVO> locationVOs = herbLocationService.transferHerbLocationListToVOList(locations);
+        List<GisHerbLocation> locations = gisHerbLocationService.getHerbLocationsByHerbId(id);
+        List<HerbLocationVO> locationVOs = gisHerbLocationService.transferHerbLocationListToVOList(locations);
         return ResponseEntity.ok(
                 Map.of("code",0,
                         "locations",locationVOs)
@@ -67,8 +65,8 @@ public class HerbInfoLocationController {
                             "message","district does not exist")
             );
         }
-        List<HerbLocation> locations = herbLocationService.getHerbLocationsByDistrictName(districtName);
-        List<HerbLocationVO> locationVOs = herbLocationService.transferHerbLocationListToVOList(locations);
+        List<GisHerbLocation> locations = gisHerbLocationService.getHerbLocationsByDistrictName(districtName);
+        List<HerbLocationVO> locationVOs = gisHerbLocationService.transferHerbLocationListToVOList(locations);
         return ResponseEntity.ok(
                 Map.of("code",0,
                         "locations",locationVOs)
@@ -84,8 +82,8 @@ public class HerbInfoLocationController {
                             "message","street does not exist")
             );
         }
-        List<HerbLocation> locations = herbLocationService.getHerbLocationsByStreetName(streetName);
-        List<HerbLocationVO> locationVOs = herbLocationService.transferHerbLocationListToVOList(locations);
+        List<GisHerbLocation> locations = gisHerbLocationService.getHerbLocationsByStreetName(streetName);
+        List<HerbLocationVO> locationVOs = gisHerbLocationService.transferHerbLocationListToVOList(locations);
         return ResponseEntity.ok(
                 Map.of("code",0,
                         "locations",locationVOs)
@@ -128,14 +126,14 @@ public class HerbInfoLocationController {
             );
         }
 
-        HerbLocation herbLocation = herbLocationService.transferDTOToHerbLocation(herbLocationDTO);
-        System.out.println(herbLocation);
-        if(!herbLocationService.addHerbLocation(herbLocation)){
+        GisHerbLocation herbLocation = gisHerbLocationService.transferDTOToGisHerbLocation(herbLocationDTO);
+        //System.out.println(herbLocation);
+        if(!gisHerbLocationService.addHerbLocation(herbLocation)){
             return ResponseEntity.status(500).body("error to insert");
         }
-        herbLocation = herbLocationService.getHerbLocationByLocationInfo(herbLocation);
-        System.out.println(herbLocation);
-        HerbLocationVO herbLocationVO = herbLocationService.transferHerbLocationToVO(herbLocation);
+        herbLocation = gisHerbLocationService.getHerbLocationByLocationInfo(herbLocation);
+        //System.out.println(herbLocation);
+        HerbLocationVO herbLocationVO = gisHerbLocationService.transferHerbLocationToVO(herbLocation);
         return ResponseEntity.ok(
                 Map.of("code",0,
                         "location",herbLocationVO)
@@ -178,7 +176,7 @@ public class HerbInfoLocationController {
             );
         }
 
-        HerbLocation herbLocation = herbLocationService.getHerbLocationById(herbLocationId);
+        GisHerbLocation herbLocation = gisHerbLocationService.getHerbLocationById(herbLocationId);
         if(herbLocation==null){
             return ResponseEntity.ok(
                     Map.of("code",-5,
@@ -186,14 +184,14 @@ public class HerbInfoLocationController {
             );
         }
 
-        herbLocation = herbLocationService.transferDTOToHerbLocation(herbLocationDTO);
-        herbLocation.setId(herbLocationId);
+        herbLocation = gisHerbLocationService.transferDTOToGisHerbLocation(herbLocationDTO);
+        herbLocation.setId((long) herbLocationId);
 
-        if(!herbLocationService.updateHerbLocation(herbLocation)){
+        if(!gisHerbLocationService.updateHerbLocation(herbLocation)){
             return ResponseEntity.status(500).body("error to update");
         }
 
-        HerbLocationVO herbLocationVO = herbLocationService.transferHerbLocationToVO(herbLocation);
+        HerbLocationVO herbLocationVO = gisHerbLocationService.transferHerbLocationToVO(herbLocation);
         return ResponseEntity.ok(
                 Map.of("code",0,
                         "location",herbLocationVO)
@@ -202,16 +200,16 @@ public class HerbInfoLocationController {
 
     @DeleteMapping("/herbs/location/{locationId}")
     public ResponseEntity<?> deleteHerbLocation(@PathVariable int locationId) {
-        if(!herbLocationService.isHerbLocationExist(locationId)){
+        if(!gisHerbLocationService.isHerbLocationExist(locationId)){
             //return ResponseEntity.status(490).body("该位置信息不存在");
             return ResponseEntity.ok(
                     Map.of("code",-1,
                             "message","the location does not exist")
             );
         }
-        HerbLocation location = herbLocationService.getHerbLocationById(locationId);
-        HerbLocationVO locationVO = herbLocationService.transferHerbLocationToVO(location);
-        if(!herbLocationService.deleteHerbLocation(locationId)){
+        GisHerbLocation location = gisHerbLocationService.getHerbLocationById(locationId);
+        HerbLocationVO locationVO = gisHerbLocationService.transferHerbLocationToVO(location);
+        if(!gisHerbLocationService.deleteHerbLocation(locationId)){
             return ResponseEntity.status(500).body("error to delete");
         }
         return ResponseEntity.ok(

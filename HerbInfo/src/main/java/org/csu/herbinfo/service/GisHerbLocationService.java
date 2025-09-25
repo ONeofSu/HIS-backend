@@ -22,7 +22,7 @@ public interface GisHerbLocationService {
 
     boolean isHerbLocationExist(int herbLocationId);
 
-    HerbLocation transferDTOToHerbLocation(HerbLocationDTO herbLocationDTO);
-    HerbLocationVO transferHerbLocationToVO(HerbLocation herbLocation);
-    List<HerbLocationVO> transferHerbLocationListToVOList(List<HerbLocation> herbLocationList);
+    GisHerbLocation transferDTOToGisHerbLocation(HerbLocationDTO herbLocationDTO);
+    HerbLocationVO transferHerbLocationToVO(GisHerbLocation herbLocation);
+    List<HerbLocationVO> transferHerbLocationListToVOList(List<GisHerbLocation> herbLocationList);
 }
