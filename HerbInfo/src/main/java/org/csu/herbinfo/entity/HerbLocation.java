@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+@Deprecated
 @Data
 @TableName("herb_location")
 public class HerbLocation {

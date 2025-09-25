@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 @Service
 public class HerbLocationServiceImpl implements HerbLocationService {
     @Autowired
@@ -144,12 +145,12 @@ public class HerbLocationServiceImpl implements HerbLocationService {
 
     @Override
     public HerbLocation getHerbLocationByLocationInfo(HerbLocation herbLocation) {
-        System.out.println("getHerbLocationByLocationInfo:"+herbLocation);
+       //System.out.println("getHerbLocationByLocationInfo:"+herbLocation);
         int location_id = isHerbLocationInfoExists(herbLocation);
         if(location_id==-1){
             return null;
         }
-        System.out.println("getHerbLocationByLocationInfo:"+location_id);
+        //System.out.println("getHerbLocationByLocationInfo:"+location_id);
         return herbLocationMapper.selectById(location_id);
     }
 

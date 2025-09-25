@@ -10,11 +10,29 @@ spring:
  application:
   name: herb-info-service
  datasource:
-  url: jdbc:mysql://localhost:3306/his_herbinfo
-  username: root
-  password: 123456
+  dynamic:
+   primary: mysql
+   strict: false
+   datasource:
+    mysql:
+     driver-class-name:  com.mysql.cj.jdbc.Driver
+     url: jdbc:mysql://localhost:3306/his_herbinfo
+     username: root
+     password: 123456
+
+    postgresql:
+     driver-class-name: org.postgresql.Driver
+     url: jdbc:postgresql://localhost:5432/his_location
+     username: postgres
+     password: 123456
+
  servlet:
   multipart:
    enabled: true
    max-file-size: 10MB
    max-request-size: 10MB
+
+mybatis-plus:
+ type-handlers-package: org.csu.herbinfo.handler  # 指向类型处理器所在包
+ configuration:
+  default-scripting-language-driver: org.apache.ibatis.scripting.defaults.RawLanguageDriver

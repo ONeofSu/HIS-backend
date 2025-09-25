@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Deprecated
 public interface HerbLocationService {
     public List<HerbLocation> getAllHerbLocations();
     public HerbLocation getHerbLocationById(int id);
