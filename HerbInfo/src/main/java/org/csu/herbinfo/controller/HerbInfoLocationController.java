@@ -128,11 +128,12 @@ public class HerbInfoLocationController {
 
         GisHerbLocation herbLocation = gisHerbLocationService.transferDTOToGisHerbLocation(herbLocationDTO);
         //System.out.println(herbLocation);
-        if(!gisHerbLocationService.addHerbLocation(herbLocation)){
+        int id = gisHerbLocationService.addHerbLocation(herbLocation);
+        if(id == -1){
             return ResponseEntity.status(500).body("error to insert");
         }
-        herbLocation = gisHerbLocationService.getHerbLocationByLocationInfo(herbLocation);
-        //System.out.println(herbLocation);
+        herbLocation = gisHerbLocationService.getHerbLocationById(id);
+        System.out.println(herbLocation);
         HerbLocationVO herbLocationVO = gisHerbLocationService.transferHerbLocationToVO(herbLocation);
         return ResponseEntity.ok(
                 Map.of("code",0,

@@ -106,19 +106,19 @@ public class GisHerbLocationServiceImpl implements GisHerbLocationService {
     }
 
     @Override
-    public boolean addHerbLocation(GisHerbLocation herbLocation) {
+    public int addHerbLocation(GisHerbLocation herbLocation) {
         if(!isHerbLocationValid(herbLocation)){
-            return false;
+            return -1;
         }
         int ori_id = isHerbLocationInfoExists(herbLocation);
         if(ori_id!=-1){
             GisHerbLocation ori = gisHerbLocationMapper.selectById(ori_id);
             ori.setCount(ori.getCount()+herbLocation.getCount());
             gisHerbLocationMapper.updateById(ori);
-            return true;
+            return ori_id;
         }
-        gisHerbLocationMapper.insert(herbLocation);
-        return true;
+        int id = gisHerbLocationMapper.insert(herbLocation);
+        return id;
     }
 
     @Override

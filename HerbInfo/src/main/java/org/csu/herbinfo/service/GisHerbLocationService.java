@@ -14,13 +14,15 @@ public interface GisHerbLocationService {
     List<GisHerbLocation> getHerbLocationsByDistrictName(String district);
     int getHerbCountsByDistrictName(String district);
     List<GisHerbLocation> getHerbLocationsByStreetName(String street);
-    boolean addHerbLocation(GisHerbLocation herbLocation);
+    int addHerbLocation(GisHerbLocation herbLocation);
     boolean updateHerbLocation(GisHerbLocation herbLocation);
     int isHerbLocationInfoExists(GisHerbLocation herbLocation); //若存在位置相同的返回HerbLocation id 不存在返回-1
     GisHerbLocation getHerbLocationByLocationInfo(GisHerbLocation herbLocation);
     boolean deleteHerbLocation(int herbLocationId);
 
     boolean isHerbLocationExist(int herbLocationId);
+
+    List<GisHerbLocation> findNearByHerbLocations();
 
     GisHerbLocation transferDTOToGisHerbLocation(HerbLocationDTO herbLocationDTO);
     HerbLocationVO transferHerbLocationToVO(GisHerbLocation herbLocation);
