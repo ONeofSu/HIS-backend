@@ -15,6 +15,7 @@ import org.csu.herb_teaching.VO.CourseDetailVO;
 import org.csu.herb_teaching.VO.PageVO;
 import org.csu.herb_teaching.VO.HerbSimpleVO;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
     private final UserCourseCollectionMapper userCourseCollectionMapper;
     private final CourseHerbLinkMapper courseHerbLinkMapper;
     private final UserFeignClient userFeignClient;
+    @Qualifier("org.csu.herb_teaching.feign.HerbInfoFeignClient")
     private final HerbInfoFeignClient herbInfoFeignClient;
 
     @Override

@@ -2,6 +2,7 @@ package org.csu.herbinfo.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.csu.herbinfo.DTO.HerbLocationDTO;
+import org.csu.herbinfo.DTO.Location;
 import org.csu.herbinfo.VO.HerbLocationVO;
 import org.csu.herbinfo.entity.GisHerbLocation;
 import org.csu.herbinfo.entity.HerbLocation;
@@ -216,5 +217,18 @@ public class GisHerbLocationServiceImpl implements GisHerbLocationService {
             herbLocationVOList.add(transferHerbLocationToVO(herbLocation));
         }
         return herbLocationVOList;
+    }
+
+    @Override
+    public List<GisHerbLocation> findNearByHerbLocations(Location location) {
+        return findNearByHerbLocations(location,5000);
+    }
+
+    @Override
+    public List<GisHerbLocation> findNearByHerbLocations(Location location, double radius) {
+        List<GisHerbLocation> herbLocationList;
+        String pointWkt = String.format("POINT(%f %f)", location.getLongitude(), location.getLatitude());
+        herbLocationList = gisHerbLocationMapper.getNearByLocations(pointWkt, radius);
+        return herbLocationList;
     }
 }

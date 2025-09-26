@@ -1,6 +1,7 @@
 package org.csu.herbinfo.service;
 
 import org.csu.herbinfo.DTO.HerbLocationDTO;
+import org.csu.herbinfo.DTO.Location;
 import org.csu.herbinfo.VO.HerbLocationVO;
 import org.csu.herbinfo.entity.GisHerbLocation;
 import org.csu.herbinfo.entity.HerbLocation;
@@ -22,7 +23,8 @@ public interface GisHerbLocationService {
 
     boolean isHerbLocationExist(int herbLocationId);
 
-    List<GisHerbLocation> findNearByHerbLocations();
+    List<GisHerbLocation> findNearByHerbLocations(Location location);
+    List<GisHerbLocation> findNearByHerbLocations(Location location, double radius);
 
     GisHerbLocation transferDTOToGisHerbLocation(HerbLocationDTO herbLocationDTO);
     HerbLocationVO transferHerbLocationToVO(GisHerbLocation herbLocation);

@@ -2,6 +2,7 @@ package org.csu.herbinfo.controller;
 
 import org.csu.herbinfo.DTO.DistrictAndStreetDTO;
 import org.csu.herbinfo.DTO.HerbLocationDTO;
+import org.csu.herbinfo.DTO.Location;
 import org.csu.herbinfo.VO.HerbLocationVO;
 import org.csu.herbinfo.VO.StreetVO;
 import org.csu.herbinfo.entity.*;
@@ -274,6 +275,53 @@ public class HerbInfoLocationController {
         return ResponseEntity.ok(
                 Map.of("code",0,
                         "streets",streetVOS)
+        );
+    }
+
+    /**
+     * get nearby 5km locations
+     * @param location
+     * @return ResponseEntity
+     */
+    @GetMapping("/herbs/location/nearby")
+    public ResponseEntity<?> getHerbLocationNearby(@RequestBody Location location) {
+        if(!Location.validLocation(location.getLongitude(), location.getLatitude())){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","the location is not valid")
+            );
+        }
+        List<GisHerbLocation> locations = gisHerbLocationService.findNearByHerbLocations(location);
+        List<HerbLocationVO> locationVOs = gisHerbLocationService.transferHerbLocationListToVOList(locations);
+        return ResponseEntity.ok(
+                Map.of(
+                        "code",0,
+                        "locations",locationVOs
+                )
+        );
+    }
+
+    /**
+     * get nearby locations
+     * @param location
+     * @param distance
+     * @return ResponseEntity
+     */
+    @GetMapping("/herbs/location/nearby/distance/{distance}")
+    public ResponseEntity<?> getHerbLocationNearby(@RequestBody Location location,@PathVariable double distance) {
+        if(!Location.validLocation(location.getLongitude(), location.getLatitude())){
+            return ResponseEntity.ok(
+                    Map.of("code",-1,
+                            "message","the location is not valid")
+            );
+        }
+        List<GisHerbLocation> locations = gisHerbLocationService.findNearByHerbLocations(location,distance);
+        List<HerbLocationVO> locationVOs = gisHerbLocationService.transferHerbLocationListToVOList(locations);
+        return ResponseEntity.ok(
+                Map.of(
+                        "code",0,
+                        "locations",locationVOs
+                )
         );
     }
 }
