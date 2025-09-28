@@ -1,6 +1,9 @@
 package org.csu.herbinfo.service.impl;
 
+import ch.hsr.geohash.GeoHash;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.csu.herbinfo.DTO.HerbLocationDTO;
 import org.csu.herbinfo.DTO.Location;
 import org.csu.herbinfo.VO.HerbLocationVO;
@@ -14,10 +17,16 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
 
 /**
  * todo 重构类型转换方法
@@ -31,6 +40,20 @@ public class GisHerbLocationServiceImpl implements GisHerbLocationService {
     DistrictStreetService districtStreetService;
     @Autowired
     HerbService herbService;
+
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final String NEARBY_LOCATION_KEY = "location:nearby";
+
+    // 本地缓存配置
+    private final Cache<String, List<GisHerbLocation>> localCache =
+            Caffeine.newBuilder()
+                    .expireAfterWrite(5, TimeUnit.MINUTES)  // 本地缓存5分钟
+                    .maximumSize(1000)                      // 最大1000条
+                    .build();
+
+    GisHerbLocationServiceImpl(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     private boolean isHerbLocationValid(GisHerbLocation herbLocation) {
         if(herbLocation==null){
@@ -219,6 +242,8 @@ public class GisHerbLocationServiceImpl implements GisHerbLocationService {
         return herbLocationVOList;
     }
 
+//----------------------------------------NEARBY LOCATIONS--------------------------------------------------------------
+
     @Override
     public List<GisHerbLocation> findNearByHerbLocations(Location location) {
         return findNearByHerbLocations(location,5000);
@@ -226,9 +251,74 @@ public class GisHerbLocationServiceImpl implements GisHerbLocationService {
 
     @Override
     public List<GisHerbLocation> findNearByHerbLocations(Location location, double radius) {
-        List<GisHerbLocation> herbLocationList;
+        String cacheKey = generateNearbyCacheKey(location, radius);
+        List<GisHerbLocation> result;
+
+        //先查找本地缓存
+        result = localCache.getIfPresent( cacheKey );
+        if(result!=null){
+            //System.out.println("use local cache");
+            return result;
+        }
+
+        //查找Redis
+        result = (ArrayList<GisHerbLocation>) redisTemplate.opsForValue().get(cacheKey);
+        if(result!=null){
+            localCache.put(cacheKey, result);   //回填本地缓存
+            //System.out.println("use redis cache");
+            return result;
+        }
+
+
         String pointWkt = String.format("POINT(%f %f)", location.getLongitude(), location.getLatitude());
-        herbLocationList = gisHerbLocationMapper.getNearByLocations(pointWkt, radius);
-        return herbLocationList;
+        result = gisHerbLocationMapper.getNearByLocations(pointWkt, radius);
+
+        //异步更新缓存
+        if (!result.isEmpty()) {
+            List<GisHerbLocation> finalResult = result;
+            int timeout = 600 + new Random().nextInt(100);
+            CompletableFuture.runAsync(() -> {
+                // 写入本地缓存
+                localCache.put(cacheKey, finalResult);
+                // 写入Redis缓存
+                redisTemplate.opsForValue().set(cacheKey, finalResult, timeout, TimeUnit.SECONDS);
+            });
+        }else{
+            //null 防缓存穿透
+            int timeout = 25 + new Random().nextInt(10);
+            redisTemplate.opsForValue().set(cacheKey, Collections.emptyList(),timeout, TimeUnit.SECONDS);
+        }
+
+        return result;
     }
+
+    /**
+     *生成缓存键
+     * @param location
+     * @param radius
+     * @return cacheKey
+     */
+    private String generateNearbyCacheKey(Location location,double radius) {
+        int precision = calculateGeoHashPrecision(radius);
+        GeoHash geoHash = GeoHash.withCharacterPrecision(
+                location.getLatitude(),
+                location.getLongitude(),
+                precision
+        );
+        return NEARBY_LOCATION_KEY + geoHash.toBase32() + ":" + (int)radius;
+    }
+
+    /**
+     * 计算GeoHash精度
+     * @param radius
+     * @return precision
+     */
+    private int calculateGeoHashPrecision(double radius){
+        if (radius <= 500) return 9;   // ±2米精度
+        if (radius <= 2000) return 8;  // ±20米精度
+        if (radius <= 5000) return 7;  // ±80米精度
+        if (radius <= 20000) return 6; // ±610米精度
+        return 5;                      // ±2.4公里精度
+    }
+
 }
