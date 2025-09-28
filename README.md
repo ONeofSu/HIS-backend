@@ -16,9 +16,9 @@
 
 **技术选型：** SpringBoot + SpringMVC + MyBatis-Plus + Spring Cloud
 
-**工具选用：**Redis + RabbitMQ
+**工具选用：** Redis + RabbitMQ
 
-**数据存储：**MySQL + PostgreSQL
+**数据存储：** MySQL + PostgreSQL
 
 ## 三 功能介绍
 ### 3.1 信息门户
