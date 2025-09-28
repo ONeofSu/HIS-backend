@@ -1,4 +1,7 @@
 # HIS-生物医药信息系统后端
+
+[中文](README.md) | [English](README_EN.md)
+
 ## 一 项目简介
 前后端分离项目，此仓库为后端，采用微服务架构。前端仓库地址:https://github.com/software-engineer-group-oasis/chinese-medicine.git
 
@@ -7,15 +10,15 @@
 系统分成七大模块：药材分布展示、数据获取与交换、课程资源存储、课题研究管理、培训资料管理、中药材质量评价与申报、业绩管理模块。
 
 ## 二 开发环境
-操作系统：Windows11
+**操作系统：** Windows11
 
-JDK VERSION:21
+**JDK VERSION:** 21
 
-技术选型：SpringBoot + SpringMVC + MyBatis-Plus + Spring Cloud
+**技术选型：** SpringBoot + SpringMVC + MyBatis-Plus + Spring Cloud
 
-工具选用: Redis + RabbitMQ
+**工具选用：**Redis + RabbitMQ
 
-数据存储：MySQL + PostgreSQL
+**数据存储：**MySQL + PostgreSQL
 
 ## 三 功能介绍
 ### 3.1 信息门户
