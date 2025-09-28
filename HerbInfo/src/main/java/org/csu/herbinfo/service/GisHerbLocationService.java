@@ -23,7 +23,19 @@ public interface GisHerbLocationService {
 
     boolean isHerbLocationExist(int herbLocationId);
 
+    /**
+     * 获得500m范围内的位置信息
+     * @param location
+     * @return gisHerbLocations
+     */
     List<GisHerbLocation> findNearByHerbLocations(Location location);
+
+    /**
+     * 获得指定范围内的位置信息
+     * @param location
+     * @param radius
+     * @return gisHerbLocations
+     */
     List<GisHerbLocation> findNearByHerbLocations(Location location, double radius);
 
     GisHerbLocation transferDTOToGisHerbLocation(HerbLocationDTO herbLocationDTO);

@@ -20,17 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-
-
-/**
- * todo 重构类型转换方法
- */
 
 @Service
 public class GisHerbLocationServiceImpl implements GisHerbLocationService {
@@ -142,6 +134,7 @@ public class GisHerbLocationServiceImpl implements GisHerbLocationService {
             return ori_id;
         }
         int id = gisHerbLocationMapper.insert(herbLocation);
+        clearNearbyCacheForLocation(herbLocation);  //清除附近缓存
         return id;
     }
 
@@ -150,7 +143,10 @@ public class GisHerbLocationServiceImpl implements GisHerbLocationService {
         if(!isHerbLocationValid(herbLocation)){
             return false;
         }
+        GisHerbLocation ori = gisHerbLocationMapper.selectById(herbLocation.getId());
+        clearNearbyCacheForLocation(ori);   //清除旧位置的缓存
         gisHerbLocationMapper.updateById(herbLocation);
+        clearNearbyCacheForLocation(herbLocation);  //清除新位置缓存
         return true;
     }
 
@@ -182,6 +178,8 @@ public class GisHerbLocationServiceImpl implements GisHerbLocationService {
         if(!isHerbLocationExist(herbLocationId)){
             return false;
         }
+        GisHerbLocation ori = gisHerbLocationMapper.selectById(herbLocationId);
+        clearNearbyCacheForLocation(ori);   //清楚旧位置附近的缓存
         gisHerbLocationMapper.deleteById(herbLocationId);
         return true;
     }
@@ -321,4 +319,32 @@ public class GisHerbLocationServiceImpl implements GisHerbLocationService {
         return 5;                      // ±2.4公里精度
     }
 
+    /**
+     * 删除附近位置的缓存
+     * @param gisHerbLocation
+     */
+    private void clearNearbyCacheForLocation(GisHerbLocation gisHerbLocation) {
+        //获取该位置点周围可能影响的所有半径
+        double[] radii = {500, 2000, 5000, 20000};
+        Location loc = new Location(gisHerbLocation.getGeom().getCoordinate().getX()
+                ,gisHerbLocation.getGeom().getCoordinate().getY());
+
+        //为每个半径清理缓存
+        for(double radius : radii) {
+            String cacheKey = generateNearbyCacheKey(loc, radius);
+
+            // 异步清理避免阻塞
+            CompletableFuture.runAsync(() -> {
+                localCache.invalidate(cacheKey);
+                redisTemplate.delete(cacheKey);
+            });
+        }
+
+        //MAX_VALUE情况
+        String maxRadiusKey = generateNearbyCacheKey(loc, Double.MAX_VALUE);
+        CompletableFuture.runAsync(() -> {
+            localCache.invalidate(maxRadiusKey);
+            redisTemplate.delete(maxRadiusKey);
+        });
+    }
 }
