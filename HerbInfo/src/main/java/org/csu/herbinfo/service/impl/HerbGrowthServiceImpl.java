@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -39,9 +40,30 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
     private final static String GET_ALL_NEED_AUDIT_GROWTH = "auditGrowth:need";
     private final static String GET_ALL_GROWTH = "growth:all";
     private final static String GET_ALL_AUDIT = "audit:all";
+    private final static String AUDIT_LOCK = "audit:lock";
 
     HerbGrowthServiceImpl(RedisTemplate<String,Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
+    }
+
+    /**
+     * 尝试添加审核锁
+     * @param key
+     * @return is lock success
+     */
+    private boolean tryLock(String key){
+        String lockKey = AUDIT_LOCK+key;
+        return Boolean.TRUE.equals(redisTemplate.opsForValue()
+                .setIfAbsent(lockKey, "1", Duration.ofSeconds(30)));    //锁过期时间30s
+    }
+
+    /**
+     * 释放锁
+     * @param key
+     */
+    private void unlock(String key){
+        String unlockKey = AUDIT_LOCK+key;
+        redisTemplate.delete(unlockKey);
     }
 
     //是否符合not NULL 要求
@@ -358,27 +380,34 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
         if(herbGrowth==null || herbGrowth.getGrowthAuditStatus()!=0){
             return null;
         }
+        String key = String.valueOf(herbGrowth.getId());
+        try{
+            if(!tryLock(key)){
+                throw new RuntimeException("当前记录正在被其他用户审核，请稍后再试");
+            }
 
-        redisTemplate.delete(GET_ALL_NEED_AUDIT_GROWTH);
-        redisTemplate.delete(GET_ALL_GROWTH);
+            redisTemplate.delete(GET_ALL_NEED_AUDIT_GROWTH);
+            redisTemplate.delete(GET_ALL_GROWTH);
 
-        if(growthAudit.getAuditResult() == 1){
-            herbGrowth.setGrowthAuditStatus(1);
-            herbGrowthMapper.updateById(herbGrowth);
-            //清理缓存
-            redisTemplate.delete(GET_AUDIT_GROWTH_BY_BATCH_CODE+herbGrowth.getBatchCode());
-            redisTemplate.delete(GET_ALL_AUDIT_GROWTH);
+            if(growthAudit.getAuditResult() == 1){
+                herbGrowth.setGrowthAuditStatus(1);
+                herbGrowthMapper.updateById(herbGrowth);
+                //清理缓存
+                redisTemplate.delete(GET_AUDIT_GROWTH_BY_BATCH_CODE+herbGrowth.getBatchCode());
+                redisTemplate.delete(GET_ALL_AUDIT_GROWTH);
 
-        }else if(growthAudit.getAuditResult() == 2){
-            herbGrowth.setGrowthAuditStatus(2);
-            herbGrowthMapper.updateById(herbGrowth);
-        }else{
-            return null;
+            }else if(growthAudit.getAuditResult() == 2){
+                herbGrowth.setGrowthAuditStatus(2);
+                herbGrowthMapper.updateById(herbGrowth);
+            }else{
+                return null;
+            }
+            growthAudit.setAuditTime(LocalDateTime.now());
+            growthAuditMapper.insert(growthAudit);
+            return growthAudit;
+        }finally {
+            unlock(key);
         }
-
-        growthAudit.setAuditTime(LocalDateTime.now());
-        growthAuditMapper.insert(growthAudit);
-        return growthAudit;
     }
 
     @Override
@@ -387,25 +416,32 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
         if(herbGrowth==null){
             return null;
         }
+        String key = String.valueOf(herbGrowth.getId());
+        try {
+            if(!tryLock(key)){
+                throw new RuntimeException("当前记录正在被其他用户审核，请稍后再试");
+            }
+            //清理缓存
+            redisTemplate.delete(GET_AUDIT_GROWTH_BY_BATCH_CODE+herbGrowth.getBatchCode());
+            redisTemplate.delete(GET_ALL_AUDIT_GROWTH);
+            redisTemplate.delete(GET_ALL_NEED_AUDIT_GROWTH);
+            redisTemplate.delete(GET_ALL_GROWTH);
 
-        //清理缓存
-        redisTemplate.delete(GET_AUDIT_GROWTH_BY_BATCH_CODE+herbGrowth.getBatchCode());
-        redisTemplate.delete(GET_ALL_AUDIT_GROWTH);
-        redisTemplate.delete(GET_ALL_NEED_AUDIT_GROWTH);
-        redisTemplate.delete(GET_ALL_GROWTH);
+            if(growthAudit.getAuditResult() == 1){
+                herbGrowth.setGrowthAuditStatus(1);
+                herbGrowthMapper.updateById(herbGrowth);
+            }else if(growthAudit.getAuditResult() == 2){
+                herbGrowth.setGrowthAuditStatus(2);
+                herbGrowthMapper.updateById(herbGrowth);
+            }else{
+                return null;
+            }
 
-        if(growthAudit.getAuditResult() == 1){
-            herbGrowth.setGrowthAuditStatus(1);
-            herbGrowthMapper.updateById(herbGrowth);
-        }else if(growthAudit.getAuditResult() == 2){
-            herbGrowth.setGrowthAuditStatus(2);
-            herbGrowthMapper.updateById(herbGrowth);
-        }else{
-            return null;
+            growthAuditMapper.updateById(growthAudit);
+            return growthAudit;
+        }finally {
+            unlock(key);
         }
-
-        growthAuditMapper.updateById(growthAudit);
-        return growthAudit;
     }
 
     @Override
@@ -421,7 +457,6 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
     @Override
     public List<GrowthAudit> getAllAudit() {
         List<GrowthAudit> growthAudits = growthAuditMapper.selectList(null);
-
         return growthAudits;
     }
 
