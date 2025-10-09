@@ -32,6 +32,12 @@ spring:
    max-file-size: 10MB
    max-request-size: 10MB
 
+ rabbitmq:
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+
 mybatis-plus:
  type-handlers-package: org.csu.herbinfo.handler  # 指向类型处理器所在包
 # configuration:

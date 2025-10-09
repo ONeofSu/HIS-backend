@@ -4,12 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.csu.herbinfo.DTO.GrowthAuditDTO;
 import org.csu.herbinfo.DTO.HerbGrowthDTO;
 import org.csu.herbinfo.VO.HerbGrowthVO;
+import org.csu.herbinfo.config.RabbitMQConfig;
 import org.csu.herbinfo.entity.GrowthAudit;
 import org.csu.herbinfo.entity.HerbGrowth;
 import org.csu.herbinfo.mapper.GrowthAuditMapper;
 import org.csu.herbinfo.mapper.HerbGrowthMapper;
 import org.csu.herbinfo.service.HerbGrowthService;
 import org.csu.herbinfo.service.HerbService;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,9 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
     HerbService herbService;
     @Autowired
     GrowthAuditMapper growthAuditMapper;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
     private final RedisTemplate<String,Object> redisTemplate;
 
     private final static String GET_AUDIT_GROWTH_BY_BATCH_CODE = "auditGrowth:batchCode";
@@ -403,7 +408,13 @@ public class HerbGrowthServiceImpl implements HerbGrowthService {
                 return null;
             }
             growthAudit.setAuditTime(LocalDateTime.now());
-            growthAuditMapper.insert(growthAudit);
+
+            // 发送审核日志到 RabbitMQ（异步处理）
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.AUDIT_LOG_QUEUE,
+                    growthAudit
+            );
+
             return growthAudit;
         }finally {
             unlock(key);
