@@ -1,14 +1,24 @@
 package org.csu.hisuser.service;
 
+import org.csu.hisuser.VO.BatchInviteResultVO;
 import org.csu.hisuser.entity.InvitationCode;
 import org.csu.hisuser.entity.User;
 import org.csu.hisuser.entity.UserLinkInvitation;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface InviteService {
     InvitationCode generateTeacherInviteCode(int creatByUserId, String schoolName, String teacherName);
     InvitationCode generateStudentInviteCode(int creatByUserId, String schoolName, String studentName);
+
+    /**
+     * 通过Excel批量生成邀请码
+     * @param creatorUserId
+     * @param file
+     * @return 邀请码处理结果
+     */
+    List<BatchInviteResultVO> bathInvite(int creatorUserId, MultipartFile file);
 
     boolean deleteInviteCode(Long inviteCodeId);
     Long getInvitationCodeIdByCode(String inviteCode);

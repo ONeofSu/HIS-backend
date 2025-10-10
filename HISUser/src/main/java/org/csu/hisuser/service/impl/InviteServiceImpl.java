@@ -1,7 +1,11 @@
 package org.csu.hisuser.service.impl;
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.csu.hisuser.DTO.BatchInviteDTO;
+import org.csu.hisuser.VO.BatchInviteResultVO;
+import org.csu.hisuser.config.ThreadPoolConfig;
 import org.csu.hisuser.entity.InvitationCode;
 import org.csu.hisuser.entity.User;
 import org.csu.hisuser.entity.UserLinkInvitation;
@@ -12,10 +16,18 @@ import org.csu.hisuser.service.UserService;
 import org.csu.hisuser.util.InvitationCodeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class InviteServiceImpl implements InviteService {
@@ -25,6 +37,12 @@ public class InviteServiceImpl implements InviteService {
     UserService userService;
     @Autowired
     UserLinkInvitationMapper userLinkInvitationMapper;
+
+    private final ExecutorService inviteCodeExecutor;
+
+    public InviteServiceImpl(ExecutorService inviteCodeExecutor) {
+        this.inviteCodeExecutor = inviteCodeExecutor;
+    }
 
     private InvitationCode getInvitationCodeByCode(String code){
         QueryWrapper<InvitationCode> wrapper = new QueryWrapper<>();
@@ -65,6 +83,122 @@ public class InviteServiceImpl implements InviteService {
         invitationCodeMapper.insert(invitationCode);
         return invitationCode;
     }
+
+    // todo 看看可不可以用future
+
+    @Override
+    @Transactional
+    public List<BatchInviteResultVO> bathInvite(int creatorUserId, MultipartFile file) {
+        // 1. 读取Excel数据
+        List<BatchInviteDTO> inviteList = readExcelData(file);
+
+        // 2. 验证创建者权限和学校信息
+        String creatorSchool = getCreatorSchool(creatorUserId);
+
+        // 3. 准备线程安全的结果集合
+        List<BatchInviteResultVO> results = Collections.synchronizedList(new ArrayList<>());
+
+        // 4. 使用CountDownLatch等待所有任务完成
+        CountDownLatch latch = new CountDownLatch(inviteList.size());
+
+        // 5. 提交任务到线程池
+        for (BatchInviteDTO dto : inviteList) {
+            inviteCodeExecutor.submit(() -> {
+                try {
+                    processSingleInvite(creatorUserId, creatorSchool, dto, results);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        // 6. 等待所有任务完成
+        try {
+            latch.await(5, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("批量处理被中断");
+        }
+
+        return results;
+    }
+
+    // todo 完善权限检查逻辑
+    /**
+     * 处理邀请
+     * @param creatorUserId
+     * @param creatorSchool
+     * @param dto
+     * @param results
+     */
+    private void processSingleInvite(int creatorUserId, String creatorSchool,
+                                     BatchInviteDTO dto, List<BatchInviteResultVO> results) {
+        try {
+            // 验证学校是否匹配
+            if (userService.getCategoryOnUser(creatorUserId).getId() == 2 &&
+                    !creatorSchool.equals(dto.getSchoolName())) {
+                results.add(new BatchInviteResultVO(
+                        dto.getUserName(), dto.getSchoolName(), dto.getInviteCodeType(),
+                        false, "学校不匹配", null));
+                return;
+            }
+
+            // 根据类别生成邀请码
+            InvitationCode code;
+            if (dto.getInviteCodeType() == 1) {
+                code = generateStudentInviteCode(creatorUserId, dto.getSchoolName(), dto.getUserName());
+            } else if (dto.getInviteCodeType() == 2) {
+                code = generateTeacherInviteCode(creatorUserId, dto.getSchoolName(), dto.getUserName());
+            } else {
+                results.add(new BatchInviteResultVO(
+                        dto.getUserName(), dto.getSchoolName(), dto.getInviteCodeType(),
+                        false, "无效的用户类别", null));
+                return;
+            }
+
+            results.add(new BatchInviteResultVO(
+                    dto.getUserName(), dto.getSchoolName(), dto.getInviteCodeType(),
+                    true, "生成成功", code.getCode()));
+        } catch (Exception e) {
+            results.add(new BatchInviteResultVO(
+                    dto.getUserName(), dto.getSchoolName(), dto.getInviteCodeType(),
+                    false, e.getMessage(), null));
+        }
+    }
+
+    /**
+     * 获得邀请发起者学校
+     * @param creatorUserId
+     * @return 邀请发起者的学校名
+     */
+    private String getCreatorSchool(int creatorUserId) {
+        if (userService.getCategoryOnUser(creatorUserId).getId() == 2) {
+            String school = this.getSchoolNameByUserId(creatorUserId);
+            if (school == null || school.isEmpty()) {
+                throw new RuntimeException("教师学校信息不存在");
+            }
+            return school;
+        }
+        return null; // 管理员可以创建任意学校的邀请码
+    }
+
+    /**
+     * 解析Excel内容
+     * @param file
+     * @return 解析后的DTO对象
+     */
+    private List<BatchInviteDTO> readExcelData(MultipartFile file) {
+        // 使用EasyExcel读取Excel
+        try {
+            return EasyExcel.read(file.getInputStream())
+                    .head(BatchInviteDTO.class)
+                    .sheet()
+                    .doReadSync();
+        } catch (IOException e) {
+            throw new RuntimeException("读取Excel文件失败", e);
+        }
+    }
+
 
     @Override
     public Long getInvitationCodeIdByCode(String inviteCode) {
