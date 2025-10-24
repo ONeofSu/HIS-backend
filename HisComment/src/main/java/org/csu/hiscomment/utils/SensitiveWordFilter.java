@@ -71,6 +71,7 @@ public class SensitiveWordFilter {
             log.error("3. 应用配置是否正确");
         } else {
             log.info("敏感词过滤器初始化完成，共加载 {} 个敏感词", sensitiveWordMap.size());
+
         }
     }
     
