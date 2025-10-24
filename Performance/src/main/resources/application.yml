@@ -1,7 +1,7 @@
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://8.137.159.138:8080/eureka/
+      defaultZone: http://localhost:8080/eureka/
 
 server:
   port: 8089
@@ -13,7 +13,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/his_performance
     username: root
-    password: Liu12345
+    password: 123456
   servlet:
     multipart:
       max-file-size: 50MB

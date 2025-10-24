@@ -85,7 +85,7 @@ spring:
 
             #研究内容(仅学生)
             - id: herb-research-service
-              uri: http://8.148.30.255:8086
+              uri: http://herb-research-service
               predicates:
                 - Path=/herb-research-service/**
               filters:
@@ -134,7 +134,7 @@ spring:
 
             #培训资料
             - id: herb-training-service
-              uri: http://localhost:8087
+              uri: http://herb-training-service
               predicates:
                 - Path=/herb-training-service/**
               filters:
@@ -143,7 +143,7 @@ spring:
 
             #敏感词管理（仅管理员权限）
             - id: sensitive-word-service-admin
-              uri: http://47.122.113.158:8088
+              uri: http://comment-service
               predicates:
                 - Path=/comment-service/admin/sensitive-words/**
               filters:
@@ -152,7 +152,7 @@ spring:
 
             #评论
             - id: comment-service
-              uri: http://47.122.113.158:8088
+              uri: http://comment-service
               predicates:
                 - Path=/comment-service/**
               filters:
@@ -161,7 +161,7 @@ spring:
 
             #业绩审核相关操作（仅管理员权限）
             - id: performance-service-audit
-              uri: http://8.148.30.255:8089
+              uri: http://performance-service
               predicates:
                 - Path=/performance-service/performances/*/audit
                 - Method=POST
@@ -171,7 +171,7 @@ spring:
 
             #业绩待审核列表（仅管理员权限）
             - id: performance-service-pending
-              uri: http://8.148.30.255:8089
+              uri: http://performance-service
               predicates:
                 - Path=/performance-service/performances/pending
                 - Method=GET
@@ -181,7 +181,7 @@ spring:
 
             #业绩管理其他操作（教师和管理员权限）
             - id: performance-service-write
-              uri: http://8.148.30.255:8089
+              uri: http://performance-service
               predicates:
                 - Path=/performance-service/**
                 - Method=GET,POST,PUT,DELETE
