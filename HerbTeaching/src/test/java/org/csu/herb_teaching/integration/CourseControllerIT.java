@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.csu.herb_teaching.DTO.CourseDTO;
 import org.csu.herb_teaching.VO.CourseDetailVO;
 import org.csu.herb_teaching.VO.PageVO;
+import org.csu.herb_teaching.VO.UserVO;
 import org.csu.herb_teaching.entity.Course;
 import org.csu.herb_teaching.feign.HerbInfoFeignClient;
 import org.csu.herb_teaching.feign.UserFeignClient;
@@ -80,8 +81,12 @@ class CourseControllerIT {
 
     @BeforeAll
     void initSchema() throws Exception {
+        if (!MYSQL.isRunning()) {
+            MYSQL.start();
+        }
         try (Connection conn = DriverManager.getConnection(MYSQL.getJdbcUrl(), MYSQL.getUsername(), MYSQL.getPassword());
              Statement stmt = conn.createStatement()) {
+            // 创建课程表
             stmt.execute("""
                     CREATE TABLE IF NOT EXISTS course (
                         course_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -95,6 +100,62 @@ class CourseControllerIT {
                         course_des TEXT,
                         course_average_rating DECIMAL(3,2) DEFAULT 0.00,
                         course_rating_count INT DEFAULT 0
+                    )
+                    """);
+            // 创建实验表
+            stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS lab (
+                        lab_id INT AUTO_INCREMENT PRIMARY KEY,
+                        course_id INT NOT NULL,
+                        lab_name VARCHAR(100) NOT NULL,
+                        lab_steps TEXT,
+                        lab_order INT DEFAULT 0,
+                        INDEX idx_course_id (course_id)
+                    )
+                    """);
+            // 创建课程资源表
+            stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS course_resource (
+                        course_resource_id INT AUTO_INCREMENT PRIMARY KEY,
+                        course_id INT NOT NULL,
+                        course_resource_type INT NOT NULL,
+                        course_resource_order INT DEFAULT 0,
+                        course_resource_title VARCHAR(100),
+                        course_resource_content TEXT,
+                        course_resource_metadata JSON,
+                        course_resource_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        course_resource_isvalid TINYINT(1) DEFAULT 1,
+                        INDEX idx_course_id (course_id)
+                    )
+                    """);
+            // 创建课程药材关联表
+            stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS course_herb_link (
+                        link_id INT AUTO_INCREMENT PRIMARY KEY,
+                        course_id INT NOT NULL,
+                        herb_id INT NOT NULL,
+                        UNIQUE KEY uk_course_herb (course_id, herb_id)
+                    )
+                    """);
+            // 创建课程评分表
+            stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS course_rating (
+                        rating_id INT AUTO_INCREMENT PRIMARY KEY,
+                        course_id INT NOT NULL,
+                        user_id INT NOT NULL,
+                        rating_value INT NOT NULL,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE KEY uk_course_user_rating (course_id, user_id)
+                    )
+                    """);
+            // 创建用户课程收藏表
+            stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS user_course_collection (
+                        collection_id INT AUTO_INCREMENT PRIMARY KEY,
+                        course_id INT NOT NULL,
+                        user_id INT NOT NULL,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE KEY uk_course_user_collection (course_id, user_id)
                     )
                     """);
         }
@@ -228,6 +289,13 @@ class CourseControllerIT {
         when(userFeignClient.isUserRealTeacher(1)).thenReturn(true);
         when(userFeignClient.getUserIdByToken(anyString())).thenReturn(100);
         when(userFeignClient.isUserExist(100)).thenReturn(true);
+        
+        // Mock getUserInfoById - 返回UserVO对象
+        UserVO teacherVO = new UserVO();
+        teacherVO.setId(1);
+        teacherVO.setUsername("测试教师");
+        teacherVO.setAvatarUrl("http://example.com/avatar.jpg");
+        when(userFeignClient.getUserInfoById(1)).thenReturn(teacherVO);
 
         // 先创建课程
         CourseDTO courseDTO = new CourseDTO();
@@ -236,11 +304,6 @@ class CourseControllerIT {
         courseDTO.setCourseType(1);
         courseDTO.setCourseObject(0);
         Course created = courseService.createCourse(courseDTO);
-
-        // Mock getCourseDetail
-        CourseDetailVO detailVO = new CourseDetailVO();
-        detailVO.setCourseId(created.getCourseId());
-        when(courseService.getCourseDetail(created.getCourseId())).thenReturn(detailVO);
 
         Map<String, Integer> ratingPayload = new HashMap<>();
         ratingPayload.put("ratingValue", 5);
