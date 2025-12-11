@@ -85,7 +85,7 @@ spring:
 
             #研究内容(仅学生)
             - id: herb-research-service
-              uri: http://herb-research-service
+              uri: lb://herb-research-service
               predicates:
                 - Path=/herb-research-service/**
               filters:
@@ -94,7 +94,7 @@ spring:
 
             #课程评分（所有登录用户可用）
             - id: herb-teaching-service-rate
-              uri: http://herb-teaching-service
+              uri: lb://herb-teaching-service
               predicates:
                 - Path=/herb-teaching-service/courses/*/ratings
                 - Method=POST
@@ -104,7 +104,7 @@ spring:
 
             #课程收藏（所有登录用户可用）
             - id: herb-teaching-service-collect
-              uri: http://herb-teaching-service
+              uri: lb://herb-teaching-service
               predicates:
                 - Path=/herb-teaching-service/courses/*/collections
                 - Method=POST,DELETE
@@ -114,7 +114,7 @@ spring:
 
             #课程管理(仅教师、管理员)
             - id: herb-teaching-service-write
-              uri: http://herb-teaching-service
+              uri: lb://herb-teaching-service
               predicates:
                 - Path=/herb-teaching-service/**
                 - Method=POST,PUT,DELETE
@@ -124,7 +124,7 @@ spring:
 
             #课程查看
             - id: herb-teaching-service-read
-              uri: http://herb-teaching-service
+              uri: lb://herb-teaching-service
               predicates:
                 - Path=/herb-teaching-service/**
                 - Method=GET
@@ -134,7 +134,7 @@ spring:
 
             #培训资料
             - id: herb-training-service
-              uri: http://herb-training-service
+              uri: lb://herb-training-service
               predicates:
                 - Path=/herb-training-service/**
               filters:
@@ -143,7 +143,7 @@ spring:
 
             #敏感词管理（仅管理员权限）
             - id: sensitive-word-service-admin
-              uri: http://comment-service
+              uri: lb://comment-service
               predicates:
                 - Path=/comment-service/admin/sensitive-words/**
               filters:
@@ -152,7 +152,7 @@ spring:
 
             #评论
             - id: comment-service
-              uri: http://comment-service
+              uri: lb://comment-service
               predicates:
                 - Path=/comment-service/**
               filters:
@@ -161,7 +161,7 @@ spring:
 
             #业绩审核相关操作（仅管理员权限）
             - id: performance-service-audit
-              uri: http://performance-service
+              uri: lb://performance-service
               predicates:
                 - Path=/performance-service/performances/*/audit
                 - Method=POST
@@ -171,7 +171,7 @@ spring:
 
             #业绩待审核列表（仅管理员权限）
             - id: performance-service-pending
-              uri: http://performance-service
+              uri: lb://performance-service
               predicates:
                 - Path=/performance-service/performances/pending
                 - Method=GET
@@ -181,7 +181,7 @@ spring:
 
             #业绩管理其他操作（教师和管理员权限）
             - id: performance-service-write
-              uri: http://performance-service
+              uri: lb://performance-service
               predicates:
                 - Path=/performance-service/**
                 - Method=GET,POST,PUT,DELETE

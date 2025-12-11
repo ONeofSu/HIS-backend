@@ -5,7 +5,7 @@ server:
 eureka:
   instance:
     #??ip
-    hostname: 8.137.159.138
+    hostname: localhost
   client:
     #??????????
     register-with-eureka: false
