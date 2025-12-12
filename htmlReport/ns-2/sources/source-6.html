@@ -1,0 +1,93 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LiveStreamService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.csu.histraining.service</a>
+</div>
+
+<h1>Coverage Summary for Class: LiveStreamService (org.csu.histraining.service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">LiveStreamService</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package org.csu.histraining.service;
+&nbsp;
+&nbsp;import org.csu.histraining.entity.LiveRoom;
+&nbsp;import org.csu.histraining.mapper.LiveRoomMapper;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;
+&nbsp;public interface LiveStreamService {
+&nbsp;    public LiveRoom createLiveRoom(LiveRoom liveRoom);
+&nbsp;    public LiveRoom startLiveStream(Long roomId);
+&nbsp;    public LiveRoom endLiveStream(Long roomId);
+&nbsp;    public List&lt;LiveRoom&gt; getActiveLiveRooms(int page,int size);
+&nbsp;    public List&lt;LiveRoom&gt; getHotLiveRooms(int limit);
+&nbsp;
+&nbsp;    public void addViewCount(Long roomId);
+&nbsp;    public boolean isStreamKeyValid(String streamKey,String token,String expire);
+&nbsp;    public boolean isLiveStreamStartInLiveRoom(Long roomId);
+&nbsp;
+&nbsp;    public void handleStreamPublish(String app,String stream);
+&nbsp;    public void handleStreamClose(String app,String stream);
+&nbsp;    public Map&lt;String, Object&gt; getSrsServerInfo();
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-21 10:30</div>
+</div>
+</body>
+</html>

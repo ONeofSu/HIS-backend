@@ -1,0 +1,92 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > UserService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.csu.histraining.service</a>
+</div>
+
+<h1>Coverage Summary for Class: UserService (org.csu.histraining.service)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">UserService$MockitoMock$ZGTgUZnL</td>
+  </tr>
+  <tr>
+    <td class="name">UserService$MockitoMock$ZGTgUZnL$auxiliary$82fLzqzl</td>
+  </tr>
+  <tr>
+    <td class="name">UserService$MockitoMock$ZGTgUZnL$auxiliary$kXX1VzBx</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package org.csu.histraining.service;
+&nbsp;
+&nbsp;import org.springframework.cloud.openfeign.FeignClient;
+&nbsp;import org.springframework.web.bind.annotation.GetMapping;
+&nbsp;import org.springframework.web.bind.annotation.PathVariable;
+&nbsp;
+&nbsp;@FeignClient(value = &quot;his-user-service&quot;)
+&nbsp;public interface UserService {
+&nbsp;    @GetMapping(&quot;/inner/user/info/token/{token}/userId&quot;)
+&nbsp;    public int getUserId(@PathVariable(&quot;token&quot;) String token);
+&nbsp;    @GetMapping(&quot;/inner/user/info/token/userId/{userId}/username&quot;)
+&nbsp;    public String getUsernameById(@PathVariable(&quot;userId&quot;) int userId);
+&nbsp;    @GetMapping(&quot;/inner/user/exist/userId/{userId}&quot;)
+&nbsp;    public boolean isUserIdExist(@PathVariable(&quot;userId&quot;) int userId);
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-21 10:30</div>
+</div>
+</body>
+</html>
