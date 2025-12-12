@@ -83,6 +83,42 @@ class EvaluationApplicationServiceImplTest {
         verify(evaluationApplicationMapper).selectList(null);
     }
 
+    @Test
+    void getApplicationByIdReturnsMapperResult() {
+        EvaluationApplication application = new EvaluationApplication();
+        when(evaluationApplicationMapper.selectById(5)).thenReturn(application);
+
+        assertSame(application, service.GetApplicationById(5));
+        verify(evaluationApplicationMapper).selectById(5);
+    }
+
+    @Test
+    void getApplicationStateReturnsValueWhenPresent() {
+        EvaluationApplication application = new EvaluationApplication();
+        application.setApplicationState("pending");
+        when(evaluationApplicationMapper.selectById(6)).thenReturn(application);
+
+        assertEquals("pending", service.GetApplicationState(6));
+        verify(evaluationApplicationMapper, atLeastOnce()).selectById(6);
+    }
+
+    @Test
+    void getApplicationStateReturnsNullWhenMissing() {
+        when(evaluationApplicationMapper.selectById(7)).thenReturn(null);
+
+        assertNull(service.GetApplicationState(7));
+        verify(evaluationApplicationMapper, atLeastOnce()).selectById(7);
+    }
+
+    @Test
+    void getApplicationByEvaluationIdQueriesByColumn() {
+        EvaluationApplication application = new EvaluationApplication();
+        when(evaluationApplicationMapper.selectOne(any())).thenReturn(application);
+
+        assertSame(application, service.GetApplicationByEvaluationId(9));
+        verify(evaluationApplicationMapper).selectOne(any());
+    }
+
     /**
      * 测试通过ID获取草药评估信息的方法
      * 验证当申请存在时，能否正确获取关联的草药评估信息

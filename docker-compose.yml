@@ -1,0 +1,54 @@
+services:
+  # 1. RabbitMQ 服务
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: his-rabbitmq
+    hostname: his-rabbit-host
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  # 2. Redis 服务
+  redis:
+    image: redis:6.2-alpine
+    container_name: his-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # 3. MySQL 服务
+  mysql:
+    image: mysql:8.0
+    container_name: his-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # 4. PostGIS 服务 (用于地理空间数据)
+  postgis:
+    image: postgis/postgis:18-3.6
+    container_name: his-postgis
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres        # 默认超级管理员
+      - POSTGRES_PASSWORD=123456    # 密码
+      - POSTGRES_DB=his_location    # 默认创建的数据库名
+    volumes:
+      # PostGIS 18+ 镜像的数据卷路径是 /var/lib/postgresql
+      - postgis_data:/var/lib/postgresql
+
+volumes:
+  rabbitmq_data:
+  redis_data:
+  mysql_data:
+  postgis_data:
