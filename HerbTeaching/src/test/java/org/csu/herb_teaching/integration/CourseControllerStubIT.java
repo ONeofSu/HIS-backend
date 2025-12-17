@@ -246,7 +246,9 @@ class CourseControllerStubIT {
                         .content(objectMapper.writeValueAsString(courseDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
-                .andExpect(jsonPath("$.data.courseName").value("桩测试课程"));
+                // Controller 返回结构中没有 data，直接包含 course 和 courseName 字段
+                .andExpect(jsonPath("$.courseName").value("桩测试课程"))
+                .andExpect(jsonPath("$.course.courseName").value("桩测试课程"));
     }
 
     @Test
@@ -274,9 +276,13 @@ class CourseControllerStubIT {
     @DisplayName("桩测试：课程评分 - 使用Stub验证用户存在")
     void testRateCourse_WithStub() throws Exception {
         // Arrange - 设置Stub数据
+        // 评分用户
         userFeignClientStub.addUser(100, "testUser", "http://example.com/avatar.jpg", false);
-        
-        // 先创建一个课程
+        userFeignClientStub.addToken("test-token", 100);
+        // 授课教师（用于创建课程时的教师校验）
+        userFeignClientStub.addUser(200, "teacherUser", "http://example.com/avatar.jpg", true);
+
+        // 先通过 Service 创建一个课程（会调用 isUserRealTeacher 校验）
         CourseDTO courseDTO = new CourseDTO();
         courseDTO.setCourseName("评分测试课程");
         courseDTO.setTeacherId(200);
@@ -285,13 +291,19 @@ class CourseControllerStubIT {
         Course course = courseService.createCourse(courseDTO);
         int courseId = course.getCourseId();
 
-        // Act & Assert - 使用Stub验证用户存在
+        // 评分请求 Payload
+        Map<String, Integer> ratingPayload = new HashMap<>();
+        ratingPayload.put("ratingValue", 4);
+
+        // Act & Assert - 使用Stub验证用户存在 + 控制器评分逻辑
         mockMvc.perform(post("/courses/{courseId}/ratings", courseId)
-                        .param("userId", "100")
-                        .param("rating", "4"))
+                        .header("Authorization", "Bearer test-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(ratingPayload)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
-                .andExpect(jsonPath("$.data.ratingValue").value(4));
+                .andExpect(jsonPath("$.rating").value(4))
+                .andExpect(jsonPath("$.courseRating.ratingValue").value(4));
     }
 
     @Test
@@ -301,21 +313,33 @@ class CourseControllerStubIT {
         userFeignClientStub.addUser(200, "teacherUser", "http://example.com/avatar.jpg", true);
         herbInfoFeignClientStub.addHerb(1, "人参", "珍贵中药材", "补气药");
         
-        // 先创建一个课程
+        // 先通过 Controller 创建一个课程，避免直接调用 Service 返回 null 的问题
         CourseDTO courseDTO = new CourseDTO();
-        courseDTO.setCourseName("中草药测试课程");
+        courseDTO.setCourseName("中草药测试课程-存在");
         courseDTO.setTeacherId(200);
         courseDTO.setCourseType(1);
         courseDTO.setCourseObject(0);
-        Course course = courseService.createCourse(courseDTO);
-        int courseId = course.getCourseId();
 
-        // Act & Assert - 使用Stub验证中草药存在
-        mockMvc.perform(post("/courses/{courseId}/herbs", courseId)
-                        .param("herbId", "1"))
+        String createResponse = mockMvc.perform(post("/courses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(courseDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
-                .andExpect(jsonPath("$.message").value("中草药添加成功"));
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> createBody = objectMapper.readValue(createResponse, Map.class);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> courseMap = (Map<String, Object>) createBody.get("course");
+        int courseId = (Integer) courseMap.get("courseId");
+
+        // Act & Assert - 使用Stub验证中草药存在
+        mockMvc.perform(post("/courses/{courseId}/herbs/{herbId}", courseId, 1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("Herb added to course successfully."));
     }
 
     @Test
@@ -325,18 +349,30 @@ class CourseControllerStubIT {
         userFeignClientStub.addUser(200, "teacherUser", "http://example.com/avatar.jpg", true);
         // 不添加中草药，模拟中草药不存在的情况
         
-        // 先创建一个课程
+        // 先通过 Controller 创建一个课程
         CourseDTO courseDTO = new CourseDTO();
-        courseDTO.setCourseName("中草药测试课程");
+        courseDTO.setCourseName("中草药测试课程-不存在");
         courseDTO.setTeacherId(200);
         courseDTO.setCourseType(1);
         courseDTO.setCourseObject(0);
-        Course course = courseService.createCourse(courseDTO);
-        int courseId = course.getCourseId();
+
+        String createResponse = mockMvc.perform(post("/courses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(courseDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> createBody = objectMapper.readValue(createResponse, Map.class);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> courseMap = (Map<String, Object>) createBody.get("course");
+        int courseId = (Integer) courseMap.get("courseId");
 
         // Act & Assert - 使用Stub验证中草药不存在
-        mockMvc.perform(post("/courses/{courseId}/herbs", courseId)
-                        .param("herbId", "999")) // 不存在的herbId
+        mockMvc.perform(post("/courses/{courseId}/herbs/{herbId}", courseId, 999)) // 不存在的herbId
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(-1))
                 .andExpect(jsonPath("$.message").value("中草药不存在"));

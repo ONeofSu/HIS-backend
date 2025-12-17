@@ -220,8 +220,23 @@ class CourseServiceImplTest {
     }
 
     @Test
-    @DisplayName("测试创建课程 - 教师ID无效")
-    void testCreateCourse_InvalidTeacher() {
+    @DisplayName("测试创建课程 - 教师ID无效（isTeacher为null）")
+    void testCreateCourse_InvalidTeacher_Null() {
+        // Arrange
+        when(courseMapper.selectCount(any(QueryWrapper.class))).thenReturn(0L);
+        when(userFeignClient.isUserRealTeacher(100)).thenReturn(null);
+
+        // Act
+        Course result = courseService.createCourse(testCourseDTO);
+
+        // Assert
+        assertNull(result);
+        verify(courseMapper, never()).insert(any(Course.class));
+    }
+
+    @Test
+    @DisplayName("测试创建课程 - 教师ID无效（isTeacher为false）")
+    void testCreateCourse_InvalidTeacher_False() {
         // Arrange
         when(courseMapper.selectCount(any(QueryWrapper.class))).thenReturn(0L);
         when(userFeignClient.isUserRealTeacher(100)).thenReturn(false);
@@ -232,6 +247,88 @@ class CourseServiceImplTest {
         // Assert
         assertNull(result);
         verify(courseMapper, never()).insert(any(Course.class));
+    }
+
+    @Test
+    @DisplayName("测试创建课程 - 边界条件：课程名为空字符串")
+    void testCreateCourse_EmptyCourseName() {
+        // Arrange
+        CourseDTO courseDTO = new CourseDTO();
+        courseDTO.setCourseName(""); // 空字符串
+        courseDTO.setTeacherId(100);
+        courseDTO.setCourseType(1);
+        courseDTO.setCourseObject(0);
+
+        // Mock: 空字符串课程名不存在
+        when(courseMapper.selectCount(any(QueryWrapper.class))).thenReturn(0L);
+        when(userFeignClient.isUserRealTeacher(100)).thenReturn(true);
+        when(courseMapper.insert(any(Course.class))).thenAnswer(invocation -> {
+            Course course = invocation.getArgument(0);
+            course.setCourseId(1);
+            return 1;
+        });
+
+        // Act
+        Course result = courseService.createCourse(courseDTO);
+
+        // Assert
+        // 根据业务逻辑，空字符串课程名可能被允许或拒绝
+        // 这里假设允许创建，实际应根据业务需求调整
+        assertNotNull(result);
+    }
+
+    @Test
+    @DisplayName("测试创建课程 - 边界条件：课程名包含特殊字符")
+    void testCreateCourse_SpecialCharactersInName() {
+        // Arrange
+        CourseDTO courseDTO = new CourseDTO();
+        courseDTO.setCourseName("测试课程@#$%");
+        courseDTO.setTeacherId(100);
+        courseDTO.setCourseType(1);
+        courseDTO.setCourseObject(0);
+
+        // Mock: 特殊字符课程名不存在
+        when(courseMapper.selectCount(any(QueryWrapper.class))).thenReturn(0L);
+        when(userFeignClient.isUserRealTeacher(100)).thenReturn(true);
+        when(courseMapper.insert(any(Course.class))).thenAnswer(invocation -> {
+            Course course = invocation.getArgument(0);
+            course.setCourseId(1);
+            return 1;
+        });
+
+        // Act
+        Course result = courseService.createCourse(courseDTO);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("测试课程@#$%", result.getCourseName());
+    }
+
+    @Test
+    @DisplayName("测试创建课程 - 验证初始评分和评分数量")
+    void testCreateCourse_InitialRatingValues() {
+        // Arrange
+        CourseDTO courseDTO = new CourseDTO();
+        courseDTO.setCourseName("新课程");
+        courseDTO.setTeacherId(100);
+        courseDTO.setCourseType(1);
+        courseDTO.setCourseObject(0);
+
+        when(courseMapper.selectCount(any(QueryWrapper.class))).thenReturn(0L);
+        when(userFeignClient.isUserRealTeacher(100)).thenReturn(true);
+        when(courseMapper.insert(any(Course.class))).thenAnswer(invocation -> {
+            Course course = invocation.getArgument(0);
+            course.setCourseId(1);
+            return 1;
+        });
+
+        // Act
+        Course result = courseService.createCourse(courseDTO);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(BigDecimal.ZERO, result.getCourseAverageRating());
+        assertEquals(0, result.getCourseRatingCount());
     }
 
     @Test
