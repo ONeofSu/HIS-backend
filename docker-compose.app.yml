@@ -1,0 +1,290 @@
+services:
+  # -------------------------------------------------------
+  # 1. 注册中心 (Eureka) - 最先启动
+  # -------------------------------------------------------
+  his-eureka:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        JAR_FILE: EurekaServer01/target/*.jar
+    container_name: his-eureka
+    ports:
+      - "8080:8080"
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx256m
+      # 关键：让 Eureka 知道自己的主机名，否则其他服务注册上来可能还是 localhost
+      - EUREKA_INSTANCE_HOSTNAME=his-eureka
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
+      - EUREKA_CLIENT_FETCH_REGISTRY=false
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://his-eureka:8080/eureka/
+    networks:
+      - his-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5' # 限制只使用0.5个CPU核
+          memory: 512M # 限制容器最大只能用512MB内存
+        reservations:
+          memory: 256M # 保证最少给256M内存
+
+  # -------------------------------------------------------
+  # 2. 网关服务 (Gateway)
+  # -------------------------------------------------------
+  his-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        JAR_FILE: HISGateway/target/*.jar
+    container_name: his-gateway
+    ports:
+      - "8090:8090"
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx256m
+      - TZ=Asia/Shanghai
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://his-eureka:8080/eureka/
+      - SPRING_DATA_REDIS_HOST=his-redis
+    depends_on:
+      - his-eureka
+    networks:
+      - his-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5' # 限制只使用0.5个CPU核
+          memory: 512M # 限制容器最大只能用512MB内存
+        reservations:
+          memory: 256M # 保证最少给256M内存
+
+  # -------------------------------------------------------
+  # 3. 用户服务 (HISUser)
+  # -------------------------------------------------------
+  his-user:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        JAR_FILE: HISUser/target/*.jar
+    container_name: his-user-service
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx256m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://his-mysql:3306/his_userinfo?useUnicode=true&characterEncoding=utf-8&useSSL=false
+      - SPRING_RABBITMQ_HOST=his-rabbitmq
+      - SPRING_DATA_REDIS_HOST=his-redis
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://his-eureka:8080/eureka/
+    depends_on:
+      - his-eureka
+    networks:
+      - his-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5' # 限制只使用0.5个CPU核
+          memory: 512M # 限制容器最大只能用512MB内存
+        reservations:
+          memory: 256M # 保证最少给256M内存
+
+  # -------------------------------------------------------
+  # 4. 中药信息服务 (HerbInfo)
+  # -------------------------------------------------------
+  his-herb-info:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        JAR_FILE: HerbInfo/target/*.jar
+    container_name: herb-info-service
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+      # MySQL 数据源
+      - SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MYSQL_URL=jdbc:mysql://his-mysql:3306/his_herbinfo?useUnicode=true&characterEncoding=utf-8
+      # PostGIS 数据源
+      - SPRING_DATASOURCE_DYNAMIC_DATASOURCE_POSTGRESQL_URL=jdbc:postgresql://his-postgis:5432/his_location
+      - SPRING_RABBITMQ_HOST=his-rabbitmq
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://his-eureka:8080/eureka/
+    depends_on:
+      - his-eureka
+    networks:
+      - his-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5' # 限制只使用0.5个CPU核
+          memory: 512M # 限制容器最大只能用512MB内存
+        reservations:
+          memory: 256M # 保证最少给256M内存
+
+  # -------------------------------------------------------
+  # 5. 教学服务 (HerbTeaching)
+  # -------------------------------------------------------
+  his-herb-teaching:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        JAR_FILE: HerbTeaching/target/*.jar
+    container_name: herb-teaching-service
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://his-mysql:3306/his_herb_teaching?useUnicode=true&characterEncoding=utf-8
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://his-eureka:8080/eureka/
+      # 覆写上传路径到容器内路径
+      - APP_UPLOAD_PATH=/uploads/
+      - APP_UPLOAD_VIDEO-PATH=/uploads/videos/
+      - APP_UPLOAD_IMAGE-PATH=/uploads/images/
+      - APP_UPLOAD_DOCUMENT-PATH=/uploads/documents/
+    volumes:
+      # 将容器内的上传目录挂载到宿主机，防止重启数据丢失
+      - ./uploads_data:/uploads
+    depends_on:
+      - his-eureka
+    networks:
+      - his-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5' # 限制只使用0.5个CPU核
+          memory: 512M # 限制容器最大只能用512MB内存
+        reservations:
+          memory: 256M # 保证最少给256M内存
+
+  # -------------------------------------------------------
+  # 6. 评论服务 (HisComment)
+  # -------------------------------------------------------
+  his-comment:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        JAR_FILE: HisComment/target/*.jar
+    container_name: comment-service
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx256m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://his-mysql:3306/his_comment?useUnicode=true&characterEncoding=utf-8
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://his-eureka:8080/eureka/
+    depends_on:
+      - his-eureka
+    networks:
+      - his-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5' # 限制只使用0.5个CPU核
+          memory: 512M # 限制容器最大只能用512MB内存
+        reservations:
+          memory: 256M # 保证最少给256M内存
+
+  # -------------------------------------------------------
+  # 7. 培训服务 (HISTraining)
+  # -------------------------------------------------------
+  his-training:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        JAR_FILE: HISTraining/target/*.jar
+    container_name: herb-training-service
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://his-mysql:3306/his_material?useUnicode=true&characterEncoding=utf-8
+      - SPRING_DATA_REDIS_HOST=his-redis
+      - MINIO_ENDPOINT=http://his-minio:9000
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://his-eureka:8080/eureka/
+      # SRS服务器地址配置
+      # ⚠️注意：如果是宿主机IP，容器内通常可以访问。如果 SRS 也在 docker 需要改名。
+      # 保持原 IP 不变: 192.168.195.100
+    depends_on:
+      - his-eureka
+    networks:
+      - his-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5' # 限制只使用0.5个CPU核
+          memory: 512M # 限制容器最大只能用512MB内存
+        reservations:
+          memory: 256M # 保证最少给256M内存
+
+  # -------------------------------------------------------
+  # 8. 绩效服务 (Performance)
+  # -------------------------------------------------------
+  his-performance:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        JAR_FILE: Performance/target/*.jar
+    container_name: performance-service
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx256m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://his-mysql:3306/his_performance?useUnicode=true&characterEncoding=utf-8
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://his-eureka:8080/eureka/
+    depends_on:
+      - his-eureka
+    networks:
+      - his-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5' # 限制只使用0.5个CPU核
+          memory: 512M # 限制容器最大只能用512MB内存
+        reservations:
+          memory: 256M # 保证最少给256M内存
+
+  # -------------------------------------------------------
+  # 9. 研究服务 (Research)
+  # -------------------------------------------------------
+  his-research:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        JAR_FILE: Research/target/*.jar
+    container_name: herb-research-service
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx256m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://his-mysql:3306/his_research?useUnicode=true&characterEncoding=utf-8
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://his-eureka:8080/eureka/
+    depends_on:
+      - his-eureka
+    networks:
+      - his-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5' # 限制只使用0.5个CPU核
+          memory: 512M # 限制容器最大只能用512MB内存
+        reservations:
+          memory: 256M # 保证最少给256M内存
+
+  # -------------------------------------------------------
+  # 10. 评价与申报 (EvaluationAndDeclaration)
+  # -------------------------------------------------------
+  his-evaluation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        JAR_FILE: EvaluationAndDeclaration/target/*.jar
+    container_name: evaluation-service
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx256m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://his-mysql:3306/his_herb_rating?useUnicode=true&characterEncoding=utf-8
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://his-eureka:8080/eureka/
+    depends_on:
+      - his-eureka
+    networks:
+      - his-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5' # 限制只使用0.5个CPU核
+          memory: 512M # 限制容器最大只能用512MB内存
+        reservations:
+          memory: 256M # 保证最少给256M内存
+
+# 声明使用已存在的网络 (由 docker-compose-infra.yml 创建)
+networks:
+  his-network:
+    external: true

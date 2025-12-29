@@ -1,0 +1,91 @@
+services:
+  # 1. RabbitMQ 服务
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: his-rabbitmq
+    hostname: his-rabbit-host
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - TZ=Asia/Shanghai
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - his-network
+
+  # 2. Redis 服务
+  redis:
+    image: redis:6.2-alpine
+    container_name: his-redis
+    ports:
+      - "6379:6379"
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - redis_data:/data
+    networks:
+      - his-network
+
+  # 3. MySQL 服务
+  mysql:
+    image: mysql:8.0
+    container_name: his-mysql
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - TZ=Asia/Shanghai
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - his-network
+
+  # 4. PostGIS 服务
+  postgis:
+    image: postgis/postgis:18-3.6
+    container_name: his-postgis
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=his_location
+      - TZ=Asia/Shanghai
+    volumes:
+      - postgis_data:/var/lib/postgresql
+    networks:
+      - his-network
+
+  # 5. [新增] MinIO 服务 (HISTraining 依赖)
+  minio:
+    image: minio/minio
+    container_name: his-minio
+    # 启动命令：指定数据目录和控制台端口
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"  # API 端口
+      - "9001:9001"  # Web 控制台端口
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+      - TZ=Asia/Shanghai
+    volumes:
+      - minio_data:/data
+    networks:
+      - his-network
+
+volumes:
+  rabbitmq_data:
+  redis_data:
+  mysql_data:
+  postgis_data:
+  minio_data: # [新增] 数据卷
+
+networks:
+  his-network:
+    name: his-network # 显式定义网络名称，供 apps 文件引用
+    driver: bridge

@@ -44,7 +44,6 @@ services:
       - POSTGRES_PASSWORD=123456    # 密码
       - POSTGRES_DB=his_location    # 默认创建的数据库名
     volumes:
-      # PostGIS 18+ 镜像的数据卷路径是 /var/lib/postgresql
       - postgis_data:/var/lib/postgresql
 
 volumes:
