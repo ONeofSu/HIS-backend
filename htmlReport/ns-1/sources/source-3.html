@@ -1,0 +1,383 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LiveStreamImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.csu.histraining.service.impl</a>
+</div>
+
+<h1>Coverage Summary for Class: LiveStreamImpl (org.csu.histraining.service.impl)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LiveStreamImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/111)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package org.csu.histraining.service.impl;
+&nbsp;
+&nbsp;import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.csu.histraining.entity.LiveRoom;
+&nbsp;import org.csu.histraining.entity.LiveStream;
+&nbsp;import org.csu.histraining.mapper.LiveRoomMapper;
+&nbsp;import org.csu.histraining.mapper.LiveStreamMapper;
+&nbsp;import org.csu.histraining.service.LiveStreamService;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+&nbsp;import org.springframework.data.redis.core.StringRedisTemplate;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;import org.springframework.util.DigestUtils;
+&nbsp;import org.springframework.web.client.RestTemplate;
+&nbsp;
+&nbsp;import java.time.LocalDateTime;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;@Service
+<b class="nc">&nbsp;@Slf4j</b>
+<b class="nc">&nbsp;public class LiveStreamImpl implements LiveStreamService {</b>
+&nbsp;    @Autowired
+&nbsp;    LiveRoomMapper liveRoomMapper;
+&nbsp;    @Autowired
+&nbsp;    LiveStreamMapper liveStreamMapper;
+&nbsp;    @Autowired
+&nbsp;    StringRedisTemplate redisTemplate;
+&nbsp;
+&nbsp;    @Value(&quot;${live.srs.server-url}&quot;)
+&nbsp;    private String srsServerUrl;
+&nbsp;
+&nbsp;    @Value(&quot;${live.srs.api-url}&quot;)
+&nbsp;    private String srsApiUrl;
+&nbsp;
+&nbsp;    @Value(&quot;${live.srs.http-flv-url}&quot;)
+&nbsp;    private String httpFlvUrl;
+&nbsp;
+&nbsp;    @Value(&quot;${live.srs.hls-url}&quot;)
+&nbsp;    private String hlsUrl;
+&nbsp;
+&nbsp;    @Value(&quot;${live.push.key-check-enabled}&quot;)
+&nbsp;    private boolean keyCheckEnabled;
+&nbsp;
+&nbsp;    @Value(&quot;${live.push.auth-expire}&quot;)
+&nbsp;    private long authExpire;
+&nbsp;
+&nbsp;    @Value(&quot;${live.push.auth-key}&quot;)
+&nbsp;    private String authKey;
+&nbsp;
+<b class="nc">&nbsp;    private RestTemplate restTemplate = new RestTemplate();</b>
+&nbsp;
+&nbsp;    //生成密钥
+&nbsp;    private String generateStreamKey(int userId){
+<b class="nc">&nbsp;        String baseKey = userId + &quot;_&quot; + System.currentTimeMillis();</b>
+<b class="nc">&nbsp;        return DigestUtils.md5DigestAsHex(baseKey.getBytes());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //生成推流地址
+&nbsp;    private String generatePushUrl(String streamKey){
+<b class="nc">&nbsp;        StringBuilder sb = new StringBuilder(srsServerUrl);</b>
+<b class="nc">&nbsp;        sb.append(&quot;/&quot;).append(streamKey);</b>
+&nbsp;
+&nbsp;        //推流验证
+<b class="nc">&nbsp;        if(keyCheckEnabled){</b>
+<b class="nc">&nbsp;            long expireTimestamp = System.currentTimeMillis() / 1000 + authExpire;</b>
+<b class="nc">&nbsp;            String authString = streamKey + &quot;-&quot; + expireTimestamp + &quot;-&quot; + authKey;</b>
+<b class="nc">&nbsp;            String authToken = DigestUtils.md5DigestAsHex(authString.getBytes());</b>
+&nbsp;
+<b class="nc">&nbsp;            sb.append(&quot;?auth_key=&quot;).append(authToken)</b>
+<b class="nc">&nbsp;                    .append(&quot;&amp;expire=&quot;).append(expireTimestamp);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return sb.toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //直播间创建
+&nbsp;    @Override
+&nbsp;    @Transactional
+&nbsp;    public LiveRoom createLiveRoom(LiveRoom liveRoom) {
+&nbsp;        //推流秘钥生成
+<b class="nc">&nbsp;        String streamKey = generateStreamKey(liveRoom.getUserId());</b>
+<b class="nc">&nbsp;        liveRoom.setStreamKey(streamKey);</b>
+&nbsp;
+<b class="nc">&nbsp;        String pushUrl = generatePushUrl(streamKey);</b>
+<b class="nc">&nbsp;        liveRoom.setStreamUrl(pushUrl);</b>
+<b class="nc">&nbsp;        liveRoom.setHlsUrl(hlsUrl + &quot;/&quot; + streamKey + &quot;.m3u8&quot;);</b>
+<b class="nc">&nbsp;        liveRoom.setFlvUrl(httpFlvUrl + &quot;/&quot; + streamKey + &quot;.flv&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        liveRoom.setStatus(LiveRoom.NOT_LIVE);</b>
+<b class="nc">&nbsp;        liveRoom.setViewCount(0L);</b>
+<b class="nc">&nbsp;        liveRoom.setCreatedAt(LocalDateTime.now());</b>
+<b class="nc">&nbsp;        liveRoom.setUpdatedAt(LocalDateTime.now());</b>
+&nbsp;
+<b class="nc">&nbsp;        liveRoomMapper.insert(liveRoom);</b>
+<b class="nc">&nbsp;        return liveRoom;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Transactional
+&nbsp;    public LiveRoom startLiveStream(Long roomId) {
+<b class="nc">&nbsp;        LiveRoom liveRoom = liveRoomMapper.selectById(roomId);</b>
+<b class="nc">&nbsp;        if(liveRoom == null){</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;直播间不存在&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //更新状态
+<b class="nc">&nbsp;        liveRoom.setStartTime(LocalDateTime.now());</b>
+<b class="nc">&nbsp;        liveRoom.setStatus(LiveRoom.LIVE);</b>
+<b class="nc">&nbsp;        liveRoomMapper.updateById(liveRoom);</b>
+&nbsp;
+&nbsp;        //创建直播流
+<b class="nc">&nbsp;        LiveStream liveStream = new LiveStream();</b>
+<b class="nc">&nbsp;        liveStream.setRoomId(roomId);</b>
+<b class="nc">&nbsp;        liveStream.setStreamId(liveRoom.getStreamKey());</b>
+<b class="nc">&nbsp;        liveStream.setProtocol(&quot;rtmp&quot;);</b>
+<b class="nc">&nbsp;        liveStream.setStatus(LiveStream.ACTIVE);</b>
+<b class="nc">&nbsp;        liveStream.setCreatedAt(LocalDateTime.now());</b>
+<b class="nc">&nbsp;        liveStream.setUpdatedAt(LocalDateTime.now());</b>
+<b class="nc">&nbsp;        liveStreamMapper.insert(liveStream);</b>
+<b class="nc">&nbsp;        redisTemplate.opsForSet().add(&quot;his_live:active_rooms&quot;, String.valueOf(roomId));</b>
+<b class="nc">&nbsp;        return liveRoom;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Transactional
+&nbsp;    public LiveRoom endLiveStream(Long roomId) {
+<b class="nc">&nbsp;        LiveRoom liveRoom = liveRoomMapper.selectById(roomId);</b>
+<b class="nc">&nbsp;        if(liveRoom == null || liveRoom.getStatus() != LiveRoom.LIVE){</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;直播间不存在或未开播&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //更新直播间状态
+<b class="nc">&nbsp;        liveRoom.setEndTime(LocalDateTime.now());</b>
+<b class="nc">&nbsp;        liveRoom.setStatus(LiveRoom.LIVE_END);</b>
+<b class="nc">&nbsp;        liveRoomMapper.updateById(liveRoom);</b>
+&nbsp;
+&nbsp;        //更新直播流状态
+<b class="nc">&nbsp;        QueryWrapper&lt;LiveStream&gt; queryWrapper = new QueryWrapper&lt;&gt;();</b>
+<b class="nc">&nbsp;        queryWrapper.eq(&quot;live_room_id&quot;, roomId).eq(&quot;live_stream_status&quot;,1);</b>
+&nbsp;
+<b class="nc">&nbsp;        LiveStream liveStream = liveStreamMapper.selectOne(queryWrapper);</b>
+<b class="nc">&nbsp;        if(liveStream!=null){</b>
+<b class="nc">&nbsp;            liveStream.setStatus(LiveStream.END);</b>
+<b class="nc">&nbsp;            liveStream.setUpdatedAt(LocalDateTime.now());</b>
+<b class="nc">&nbsp;            liveStreamMapper.updateById(liveStream);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        redisTemplate.opsForSet().remove(&quot;his_live:active_rooms&quot;, String.valueOf(roomId));</b>
+<b class="nc">&nbsp;        return liveRoom;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public List&lt;LiveRoom&gt; getActiveLiveRooms(int page, int size) {
+<b class="nc">&nbsp;        Page&lt;LiveRoom&gt; pageParam = new Page&lt;&gt;(page,size);</b>
+<b class="nc">&nbsp;        QueryWrapper&lt;LiveRoom&gt; queryWrapper = new QueryWrapper&lt;&gt;();</b>
+<b class="nc">&nbsp;        queryWrapper.eq(&quot;live_room_status&quot;,LiveRoom.LIVE).orderByDesc(&quot;live_room_view_count&quot;);</b>
+<b class="nc">&nbsp;        List&lt;LiveRoom&gt; list = liveRoomMapper.selectPage(pageParam,queryWrapper).getRecords();</b>
+<b class="nc">&nbsp;        return list;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public List&lt;LiveRoom&gt; getHotLiveRooms(int limit) {
+<b class="nc">&nbsp;        return liveRoomMapper.findHotLiveRooms(limit);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void addViewCount(Long roomId) {
+<b class="nc">&nbsp;        String key = &quot;live:room:&quot; + roomId + &quot;:view_count&quot;;</b>
+<b class="nc">&nbsp;        redisTemplate.opsForValue().increment(key);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (Math.random() &lt; 0.25) {  // 25%概率同步，减少数据库压力</b>
+<b class="nc">&nbsp;            String countStr = redisTemplate.opsForValue().get(key);</b>
+<b class="nc">&nbsp;            if (countStr != null) {</b>
+<b class="nc">&nbsp;                long count = Long.parseLong(countStr);</b>
+&nbsp;
+<b class="nc">&nbsp;                LiveRoom room = liveRoomMapper.selectById(roomId);</b>
+<b class="nc">&nbsp;                room.setViewCount(count);</b>
+<b class="nc">&nbsp;                liveRoomMapper.updateById(room);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isStreamKeyValid(String streamKey, String token, String expire) {
+<b class="nc">&nbsp;        if(!keyCheckEnabled){</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            long expireTimestamp = Long.parseLong(expire);</b>
+<b class="nc">&nbsp;            long currentTime = System.currentTimeMillis() / 1000;</b>
+&nbsp;
+&nbsp;            // 检查是否过期
+<b class="nc">&nbsp;            if (currentTime &gt; expireTimestamp) {</b>
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            // 验证token
+<b class="nc">&nbsp;            String authString = streamKey + &quot;-&quot; + expire + &quot;-&quot; + authKey;</b>
+<b class="nc">&nbsp;            String calculatedToken = DigestUtils.md5DigestAsHex(authString.getBytes());</b>
+&nbsp;
+<b class="nc">&nbsp;            return calculatedToken.equals(token);</b>
+&nbsp;
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            e.printStackTrace();</b>
+<b class="nc">&nbsp;            System.out.println(&quot;验证推流秘钥失败&quot;);</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isLiveStreamStartInLiveRoom(Long roomId) {
+<b class="nc">&nbsp;        QueryWrapper&lt;LiveStream&gt; queryWrapper = new QueryWrapper&lt;&gt;();</b>
+<b class="nc">&nbsp;        queryWrapper.eq(&quot;live_room_id&quot;, roomId).eq(&quot;live_stream_status&quot;,LiveRoom.LIVE);</b>
+<b class="nc">&nbsp;        return liveStreamMapper.selectCount(queryWrapper) &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void handleStreamPublish(String app, String stream) {
+&nbsp;        try{
+<b class="nc">&nbsp;            QueryWrapper&lt;LiveRoom&gt; queryWrapper = new QueryWrapper&lt;&gt;();</b>
+<b class="nc">&nbsp;            queryWrapper.eq(&quot;stream_key&quot;, stream);</b>
+&nbsp;
+<b class="nc">&nbsp;            LiveRoom liveRoom = liveRoomMapper.selectOne(queryWrapper);</b>
+<b class="nc">&nbsp;            if(liveRoom!=null &amp;&amp; liveRoom.getStatus() == LiveRoom.NOT_LIVE){</b>
+<b class="nc">&nbsp;                startLiveStream(liveRoom.getId());</b>
+<b class="nc">&nbsp;                log.info(&quot;直播流发布成功: app={}, stream={}, roomId={}&quot;, app, stream, liveRoom.getId());</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            e.printStackTrace();</b>
+<b class="nc">&nbsp;            System.out.println(&quot;处理流发布回调异常&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void handleStreamClose(String app, String stream) {
+&nbsp;        try {
+<b class="nc">&nbsp;            QueryWrapper&lt;LiveRoom&gt; queryWrapper = new QueryWrapper&lt;&gt;();</b>
+<b class="nc">&nbsp;            queryWrapper.eq(&quot;stream_key&quot;, stream);</b>
+&nbsp;
+<b class="nc">&nbsp;            LiveRoom liveRoom = liveRoomMapper.selectOne(queryWrapper);</b>
+<b class="nc">&nbsp;            if(liveRoom!=null &amp;&amp; liveRoom.getStatus() == LiveRoom.LIVE){</b>
+<b class="nc">&nbsp;                endLiveStream(liveRoom.getId());</b>
+<b class="nc">&nbsp;                log.info(&quot;直播流关闭: app={}, stream={}, roomId={}&quot;, app, stream, liveRoom.getId());</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }catch (Exception e){</b>
+<b class="nc">&nbsp;            log.error(&quot;处理流关闭回调异常&quot;, e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Map&lt;String, Object&gt; getSrsServerInfo() {
+&nbsp;        try {
+<b class="nc">&nbsp;            String url = srsApiUrl + &quot;/v1/summaries&quot;;</b>
+<b class="nc">&nbsp;            ResponseEntity&lt;Map&gt; response = restTemplate.getForEntity(url, Map.class);</b>
+<b class="nc">&nbsp;            return response.getBody();</b>
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            log.error(&quot;获取SRS服务器信息异常&quot;, e);</b>
+<b class="nc">&nbsp;            return Collections.emptyMap();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-21 10:30</div>
+</div>
+</body>
+</html>

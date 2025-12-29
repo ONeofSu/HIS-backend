@@ -24,6 +24,15 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Autowired
     UserService userService;
 
+    // 测试用
+    public FeedbackServiceImpl(FeedbackMapper feedbackMapper,
+                               MaterialService materialService,
+                               UserService userService) {
+        this.feedbackMapper = feedbackMapper;
+        this.materialService = materialService;
+        this.userService = userService;
+    }
+
     private boolean isInputFeedbackValid(Feedback feedback) {
         if(!materialService.isMaterialIdExist(feedback.getMaterialId())) {
             return false;

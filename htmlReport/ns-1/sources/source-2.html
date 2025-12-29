@@ -1,0 +1,412 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LiveRecordServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.csu.histraining.service.impl</a>
+</div>
+
+<h1>Coverage Summary for Class: LiveRecordServiceImpl (org.csu.histraining.service.impl)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LiveRecordServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/133)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package org.csu.histraining.service.impl;
+&nbsp;
+&nbsp;
+&nbsp;import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+&nbsp;import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+&nbsp;import io.minio.GetPresignedObjectUrlArgs;
+&nbsp;import io.minio.MinioClient;
+&nbsp;import io.minio.UploadObjectArgs;
+&nbsp;import io.minio.http.Method;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.checkerframework.checker.units.qual.A;
+&nbsp;import org.csu.histraining.entity.LiveRecord;
+&nbsp;import org.csu.histraining.entity.LiveRoom;
+&nbsp;import org.csu.histraining.mapper.LiveRecordMapper;
+&nbsp;import org.csu.histraining.mapper.LiveRoomMapper;
+&nbsp;import org.csu.histraining.service.LiveRecordService;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.time.LocalDateTime;
+&nbsp;import java.util.List;
+&nbsp;import java.util.concurrent.CompletableFuture;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;
+&nbsp;@Service
+<b class="nc">&nbsp;@Slf4j</b>
+<b class="nc">&nbsp;public class LiveRecordServiceImpl implements LiveRecordService {</b>
+&nbsp;    @Autowired
+&nbsp;    LiveRoomMapper liveRoomMapper;
+&nbsp;    @Autowired
+&nbsp;    LiveRecordMapper liveRecordMapper;
+&nbsp;    @Autowired
+&nbsp;    MinioClient minioClient;
+&nbsp;    @Value(&quot;${minio.bucket}&quot;)
+&nbsp;    private String minioBucket;
+&nbsp;    @Value(&quot;${live.record.save-path}&quot;)
+&nbsp;    private String recordSavePath;
+&nbsp;
+<b class="nc">&nbsp;    private final ConcurrentHashMap&lt;Long, Process&gt; recordingProcesses = new ConcurrentHashMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;    private void startRecordingProcess(LiveRoom liveRoom,LiveRecord liveRecord) {
+<b class="nc">&nbsp;        CompletableFuture.runAsync(() -&gt; {</b>
+&nbsp;           try {
+&nbsp;//               ProcessBuilder pbT = new ProcessBuilder(&quot;ffmpeg&quot;, &quot;-version&quot;);
+&nbsp;//               pbT.redirectErrorStream(true);
+&nbsp;//               Process processT = pbT.start();
+&nbsp;//               BufferedReader reader = new BufferedReader(new InputStreamReader(processT.getInputStream()));
+&nbsp;//               String line;
+&nbsp;//               while ((line = reader.readLine()) != null) {
+&nbsp;//                   System.out.println(line);
+&nbsp;//               }
+&nbsp;
+<b class="nc">&nbsp;               File saveDir = new File(recordSavePath);</b>
+<b class="nc">&nbsp;               if(!saveDir.exists()){</b>
+<b class="nc">&nbsp;                   saveDir.mkdirs();</b>
+&nbsp;               }
+&nbsp;
+<b class="nc">&nbsp;               String outputPath = recordSavePath + &quot;/&quot; + liveRecord.getFileName();</b>
+<b class="nc">&nbsp;               String inputUrl = liveRoom.getFlvUrl();</b>
+&nbsp;
+&nbsp;               //使用ffmpeg录制
+<b class="nc">&nbsp;               ProcessBuilder pb = new ProcessBuilder(</b>
+&nbsp;                       &quot;ffmpeg&quot;,
+&nbsp;                       &quot;-i&quot;,inputUrl,
+&nbsp;                       &quot;-c:v&quot;,&quot;copy&quot;,
+&nbsp;                       &quot;-c:a&quot;,&quot;aac&quot;,
+&nbsp;                       &quot;-strict&quot;,&quot;-2&quot;,
+&nbsp;                       outputPath
+&nbsp;               );
+&nbsp;
+<b class="nc">&nbsp;               Process process = pb.start();</b>
+<b class="nc">&nbsp;               recordingProcesses.put(liveRecord.getId(), process);</b>
+&nbsp;
+&nbsp;               //保存进程id
+<b class="nc">&nbsp;               String processKey = &quot;live:recording:process:&quot; + liveRecord.getId();</b>
+<b class="nc">&nbsp;               Runtime.getRuntime().addShutdownHook(new Thread(() -&gt; {</b>
+<b class="nc">&nbsp;                   process.destroy();</b>
+&nbsp;               }));
+&nbsp;
+<b class="nc">&nbsp;               log.info(&quot;开始录制直播, roomId={}, recordingId={}&quot;, liveRoom.getId(), liveRecord.getId());</b>
+&nbsp;
+<b class="nc">&nbsp;               int exitCode = process.waitFor();</b>
+<b class="nc">&nbsp;               log.info(&quot;录制进程结束, roomId={}, recordingId={}, exitCode={}&quot;,</b>
+<b class="nc">&nbsp;                       liveRoom.getId(), liveRecord.getId(), exitCode);</b>
+&nbsp;
+<b class="nc">&nbsp;               recordingProcesses.remove(liveRecord.getId());</b>
+&nbsp;
+<b class="nc">&nbsp;               if(exitCode == 0){</b>
+<b class="nc">&nbsp;                    uploadRecording(liveRecord,new File(outputPath));</b>
+&nbsp;               }
+<b class="nc">&nbsp;           }catch (Exception e){</b>
+<b class="nc">&nbsp;               log.error(&quot;录制直播异常&quot;, e);</b>
+&nbsp;
+&nbsp;               // 更新录制状态为失败
+<b class="nc">&nbsp;               LiveRecord failedRecord = new LiveRecord();</b>
+<b class="nc">&nbsp;               failedRecord.setId(liveRecord.getRoomId());</b>
+<b class="nc">&nbsp;               failedRecord.setStatus(4);  // 失败状态</b>
+<b class="nc">&nbsp;               failedRecord.setUpdatedAt(LocalDateTime.now());</b>
+&nbsp;
+<b class="nc">&nbsp;               liveRecordMapper.updateById(failedRecord);</b>
+&nbsp;           }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private void stopRecordingProcess(LiveRecord liveRecord) {
+&nbsp;        try {
+<b class="nc">&nbsp;            Process process = recordingProcesses.get(liveRecord.getId());</b>
+<b class="nc">&nbsp;            if (process != null &amp;&amp; process.isAlive()) {</b>
+&nbsp;                // 尝试通过标准输入发送 &#39;q&#39; 命令（优雅退出）
+<b class="nc">&nbsp;                try (OutputStream os = process.getOutputStream()) {</b>
+<b class="nc">&nbsp;                    os.write(&quot;q\n&quot;.getBytes());</b>
+<b class="nc">&nbsp;                    os.flush();</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                // 等待最多 10 秒
+<b class="nc">&nbsp;                if (!process.waitFor(10, TimeUnit.SECONDS)) {</b>
+<b class="nc">&nbsp;                    log.warn(&quot;ffmpeg 未正常退出，强制终止&quot;);</b>
+<b class="nc">&nbsp;                    process.destroyForcibly(); // 最终手段</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                log.info(&quot;成功停止录制, recordingId={}, exitCode={}&quot;,</b>
+<b class="nc">&nbsp;                        liveRecord.getId(), process.exitValue());</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                log.warn(&quot;未找到活跃的录制进程, recordingId={}&quot;, liveRecord.getId());</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            log.error(&quot;停止录制进程异常&quot;, e);</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;停止录制失败&quot;, e);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        log.info(&quot;手动停止录制, recordingId={}&quot;, liveRecord.getId());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void uploadRecording(LiveRecord liveRecord,File file) {
+&nbsp;        try{
+<b class="nc">&nbsp;            LiveRecord processingRecord  = new LiveRecord();</b>
+<b class="nc">&nbsp;            processingRecord.setId(liveRecord.getId());</b>
+<b class="nc">&nbsp;            processingRecord.setStatus(LiveRecord.RECORD_HANDLING);</b>
+<b class="nc">&nbsp;            processingRecord.setUpdatedAt(LocalDateTime.now());</b>
+<b class="nc">&nbsp;            liveRecordMapper.updateById(processingRecord);</b>
+&nbsp;
+<b class="nc">&nbsp;            long fileSize = file.length();</b>
+&nbsp;
+&nbsp;            // 使用FFmpeg获取视频时长
+<b class="nc">&nbsp;            String[] cmd = {</b>
+&nbsp;                    &quot;ffprobe&quot;,
+&nbsp;                    &quot;-v&quot;, &quot;error&quot;,
+&nbsp;                    &quot;-show_entries&quot;, &quot;format=duration&quot;,
+&nbsp;                    &quot;-of&quot;, &quot;default=noprint_wrappers=1:nokey=1&quot;,
+<b class="nc">&nbsp;                    file.getAbsolutePath()</b>
+&nbsp;            };
+&nbsp;
+<b class="nc">&nbsp;            Process process = Runtime.getRuntime().exec(cmd);</b>
+&nbsp;
+&nbsp;            String durationStr;
+<b class="nc">&nbsp;            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {</b>
+<b class="nc">&nbsp;                durationStr = reader.readLine();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {</b>
+&nbsp;                String errorLine;
+<b class="nc">&nbsp;                while ((errorLine = errorReader.readLine()) != null) {</b>
+<b class="nc">&nbsp;                    log.error(&quot;ffprobe 错误输出: {}&quot;, errorLine);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            File saveDir = new File(recordSavePath);</b>
+<b class="nc">&nbsp;            if (!saveDir.exists() &amp;&amp; !saveDir.mkdirs()) {</b>
+<b class="nc">&nbsp;                throw new IOException(&quot;无法创建目录: &quot; + recordSavePath);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (!saveDir.canWrite()) {</b>
+<b class="nc">&nbsp;                throw new IOException(&quot;目录不可写: &quot; + recordSavePath);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;//            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+&nbsp;//            durationStr = reader.readLine();
+<b class="nc">&nbsp;            int duration = Integer.parseInt(durationStr);</b>
+&nbsp;
+&nbsp;            //Minio
+<b class="nc">&nbsp;            String objectName = &quot;recordings/&quot; + liveRecord.getFileName();</b>
+<b class="nc">&nbsp;            minioClient.uploadObject(</b>
+<b class="nc">&nbsp;                    UploadObjectArgs.builder()</b>
+<b class="nc">&nbsp;                            .bucket(minioBucket)</b>
+<b class="nc">&nbsp;                            .object(objectName)</b>
+<b class="nc">&nbsp;                            .filename(file.getAbsolutePath())</b>
+<b class="nc">&nbsp;                            .contentType(&quot;video/mp4&quot;)</b>
+<b class="nc">&nbsp;                            .build()</b>
+&nbsp;            );
+&nbsp;
+&nbsp;            //构建访问URL
+<b class="nc">&nbsp;            String fileUrl = minioClient.getPresignedObjectUrl(</b>
+<b class="nc">&nbsp;                    GetPresignedObjectUrlArgs.builder()</b>
+<b class="nc">&nbsp;                            .bucket(minioBucket)</b>
+<b class="nc">&nbsp;                            .object(objectName)</b>
+<b class="nc">&nbsp;                            .method(Method.GET)</b>
+<b class="nc">&nbsp;                            .build()</b>
+&nbsp;            );
+&nbsp;
+&nbsp;            //更新
+<b class="nc">&nbsp;            LiveRecord updateRecord = new LiveRecord();</b>
+<b class="nc">&nbsp;            updateRecord.setId(liveRecord.getId());</b>
+<b class="nc">&nbsp;            updateRecord.setFileUrl(fileUrl);</b>
+<b class="nc">&nbsp;            updateRecord.setFileSize(fileSize);</b>
+<b class="nc">&nbsp;            updateRecord.setDuration(duration);</b>
+<b class="nc">&nbsp;            updateRecord.setStatus(LiveRecord.RECORD_USABLE);</b>
+<b class="nc">&nbsp;            updateRecord.setUpdatedAt(LocalDateTime.now());</b>
+<b class="nc">&nbsp;            liveRecordMapper.updateById(updateRecord);</b>
+&nbsp;
+<b class="nc">&nbsp;            log.info(&quot;录制文件上传完成, recordingId={}, fileSize={}, duration={}s&quot;,</b>
+<b class="nc">&nbsp;                    liveRecord.getId(), fileSize, duration);</b>
+&nbsp;
+&nbsp;            // 删除本地文件
+<b class="nc">&nbsp;            file.delete();</b>
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            log.error(&quot;上传录制文件异常&quot;,e);</b>
+&nbsp;
+<b class="nc">&nbsp;            LiveRecord failedRecord = new LiveRecord();</b>
+<b class="nc">&nbsp;            failedRecord.setId(liveRecord.getId());</b>
+<b class="nc">&nbsp;            failedRecord.setStatus(LiveRecord.RECORD_DELETED);</b>
+<b class="nc">&nbsp;            failedRecord.setUpdatedAt(LocalDateTime.now());</b>
+<b class="nc">&nbsp;            liveRecordMapper.updateById(failedRecord);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Transactional
+&nbsp;    @Override
+&nbsp;    public LiveRecord startRecord(Long roomId) {
+<b class="nc">&nbsp;        LiveRoom liveRoom = liveRoomMapper.selectById(roomId);</b>
+<b class="nc">&nbsp;        if(liveRoom == null || liveRoom.getStatus()!=LiveRoom.LIVE) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;直播间不存在或未开播&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        LiveRecord liveRecord = new LiveRecord();</b>
+<b class="nc">&nbsp;        liveRecord.setRoomId(roomId);</b>
+<b class="nc">&nbsp;        liveRecord.setFileName(liveRoom.getStreamKey() + &quot;_&quot; + System.currentTimeMillis() + &quot;.mp4&quot;);</b>
+<b class="nc">&nbsp;        liveRecord.setStatus(LiveRecord.RECORDING);</b>
+<b class="nc">&nbsp;        liveRecord.setStartTime(LocalDateTime.now());</b>
+<b class="nc">&nbsp;        liveRecord.setCreatedAt(LocalDateTime.now());</b>
+<b class="nc">&nbsp;        liveRecord.setUpdatedAt(LocalDateTime.now());</b>
+<b class="nc">&nbsp;        liveRecordMapper.insert(liveRecord);</b>
+&nbsp;
+<b class="nc">&nbsp;        startRecordingProcess(liveRoom,liveRecord);//启动录制进程</b>
+<b class="nc">&nbsp;        return liveRecord;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Transactional
+&nbsp;    @Override
+&nbsp;    public LiveRecord stopRecord(Long recordId) {
+<b class="nc">&nbsp;        LiveRecord liveRecord = liveRecordMapper.selectById(recordId);</b>
+<b class="nc">&nbsp;        if(liveRecord == null || liveRecord.getStatus()!=LiveRecord.RECORDING) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;录制任务不存在或已结束&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //更新
+<b class="nc">&nbsp;        liveRecord.setStatus(LiveRecord.RECORD_FINISH);</b>
+<b class="nc">&nbsp;        liveRecord.setUpdatedAt(LocalDateTime.now());</b>
+<b class="nc">&nbsp;        liveRecord.setEndTime(LocalDateTime.now());</b>
+<b class="nc">&nbsp;        liveRecordMapper.updateById(liveRecord);</b>
+&nbsp;
+&nbsp;
+&nbsp;        //停止录制 上传文件
+<b class="nc">&nbsp;        stopRecordingProcess(liveRecord);</b>
+&nbsp;
+<b class="nc">&nbsp;        return liveRecord;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public List&lt;LiveRecord&gt; getRecordsByRoomId(Long roomId, int page, int size) {
+<b class="nc">&nbsp;        Page&lt;LiveRecord&gt; pageParam = new Page&lt;&gt;(page, size);</b>
+<b class="nc">&nbsp;        QueryWrapper&lt;LiveRecord&gt; queryWrapper = new QueryWrapper&lt;&gt;();</b>
+<b class="nc">&nbsp;        queryWrapper.eq(&quot;live_room_id&quot;, roomId).eq(&quot;live_record_status&quot;, LiveRecord.RECORD_USABLE)</b>
+<b class="nc">&nbsp;                .orderByDesc(&quot;live_record_start_time&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        return liveRecordMapper.selectPage(pageParam, queryWrapper).getRecords();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isLiveRecording(Long recordId) {
+<b class="nc">&nbsp;        LiveRecord liveRecord = liveRecordMapper.selectById(recordId);</b>
+<b class="nc">&nbsp;        if(liveRecord == null || liveRecord.getStatus()!=LiveRecord.RECORDING) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isLiveRecordingByRoomId(Long roomId) {
+<b class="nc">&nbsp;        QueryWrapper&lt;LiveRecord&gt; queryWrapper = new QueryWrapper&lt;&gt;();</b>
+<b class="nc">&nbsp;        queryWrapper.eq(&quot;live_room_id&quot;, roomId).eq(&quot;live_record_status&quot;,LiveRecord.RECORDING);</b>
+<b class="nc">&nbsp;        return liveRecordMapper.selectCount(queryWrapper) &gt; 0;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-21 10:30</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,115 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MaterialService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.csu.histraining.service</a>
+</div>
+
+<h1>Coverage Summary for Class: MaterialService (org.csu.histraining.service)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">MaterialService$MockitoMock$zf4Awemi</td>
+  </tr>
+  <tr>
+    <td class="name">MaterialService$MockitoMock$zf4Awemi$auxiliary$rN53eNFP</td>
+  </tr>
+  <tr>
+    <td class="name">MaterialService$MockitoMock$zf4Awemi$auxiliary$ZWAfshpI</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package org.csu.histraining.service;
+&nbsp;
+&nbsp;import org.csu.histraining.DTO.MaterialDTO;
+&nbsp;import org.csu.histraining.DTO.UpdateMaterialDTO;
+&nbsp;import org.csu.histraining.VO.MaterialVO;
+&nbsp;import org.csu.histraining.VO.SimpleMaterialVO;
+&nbsp;import org.csu.histraining.entity.Content;
+&nbsp;import org.csu.histraining.entity.Material;
+&nbsp;import org.csu.histraining.model.MaterialModel;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;public interface MaterialService {
+&nbsp;    public int addMaterial(Material material);
+&nbsp;    public List&lt;Material&gt; getAllMaterial();
+&nbsp;    public List&lt;Material&gt; getAllMaterialDividePages(int page, int size);
+&nbsp;    public Material getMaterialById(int id);
+&nbsp;    public boolean isMaterialIdExist(int id);
+&nbsp;    public boolean updateMaterial(Material material);
+&nbsp;    public boolean deleteMaterialById(int id);
+&nbsp;
+&nbsp;    public int addContent(Content content);
+&nbsp;    public List&lt;Content&gt; getContentByMaterialId(int materialId);
+&nbsp;    public boolean isContentIdExist(int contentId);
+&nbsp;    public boolean updateContent(Content content);
+&nbsp;    public boolean deleteContentById(int id);
+&nbsp;
+&nbsp;    public boolean deleteMaterialContentByMaterialId(int materialId);
+&nbsp;
+&nbsp;    public MaterialModel transferDTOToMaterialModel(MaterialDTO materialDTO,int userId);
+&nbsp;    public MaterialModel transferDTOToMaterialModel(UpdateMaterialDTO updateMaterialDTO,int userId);
+&nbsp;    public MaterialVO transferModelToMaterialVO(MaterialModel materialModel);
+&nbsp;    public SimpleMaterialVO transferMaterialToSimpleVO(Material material);
+&nbsp;    public List&lt;SimpleMaterialVO&gt; transferMaterialToSimpleVOList(List&lt;Material&gt; materialList);
+&nbsp;
+&nbsp;    public int addMaterialModel(MaterialModel materialModel);
+&nbsp;    public boolean updateMaterialModel(MaterialModel materialModel);
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-21 10:30</div>
+</div>
+</body>
+</html>
